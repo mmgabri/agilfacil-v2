@@ -1,0 +1,83 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Globals:
+  Function:
+    Runtime: nodejs18.x
+    Timeout: 30
+    CodeUri: .
+    Environment:
+      Variables:
+        REGION: sa-east-1
+        TABLE_BOARD: agilfacil_board
+        TABLE_ROOM: agilfacil_room
+        TABLE_CONNECTIONS: agilfacil_connections
+
+Resources:
+
+  # ── REST: Board ──────────────────────────────────────────────────────────────
+  BoardRestFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: agilfacil-board-rest
+      Handler: handlers/rest/boardIndex.handler
+      Events:
+        GetHealthcheck:
+          Type: HttpApi
+          Properties:
+            Path: /healthcheck
+            Method: GET
+        GetBoard:
+          Type: HttpApi
+          Properties:
+            Path: /board/{boardId}
+            Method: GET
+        GetBoardByUser:
+          Type: HttpApi
+          Properties:
+            Path: /board/getBoardByUser/{creatorId}
+            Method: GET
+        CreateBoard:
+          Type: HttpApi
+          Properties:
+            Path: /board/createBoard
+            Method: POST
+        DeleteBoard:
+          Type: HttpApi
+          Properties:
+            Path: /board/{boardId}
+            Method: DELETE
+
+  # ── REST: Poker ───────────────────────────────────────────────────────────────
+  PokerRestFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: agilfacil-poker-rest
+      Handler: handlers/rest/pokerIndex.handler
+      Events:
+        CreateRoom:
+          Type: HttpApi
+          Properties:
+            Path: /room/createRoom
+            Method: POST
+        GetRoom:
+          Type: HttpApi
+          Properties:
+            Path: /room/{roomId}
+            Method: GET
+
+  # ── WebSocket: Board ─────────────────────────────────────────────────────────
+  # SAM não executa WebSocket localmente via "start-api".
+  # Use "sam local invoke BoardWsFunction --event events/ws-connect.json" para testar.
+  BoardWsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: agilfacil-board-ws
+      Handler: handlers/ws/boardIndex.handler
+
+  # ── WebSocket: Poker ──────────────────────────────────────────────────────────
+  PokerWsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: agilfacil-poker-ws
+      Handler: handlers/ws/pokerIndex.handler

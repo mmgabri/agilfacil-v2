@@ -1,0 +1,20 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-agilfacilamplify-dev-c962d-authRole",
+      "UnauthRoleArn": "arn:aws:iam::140023369634:role/amplify-agilfacilamplify-dev-c962d-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::140023369634:role/amplify-agilfacilamplify-dev-c962d-authRole",
+      "Region": "ap-south-1",
+      "DeploymentBucketName": "amplify-agilfacilamplify-dev-c962d-deployment",
+      "UnauthRoleName": "amplify-agilfacilamplify-dev-c962d-unauthRole",
+      "StackName": "amplify-agilfacilamplify-dev-c962d",
+      "StackId": "arn:aws:cloudformation:ap-south-1:140023369634:stack/amplify-agilfacilamplify-dev-c962d/76e82d90-ce14-11ef-ac90-06f74ea25fa9",
+      "AmplifyAppId": "dd3nyywr6lwt0"
+    },
+    "categories": {
+      "auth": {
+        "agilfacilamplifyf27aefbc": {}
+      }
+    }
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "requestContext": {
+    "routeKey": "comand_socket_board",
+    "connectionId": "local-test-connection-id2",
+    "domainName": "localhost",
+    "stage": "local"
+  },
+  "body": "{\"comand\": \"add_card_board\", \"boardId\": \"80d01a40-7d98-41c7-94a9-be16386a2985\", \"newCard\": {\"content\": \"Teste\", \"userId\": \"user-123\"}, \"indexColumn\": 0}"
+}

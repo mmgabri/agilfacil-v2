@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Get-ChildItem -Path \"c:\\\\_git\\\\agilfacil-v2\" -Force | Select-Object Name, @{Name=\"Type\";Expression={if\\($_.PSIsContainer\\){\"DIR\"}else{\"FILE\"}}} | Format-Table -AutoSize)",
+      "Bash(Remove-Item \"c:\\\\_git\\\\agilfacil-v2\\\\backend\\\\handlers\\\\connect.js\", \"c:\\\\_git\\\\agilfacil-v2\\\\backend\\\\handlers\\\\disconnect.js\", \"c:\\\\_git\\\\agilfacil-v2\\\\backend\\\\handlers\\\\boardCommands.js\", \"c:\\\\_git\\\\agilfacil-v2\\\\backend\\\\handlers\\\\pokerCommands.js\", \"c:\\\\_git\\\\agilfacil-v2\\\\backend\\\\handlers\\\\rest\\\\index.js\", \"c:\\\\_git\\\\agilfacil-v2\\\\backend\\\\handlers\\\\ws\\\\index.js\")",
+      "Bash(dir \"c:\\\\_git\\\\agilfacil-v2\" /b)"
+    ]
+  }
+}

@@ -1,0 +1,89 @@
+.user-list {
+    display: flex;
+    flex-wrap: wrap; /* Permite que os itens se movam para a linha seguinte se necessário */
+    gap: 15px;
+    padding: 20px;
+    max-width: 100%;
+    margin: auto;
+    justify-content: center; /* Centraliza a lista horizontalmente */
+  }
+  
+  .notas-list {
+    display: flex;
+    flex-wrap: wrap; /* Permite que os itens se movam para a linha seguinte se necessário */
+    gap: 15px;
+    padding: 30px;
+    max-width: 100%;
+    margin: auto;
+    justify-content: center; /* Centraliza a lista horizontalmente */
+  }
+  
+  .user-item {
+    display: flex;
+    flex-direction: column; /* Alinha o nome acima do ícone */
+    align-items: center;
+    gap: 5px;
+    padding: 15px;
+    background: #1C1C1C;
+    border-radius: 8px;
+    flex: 1 1 150px; /* Permite que os itens se ajustem com base no espaço disponível */
+    max-width: 200px; /* Limita a largura máxima dos itens */
+    text-align: center; /* Centraliza o texto dentro dos itens */
+    flex: 1 1 120px;
+    max-width: 150px;
+    padding: 10px;
+    gap: 5px;
+  }
+  
+  .user-icon {
+    color: #007bff; /* Cor do ícone */
+    font-size: 2rem;
+  }
+  
+  .user-name {
+    font-weight: 600;
+    font-size: 1.2rem;
+    color: #D2691E;
+  }
+
+  .vote {
+    font-weight: 600;
+    font-size: 1.5rem;
+    padding-bottom: 0rem;
+    color: #1C1C1C;
+  }
+  
+  .info-box {
+    margin-top: 5px;
+    padding: 0px;
+    background: #C0C0C0; /* Fundo branco */
+    border-radius: 4px;
+    font-size: 1rem;
+    color: #333;
+    max-width: 100%; /* Garante que a caixa não ultrapasse o limite do item */
+    width: 70px; /* Define a largura da div */
+    height: 40px; /* Define a altura da div */
+    justify-content: center;    /* Centraliza horizontalmente */
+    align-items: center;        /* Centraliza verticalmente */
+    display: flex;              /* Ativa o Flexbox */
+    border: 1px solid #ccc;     /* Exemplo de borda (opcional) */
+  
+  }
+
+  /* Responsividade */
+  @media (max-width: 768px) {
+    .user-item {
+      flex: 1 1 100px; /* Ajusta o tamanho dos itens em telas menores */
+      max-width: 150px; /* Ajusta a largura máxima dos itens */
+      font-size: 0.9rem; /* Ajusta o tamanho da fonte */
+    }
+  
+    .user-icon {
+      font-size: 1.5rem; /* Ajusta o tamanho do ícone */
+    }
+  
+    .user-name {
+      font-size: 1rem; /* Ajusta o tamanho da fonte */
+    }
+  }
+  

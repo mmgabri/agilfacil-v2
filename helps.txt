@@ -1,0 +1,13 @@
+sam build
+sam local start-api
+
+
+sam local start-api --debug-port 5858
+
+sam local invoke BoardWsFunction --event events/ws-connect.json
+
+sam local invoke BoardWsFunction --event events/ws-board-command.json
+sam local invoke BoardWsFunction --event events/ws-connect.json --debug-port 5859
+
+sam local invoke BoardWsFunction --event events/ws-board-command.json --debug-port 5859
+
