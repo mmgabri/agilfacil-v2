@@ -120,6 +120,114 @@ server {
 sudo systemctl restart nginx
 ```
 
+## Observabilidade — CloudWatch Logs & Insights
+
+O backend emite logs JSON estruturados em todos os handlers Lambda. No AWS, esses logs ficam disponíveis automaticamente nos log groups `/aws/lambda/<nome-da-função>`.
+
+### Dois campos de nível: `@level` vs `level`
+
+No CloudWatch Insights existem dois campos distintos:
+
+| Campo | O que é | Quando usar |
+|-------|---------|-------------|
+| `@level` | Nível atribuído pelo Lambda runtime (`INFO`, `WARN`, `ERROR`) — determinado pelo método `console.*` usado | Captura **qualquer** output daquela severidade, incluindo warnings nativos do Node/SDK |
+| `level` | Campo dentro do nosso JSON (`"info"`, `"warn"`, `"error"`) | Filtra **apenas** os logs estruturados da aplicação |
+
+Nas queries abaixo usamos `level` (JSON) para isolar logs da aplicação e `@level` quando queremos capturar tudo incluindo erros do runtime.
+
+### Ativando o nível de log
+
+A variável de ambiente `LOG_LEVEL` controla o que é gravado:
+
+| Valor | O que é logado |
+|-------|----------------|
+| `info` (padrão) | Eventos de negócio: connect/disconnect, comandos, creates/deletes |
+| `debug` | Tudo acima + timing do DynamoDB, detalhes de payload, contagem de conexões no broadcast |
+
+Para ativar o debug em uma função Lambda:
+1. Acesse a função no console AWS → **Configuration → Environment variables**
+2. Adicione `LOG_LEVEL = debug`
+3. Remova ou defina `LOG_LEVEL = info` após o troubleshooting para reduzir custo de logs
+
+### Abrindo o CloudWatch Insights
+
+1. Console AWS → **CloudWatch → Logs Insights**
+2. Em **Select log group(s)**, escolha o grupo da função que quer investigar (ex: `/aws/lambda/agilfacil-board-ws`)
+3. Ajuste o período (Time range) e cole a query desejada
+
+### Queries úteis
+
+#### Ver todos os erros recentes (app + runtime)
+```
+fields @timestamp, @level, level, message, boardId, roomId, userId, error
+| filter @level = "ERROR"
+| sort @timestamp desc
+| limit 50
+```
+
+#### Ver apenas erros da aplicação (sem warnings do Node/SDK)
+```
+fields @timestamp, message, boardId, roomId, userId, error
+| filter level = "error"
+| sort @timestamp desc
+| limit 50
+```
+
+#### Ver connects/disconnects por sessão (tshoot de usuário sumindo)
+```
+fields @timestamp, message, userId, idSession, connectionId
+| filter level = "info" and (message like "connect" or message like "disconnect")
+| sort @timestamp desc
+| limit 100
+```
+
+#### Acompanhar um board específico (todos os comandos)
+```
+fields @timestamp, message, command, userId, error
+| filter boardId = "SEU_BOARD_ID_AQUI"
+| sort @timestamp desc
+```
+
+#### Acompanhar uma sala de poker específica
+```
+fields @timestamp, message, command, userId, vote, status
+| filter roomId = "SEU_ROOM_ID_AQUI"
+| sort @timestamp desc
+```
+
+#### Timing de operações DynamoDB (detectar lentidão)
+```
+fields @timestamp, message, table, elapsedMs
+| filter message like "DynamoDB"
+| sort elapsedMs desc
+| limit 50
+```
+
+#### Comandos board mais lentos (debug ativado)
+```
+fields @timestamp, command, boardId, elapsedMs
+| filter message = "Board command processed"
+| sort elapsedMs desc
+| limit 20
+```
+
+#### Contagem de erros da aplicação por tipo nas últimas 24h
+```
+fields message
+| filter level = "error"
+| stats count(*) as total by message
+| sort total desc
+```
+
+#### Broadcasts com zero conexões (sessão fantasma)
+```
+fields @timestamp, idSession, type, connectionCount
+| filter message = "Broadcast to session" and connectionCount = 0
+| sort @timestamp desc
+```
+
+---
+
 ## Configuração do Lambda Health Check
 
 #### No ambiente local, na pasta health-check, executar os seguintes comandos, e verificar se os recusrsos foram criados no ambiente aws:

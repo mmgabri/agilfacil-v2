@@ -1,19 +1,21 @@
 const { saveConnection, getConnection, deleteConnection } = require('../../services/connections/connectionsService');
 const { connectClientBoard, disconnectClientBoard, addCardBoard, reorderBoard, processCombine, deleteColumn, addColumn, updateTitleColumn, updateLike, deleteCard, deleteAllCard, saveCard, updatecolorCards, setIsObfuscatedBoardLevel, setIsObfuscatedColumnLevel } = require('../../services/board/socketBoardService');
 const { broadcastToSession } = require('../../utils/broadcast');
+const log = require('../../utils/logger');
 
 const onConnect = async (event) => {
   const connectionId = event.requestContext.connectionId;
   const endpoint = `https://${event.requestContext.domainName}/${event.requestContext.stage}`;
   const { userName, userId, idSession } = event.queryStringParameters || {};
 
+  log.info('Board WS connect', { connectionId, userId, idSession, userName });
   await saveConnection(connectionId, { userName, userId, idSession, service: 'board' });
 
   try {
     const board = await connectClientBoard(idSession, userId);
     await broadcastToSession(endpoint, idSession, 'data_board', board);
   } catch (err) {
-    console.error('Erro no $connect (board):', err);
+    log.error('Erro no $connect (board)', { connectionId, userId, idSession, error: err.message });
   }
   return { statusCode: 200 };
 };
@@ -25,13 +27,14 @@ const onDisconnect = async (event) => {
   const conn = await getConnection(connectionId);
   if (!conn) return { statusCode: 200 };
 
+  log.info('Board WS disconnect', { connectionId, userId: conn.userId, idSession: conn.idSession });
   await deleteConnection(connectionId);
 
   try {
     const board = await disconnectClientBoard(conn.userId, conn.idSession);
     await broadcastToSession(endpoint, conn.idSession, 'data_board', board);
   } catch (err) {
-    console.error('Erro no $disconnect (board):', err);
+    log.error('Erro no $disconnect (board)', { connectionId, userId: conn.userId, idSession: conn.idSession, error: err.message });
   }
   return { statusCode: 200 };
 };
@@ -39,13 +42,22 @@ const onDisconnect = async (event) => {
 const onCommand = async (event) => {
   const body = JSON.parse(event.body);
   const endpoint = `https://${event.requestContext.domainName}/${event.requestContext.stage}`;
+  const start = performance.now();
+
+  log.info('Board command received', { command: body.comand, boardId: body.boardId });
 
   try {
     let board;
     switch (body.comand) {
-      case 'add_card_board':              board = await addCardBoard(body.boardId, body.newCard, body.indexColumn); break;
-      case 'reorder_board':              board = await reorderBoard(body.boardId, body.source, body.destination); break;
-      case 'combine_card':              board = await processCombine(body.boardId, body.source, body.combine); break;
+      case 'add_card_board':
+        log.debug('Board add card', { boardId: body.boardId, indexColumn: body.indexColumn, cardId: body.newCard?.id });
+        board = await addCardBoard(body.boardId, body.newCard, body.indexColumn); break;
+      case 'reorder_board':
+        log.debug('Board reorder', { boardId: body.boardId, source: body.source, destination: body.destination });
+        board = await reorderBoard(body.boardId, body.source, body.destination); break;
+      case 'combine_card':
+        log.debug('Board combine card', { boardId: body.boardId, source: body.source, combine: body.combine });
+        board = await processCombine(body.boardId, body.source, body.combine); break;
       case 'delete_column':              board = await deleteColumn(body.boardId, body.index); break;
       case 'add_collumn':               board = await addColumn(body.boardId, body.newCollumn); break;
       case 'update_title_column':       board = await updateTitleColumn(body.boardId, body.content, body.index); break;
@@ -60,12 +72,13 @@ const onCommand = async (event) => {
         board = { isTimerControl: true, timer: body.timer, timeInput: body.timeInput, isRunningTimer: body.isRunningTimer, userId: body.userId };
         break;
       default:
-        console.error('Comando board não previsto:', body.comand);
+        log.warn('Comando board não previsto', { command: body.comand, boardId: body.boardId });
         return { statusCode: 400 };
     }
     await broadcastToSession(endpoint, body.boardId, 'data_board', board);
+    log.debug('Board command processed', { command: body.comand, boardId: body.boardId, elapsedMs: (performance.now() - start).toFixed(3) });
   } catch (err) {
-    console.error('Erro ao processar comando board:', err);
+    log.error('Erro ao processar comando board', { command: body.comand, boardId: body.boardId, error: err.message });
   }
   return { statusCode: 200 };
 };

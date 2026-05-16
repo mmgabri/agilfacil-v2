@@ -11,6 +11,9 @@ import styled from "styled-components";
 import { SERVER_BASE_URL } from "../../constants/apiConstants";
 import { FormGroup, SubmitButton } from '../../styles/FormStyle'
 import localStorageService from "../../services/localStorageService";
+import logger from '../../services/logger';
+
+const CTX = 'CreateAndEnterRoomPage';
 
 
 function CreateAndEnterRoomPage() {
@@ -39,8 +42,9 @@ function CreateAndEnterRoomPage() {
                     const userStorage = { userId: uuidv4() , userName: "Visitante", isVerified: true };
                     localStorageService.setItem("AGILFACIL_USER_LOGGED", userStorage);
                     setUserAuthenticated(userStorage)
-                    console.log('userAuthenticated -->', userAuthenticated)
-                }else {
+                    logger.info(CTX, `Usuário visitante criado userId=${userStorage.userId}`);
+                } else {
+                    logger.debug(CTX, `Usuário recuperado do localStorage userId=${user.userId}`);
                     setUserAuthenticated(user)
                 }
             }
@@ -81,17 +85,18 @@ function CreateAndEnterRoomPage() {
     const handleSubmitCreateRoom = async e => {
         e.preventDefault()
 
-        //const token = await onGetToken()
+        logger.info(CTX, `Criando sala roomName="${formData.roomName}" nickName="${formData.nickName}"`);
 
         try {
             setIsLoading(true)
             const response = await axios.post(SERVER_BASE_URL + '/poker/createRoom', { roomName: formData.roomName, nickName: formData.nickName, userId: userAuthenticated.userId, userName: userAuthenticated.userName })
             setIsLoading(false)
+            logger.info(CTX, `Sala criada roomId=${response.data?.roomId ?? '?'}`);
             const userData = { ...userAuthenticated, nickName: formData.nickName, isRoomCreator: true };
             navigate('/room', { state: { roomData: response.data, userLogged: userData } });
         } catch (error) {
             setIsLoading(false)
-            console.error("Respoposta da api com erro:", error, error.response?.status)
+            logger.error(CTX, 'Erro ao criar sala', { message: error.message, status: error.response?.status });
             emitMessage('error', 905, 3000)
         }
     }
@@ -99,16 +104,18 @@ function CreateAndEnterRoomPage() {
     const handleSubmitJoinRoom = async e => {
         e.preventDefault()
 
+        logger.info(CTX, `Entrando na sala roomId="${formData.roomId}" nickName="${formData.nickName}"`);
+
         try {
             setIsLoading(true)
             const response = await axios.get(`${SERVER_BASE_URL}/rooms/${formData.roomId}`)
-            //console.log('response -->', response.data)
+            logger.info(CTX, `Sala encontrada roomId=${formData.roomId}`);
             const userData = { ...userAuthenticated, nickName: formData.nickName, isRoomCreator: false };
             setIsLoading(false)
             navigate('/room', { state: { roomData: response.data, userLogged: userData } });
         } catch (error) {
             setIsLoading(false)
-            //console.log("Respoposta da api com erro:", error, error.response?.status)
+            logger.warn(CTX, `Sala não encontrada roomId="${formData.roomId}"`, { status: error.response?.status });
             emitMessage('error', error.response?.status, 3000)
         }
     }

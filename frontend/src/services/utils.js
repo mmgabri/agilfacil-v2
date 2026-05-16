@@ -1,6 +1,9 @@
 import { toast } from 'react-toastify';
 import { DateTime } from 'luxon';
 import { signOut, fetchAuthSession } from '@aws-amplify/auth';
+import logger from './logger';
+
+const CTX = 'utils';
 
 const errorMessages = {
     0: 'Sua ação foi concluída com sucesso!',
@@ -58,18 +61,22 @@ export async function onGetToken() {
     try {
         const session = await fetchAuthSession();
         const token = session.tokens.idToken.toString();
+        logger.debug(CTX, 'Token obtido com sucesso');
         return token;
     } catch (error) {
+        logger.error(CTX, 'Falha ao obter token', { message: error.message });
         throw error;
     }
 }
 
 export const onSignOut = async () => {
     try {
-        await signOut(); // Faz o logout no Cognito
-        localStorage.clear(); // Limpa o localStorage
-        sessionStorage.clear(); // Limpa o sessionStorage
+        await signOut();
+        localStorage.clear();
+        sessionStorage.clear();
+        logger.info(CTX, 'Logout realizado com sucesso');
     } catch (error) {
+        logger.error(CTX, 'Erro ao realizar logout', { message: error.message });
         emitMessage('error', 999)
     }
 };

@@ -9,6 +9,9 @@ import { SERVER_BASE_URL } from "../../constants/apiConstants";
 import Header from '../components/Header';
 import SuggestionForm from '../components/SuggestionForm'
 import { FormContainer, Title, FormGroup, CheckboxLabel, CheckboxWrapper, StyledForm, SubmitButton, RemoveIcon, AddColumnIcon } from '../../styles/FormStyle'
+import logger from '../../services/logger';
+
+const CTX = 'CreateBoardPage';
 
 export const CreateBoardPage = ({ }) => {
   let navigate = useNavigate();
@@ -27,7 +30,7 @@ export const CreateBoardPage = ({ }) => {
   const [userAuthenticated, setUserAuthenticated] = useState({});
 
   useEffect(() => {
-    //console.log('CreateBoardPage - useEffect - location.state', location.state)
+    logger.debug(CTX, 'useEffect — location.state', location.state);
 
     const checkAuth = async () => {
       try {
@@ -49,7 +52,7 @@ export const CreateBoardPage = ({ }) => {
         const userData = { userId: attributes.sub, userName: attributes.name, isVerified: true };
         setUserAuthenticated(userData)
       } catch (error) {
-        console.error('Erro ao obter usuário: ', error)
+        logger.error(CTX, 'Erro ao obter usuário', { message: error.message });
         emitMessage('error', 999)
       }
     }
@@ -120,6 +123,7 @@ export const CreateBoardPage = ({ }) => {
   const handleSubmit = async e => {
     e.preventDefault()
 
+    logger.info(CTX, `Criando board boardName="${formData.boardName}" colunas=${formData.columns.length}`);
     const token = await onGetToken()
 
     try {
@@ -129,10 +133,11 @@ export const CreateBoardPage = ({ }) => {
           'Content-Type': 'application/json'
         },
       })
+      logger.info(CTX, `Board criado boardId=${response.data?.boardId ?? '?'}`);
       const userData = { ...userAuthenticated, isBoardCreator: true };
       navigate('/board', { state: { boardData: response.data, userAuthenticated: userData } });
     } catch (error) {
-      console.error('Erro ao criar Board : ', error)
+      logger.error(CTX, 'Erro ao criar Board', { message: error.message, status: error.response?.status });
       emitMessage('error', 906, 3000)
     }
   }

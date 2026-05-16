@@ -1,10 +1,14 @@
 const { ApiGatewayManagementApiClient, PostToConnectionCommand } = require('@aws-sdk/client-apigatewaymanagementapi');
 const { getConnectionsBySession, deleteConnection } = require('../services/connections/connectionsService');
+const log = require('./logger');
 
 // Envia { type, data } para todos os clientes conectados na mesma sessão.
 // Conexões com status 410 (Gone) são removidas automaticamente do DynamoDB.
 const broadcastToSession = async (endpoint, idSession, type, data) => {
   const connections = await getConnectionsBySession(idSession);
+
+  log.debug('Broadcast to session', { idSession, type, connectionCount: connections.length });
+
   if (!connections.length) return;
 
   const client = new ApiGatewayManagementApiClient({ endpoint });
@@ -16,9 +20,10 @@ const broadcastToSession = async (endpoint, idSession, type, data) => {
         await client.send(new PostToConnectionCommand({ ConnectionId: connectionId, Data: message }));
       } catch (err) {
         if (err.$metadata?.httpStatusCode === 410) {
+          log.debug('Removendo conexão stale', { connectionId, idSession });
           await deleteConnection(connectionId);
         } else {
-          console.error(`Erro ao enviar para connectionId ${connectionId}:`, err);
+          log.error('Erro ao enviar para connectionId', { connectionId, idSession, error: err.message });
         }
       }
     })

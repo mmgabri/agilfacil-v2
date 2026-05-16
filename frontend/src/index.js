@@ -7,8 +7,10 @@ import App from '../src/main/App';
 import reportWebVitals from './reportWebVitals';
 import { Amplify } from 'aws-amplify';
 import aws_exports from './aws-exports'
+import { setupAxiosLogger } from './services/logger';
 
 Amplify.configure(aws_exports);
+setupAxiosLogger();
 
 const root = createRoot(document.getElementById('root')); // Criando o root
 root.render(<App />); // Renderizando o componente App

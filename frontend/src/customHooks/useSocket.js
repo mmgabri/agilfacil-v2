@@ -1,5 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { WS_BOARD_URL, WS_POKER_URL } from "../constants/apiConstants";
+import logger from "../services/logger";
+
+const CTX = 'useSocket';
 
 export const useSocket = (userName, userId, idSession, service) => {
   const wsRef = useRef(null);
@@ -9,7 +12,10 @@ export const useSocket = (userName, userId, idSession, service) => {
   // Envia qualquer mensagem JSON pelo WebSocket nativo
   const send = useCallback((payload) => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
+      logger.debug(CTX, `→ send action=${payload.action} comand=${payload.comand}`, payload);
       wsRef.current.send(JSON.stringify(payload));
+    } else {
+      logger.warn(CTX, `send ignorado — WS não está OPEN (readyState=${wsRef.current?.readyState})`, { payload });
     }
   }, []);
 
@@ -86,23 +92,36 @@ export const useSocket = (userName, userId, idSession, service) => {
   useEffect(() => {
     const wsUrl = service === 'board' ? WS_BOARD_URL : WS_POKER_URL;
     const url = `${wsUrl}?userName=${encodeURIComponent(userName || '')}&userId=${encodeURIComponent(userId || '')}&idSession=${encodeURIComponent(idSession || '')}&service=${service}`;
+    logger.debug(CTX, `Conectando WebSocket service=${service} idSession=${idSession}`);
     const ws = new WebSocket(url);
     wsRef.current = ws;
 
-    ws.onopen = () => setConnected(true);
-    ws.onclose = () => setConnected(false);
-    ws.onerror = (err) => console.error('WebSocket error:', err);
+    ws.onopen = () => {
+      logger.info(CTX, `WebSocket conectado service=${service} idSession=${idSession}`);
+      setConnected(true);
+    };
+    ws.onclose = (ev) => {
+      logger.info(CTX, `WebSocket desconectado service=${service} code=${ev.code} reason=${ev.reason || '—'}`);
+      setConnected(false);
+    };
+    ws.onerror = (err) => {
+      logger.error(CTX, 'WebSocket error', err);
+    };
     ws.onmessage = (event) => {
       try {
         const msg = JSON.parse(event.data);
         // O servidor envia { type: 'data_board'|'data_room', data: {...} }
+        logger.debug(CTX, `← mensagem recebida type=${msg.type}`, msg.data);
         setSocketResponse(msg.data);
       } catch (err) {
-        console.error('Erro ao parsear mensagem WebSocket:', err);
+        logger.error(CTX, 'Erro ao parsear mensagem WebSocket', { raw: event.data, error: err.message });
       }
     };
 
-    return () => ws.close();
+    return () => {
+      logger.debug(CTX, `Fechando WebSocket service=${service} idSession=${idSession}`);
+      ws.close();
+    };
   }, [idSession]);
 
   return {
