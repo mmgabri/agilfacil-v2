@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getCurrentUser, fetchUserAttributes, fetchAuthSession } from '@aws-amplify/auth';
+import { useAppUser } from '../../context/UserContext';
 import axios from "axios";
 import { useNavigate } from 'react-router-dom';
 import { emitMessage, onSignOut, onGetToken } from '../../services/utils'
@@ -18,6 +19,7 @@ const CTX = 'CreateAndEnterRoomPage';
 
 function CreateAndEnterRoomPage() {
     let navigate = useNavigate();
+    const { userId: contextUserId, userName: contextUserName } = useAppUser();
     const [isLoading, setIsLoading] = useState(false);
     const [isModalOpen, setModalOpen] = useState(false);
     const [activeTab, setActiveTab] = useState("create");
@@ -29,8 +31,10 @@ function CreateAndEnterRoomPage() {
             try {
                 const user = await getCurrentUser();
                 const attributes = await fetchUserAttributes(user);
-                const userData = { userId: attributes.sub, userName: attributes.name, isVerified: true };
-                const userStorage = { userId: attributes.sub, userName: attributes.name };
+                const effectiveUserId = contextUserId || attributes.sub;
+                const effectiveName   = contextUserName || attributes.name;
+                const userData    = { userId: effectiveUserId, userName: effectiveName, isVerified: true };
+                const userStorage = { userId: effectiveUserId, userName: effectiveName };
                 setUserAuthenticated(userData)
 
                 localStorageService.removeItem("AGILFACIL_USER_LOGGED");
@@ -66,7 +70,7 @@ function CreateAndEnterRoomPage() {
 
         initializeUserData();
         checkAuth();
-    }, []);
+    }, [contextUserId]); // re-executa quando o UserContext for populado pelo ProtectedRoute
 
     const [formData, setFormData] = useState({
         nickName: "",

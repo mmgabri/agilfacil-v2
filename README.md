@@ -135,19 +135,24 @@ No CloudWatch Insights existem dois campos distintos:
 
 Nas queries abaixo usamos `level` (JSON) para isolar logs da aplicação e `@level` quando queremos capturar tudo incluindo erros do runtime.
 
+### Correlation ID
+
+Cada invocação Lambda gera automaticamente um `correlationId` (vindo do `requestContext.requestId` do API Gateway) que é incluído em **todos** os logs daquela execução. Use-o para rastrear o fluxo completo de uma requisição no CloudWatch Insights.
+
 ### Ativando o nível de log
 
-A variável de ambiente `LOG_LEVEL` controla o que é gravado:
+A variável de ambiente `LOG_LEVEL` controla o que é gravado (padrão: `debug`):
 
 | Valor | O que é logado |
 |-------|----------------|
-| `info` (padrão) | Eventos de negócio: connect/disconnect, comandos, creates/deletes |
-| `debug` | Tudo acima + timing do DynamoDB, detalhes de payload, contagem de conexões no broadcast |
+| `debug` (padrão) | Tudo: timing do DynamoDB, detalhes de payload, contagem de conexões no broadcast |
+| `info` | Eventos de negócio: connect/disconnect, comandos, creates/deletes |
+| `warn` | Apenas avisos e erros |
+| `error` | Apenas erros |
 
-Para ativar o debug em uma função Lambda:
+Para alterar em uma função Lambda:
 1. Acesse a função no console AWS → **Configuration → Environment variables**
-2. Adicione `LOG_LEVEL = debug`
-3. Remova ou defina `LOG_LEVEL = info` após o troubleshooting para reduzir custo de logs
+2. Defina `LOG_LEVEL = info` (ou o nível desejado)
 
 ### Abrindo o CloudWatch Insights
 
@@ -156,6 +161,13 @@ Para ativar o debug em uma função Lambda:
 3. Ajuste o período (Time range) e cole a query desejada
 
 ### Queries úteis
+
+#### Rastrear uma requisição pelo Correlation ID
+```
+fields @timestamp, level, message, boardId, roomId, userId, error, elapsedMs
+| filter correlationId = "SEU_CORRELATION_ID_AQUI"
+| sort @timestamp asc
+```
 
 #### Ver todos os erros recentes (app + runtime)
 ```

@@ -3,6 +3,7 @@ const config = require('../../config');
 const log = require('../../utils/logger');
 
 exports.handler = async (event) => {
+  log.setCorrelationId(event.requestContext.requestId);
   const { boardId } = event.pathParameters;
 
   log.debug('Get board request', { boardId });

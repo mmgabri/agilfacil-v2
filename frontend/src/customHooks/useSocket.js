@@ -90,9 +90,14 @@ export const useSocket = (userName, userId, idSession, service) => {
   // ── Lifecycle ──────────────────────────────────────────────────────────────
 
   useEffect(() => {
+    if (!userId || !idSession) {
+      logger.warn(CTX, `Conexão ignorada — parâmetros incompletos`, { userId, idSession, service });
+      return;
+    }
+
     const wsUrl = service === 'board' ? WS_BOARD_URL : WS_POKER_URL;
-    const url = `${wsUrl}?userName=${encodeURIComponent(userName || '')}&userId=${encodeURIComponent(userId || '')}&idSession=${encodeURIComponent(idSession || '')}&service=${service}`;
-    logger.debug(CTX, `Conectando WebSocket service=${service} idSession=${idSession}`);
+    const url = `${wsUrl}?userName=${encodeURIComponent(userName || '')}&userId=${encodeURIComponent(userId)}&idSession=${encodeURIComponent(idSession)}&service=${service}`;
+    logger.debug(CTX, `Conectando WebSocket service=${service} idSession=${idSession} userName=${userName}`);
     const ws = new WebSocket(url);
     wsRef.current = ws;
 
@@ -122,7 +127,7 @@ export const useSocket = (userName, userId, idSession, service) => {
       logger.debug(CTX, `Fechando WebSocket service=${service} idSession=${idSession}`);
       ws.close();
     };
-  }, [idSession]);
+  }, [idSession, userId]);
 
   return {
     socketResponse,

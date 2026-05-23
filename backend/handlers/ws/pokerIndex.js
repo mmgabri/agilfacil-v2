@@ -15,7 +15,8 @@ const onConnect = async (event) => {
   const start = performance.now();
   try {
     const room = await connectClient(userName, userId, idSession);
-    await broadcastToSession(endpoint, idSession, 'data_room', room);
+    // Exclui a própria conexão: AWS não permite PostToConnection durante o $connect dela.
+    await broadcastToSession(endpoint, idSession, 'data_room', room, connectionId);
     const elapsed = (performance.now() - start).toFixed(3);
     log.debug('Poker connect success', { userId, idSession, roomName: room.roomName, elapsedMs: elapsed });
     cloudWatch.log('WEBSOCKET', 'connect', idSession, room.roomName, userId, userName, '', '', room.status, elapsed, 'success', 'Connect client successfully.');
@@ -88,6 +89,7 @@ const onCommand = async (event) => {
 };
 
 exports.handler = async (event) => {
+  log.setCorrelationId(event.requestContext.requestId);
   switch (event.requestContext.routeKey) {
     case '$connect':             return onConnect(event);
     case '$disconnect':          return onDisconnect(event);

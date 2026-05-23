@@ -5,8 +5,6 @@ const {
   PutLogEventsCommand,
 } = require('@aws-sdk/client-cloudwatch-logs');
 
-require('dotenv').config();
-
 class CloudWatchLogger {
   logger_ativ = false;
   region = process.env.REGION

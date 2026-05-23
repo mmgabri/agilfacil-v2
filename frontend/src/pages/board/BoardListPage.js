@@ -4,6 +4,7 @@ import { emitMessage, formatdateTime, onSignOut, onGetToken } from '../../servic
 import { Tooltip } from "react-tooltip";
 import "react-tooltip/dist/react-tooltip.css";
 import { getCurrentUser, fetchUserAttributes, fetchAuthSession } from '@aws-amplify/auth';
+import { useAppUser } from '../../context/UserContext';
 import { useNavigate } from 'react-router-dom'
 import { FaRegTrashAlt, FaRegFolderOpen, FaRegClone } from 'react-icons/fa';
 import { AiOutlineExport } from "react-icons/ai";
@@ -17,6 +18,7 @@ import localStorageService from "../../services/localStorageService";
 
 const BoardListPage = () => {
   let navigate = useNavigate();
+  const { userId: contextUserId, userName: contextUserName } = useAppUser();
   const [boards, setBoards] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setModalOpen] = useState(false);
@@ -42,18 +44,21 @@ const BoardListPage = () => {
       try {
         const user = await getCurrentUser();
         const attributes = await fetchUserAttributes(user);
-        const userData = { userId: attributes.sub, userName: attributes.name, isVerified: true };
-        const userStorage = { userId: attributes.sub, userName: attributes.name };
+        // Usa o userId do contexto (pode ser o legado de migração) com fallback para o sub do Cognito
+        const effectiveUserId = contextUserId || attributes.sub;
+        const effectiveName   = contextUserName || attributes.name;
+        const userData    = { userId: effectiveUserId, userName: effectiveName, isVerified: true };
+        const userStorage = { userId: effectiveUserId, userName: effectiveName };
         setUserAuthenticated(userData)
 
         localStorageService.removeItem("AGILFACIL_USER_LOGGED");
         localStorageService.setItem("AGILFACIL_USER_LOGGED", userStorage);
 
-        // Obtem Board do Usuário Logado     
+        // Obtem Board do Usuário Logado
         const token = await onGetToken()
 
         axios
-          .get(`${SERVER_BASE_URL}/board/getBoardByUser/${attributes.sub}`,
+          .get(`${SERVER_BASE_URL}/board/getBoardByUser/${effectiveUserId}`,
             {
               headers: {
                 Authorization: `Bearer ${token}`,

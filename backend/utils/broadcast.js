@@ -3,19 +3,24 @@ const { getConnectionsBySession, deleteConnection } = require('../services/conne
 const log = require('./logger');
 
 // Envia { type, data } para todos os clientes conectados na mesma sessão.
+// excludeConnectionId: opcional — exclui a conexão que está no meio do $connect
+//   (AWS não permite PostToConnection enquanto o $connect ainda está em execução).
 // Conexões com status 410 (Gone) são removidas automaticamente do DynamoDB.
-const broadcastToSession = async (endpoint, idSession, type, data) => {
+const broadcastToSession = async (endpoint, idSession, type, data, excludeConnectionId = null) => {
   const connections = await getConnectionsBySession(idSession);
+  const targets = excludeConnectionId
+    ? connections.filter(c => c.connectionId !== excludeConnectionId)
+    : connections;
 
-  log.debug('Broadcast to session', { idSession, type, connectionCount: connections.length });
+  log.debug('Broadcast to session', { idSession, type, connectionCount: connections.length, excluded: excludeConnectionId ?? 'none' });
 
-  if (!connections.length) return;
+  if (!targets.length) return;
 
   const client = new ApiGatewayManagementApiClient({ endpoint });
   const message = Buffer.from(JSON.stringify({ type, data }));
 
   await Promise.all(
-    connections.map(async ({ connectionId }) => {
+    targets.map(async ({ connectionId }) => {
       try {
         await client.send(new PostToConnectionCommand({ ConnectionId: connectionId, Data: message }));
       } catch (err) {

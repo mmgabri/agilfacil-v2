@@ -17,82 +17,82 @@ resource "aws_apigatewayv2_stage" "http_default" {
   auto_deploy = true
 }
 
-# ── Integração Board ──────────────────────────────────────────────────────────
-resource "aws_apigatewayv2_integration" "rest_board" {
+# ── Integração unificada REST ─────────────────────────────────────────────────
+resource "aws_apigatewayv2_integration" "rest" {
   api_id                 = aws_apigatewayv2_api.http.id
   integration_type       = "AWS_PROXY"
-  integration_uri        = aws_lambda_function.rest_board.invoke_arn
+  integration_uri        = aws_lambda_function.rest.invoke_arn
   payload_format_version = "2.0"
 }
 
+# ── Board routes ──────────────────────────────────────────────────────────────
 resource "aws_apigatewayv2_route" "healthcheck" {
   api_id    = aws_apigatewayv2_api.http.id
   route_key = "GET /healthcheck"
-  target    = "integrations/${aws_apigatewayv2_integration.rest_board.id}"
+  target    = "integrations/${aws_apigatewayv2_integration.rest.id}"
 }
 
 resource "aws_apigatewayv2_route" "get_board" {
   api_id    = aws_apigatewayv2_api.http.id
   route_key = "GET /board/{boardId}"
-  target    = "integrations/${aws_apigatewayv2_integration.rest_board.id}"
+  target    = "integrations/${aws_apigatewayv2_integration.rest.id}"
 }
 
 resource "aws_apigatewayv2_route" "get_board_by_user" {
   api_id    = aws_apigatewayv2_api.http.id
   route_key = "GET /board/getBoardByUser/{creatorId}"
-  target    = "integrations/${aws_apigatewayv2_integration.rest_board.id}"
+  target    = "integrations/${aws_apigatewayv2_integration.rest.id}"
 }
 
 resource "aws_apigatewayv2_route" "create_board" {
   api_id    = aws_apigatewayv2_api.http.id
   route_key = "POST /board/createBoard"
-  target    = "integrations/${aws_apigatewayv2_integration.rest_board.id}"
+  target    = "integrations/${aws_apigatewayv2_integration.rest.id}"
 }
 
 resource "aws_apigatewayv2_route" "delete_board" {
   api_id    = aws_apigatewayv2_api.http.id
   route_key = "DELETE /board/{boardId}"
-  target    = "integrations/${aws_apigatewayv2_integration.rest_board.id}"
+  target    = "integrations/${aws_apigatewayv2_integration.rest.id}"
 }
 
-resource "aws_lambda_permission" "http_rest_board" {
-  statement_id  = "AllowHTTPAPIBoardInvoke"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.rest_board.function_name
-  principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_apigatewayv2_api.http.execution_arn}/*/*"
-}
-
-# ── Integração Poker ──────────────────────────────────────────────────────────
-resource "aws_apigatewayv2_integration" "rest_poker" {
-  api_id                 = aws_apigatewayv2_api.http.id
-  integration_type       = "AWS_PROXY"
-  integration_uri        = aws_lambda_function.rest_poker.invoke_arn
-  payload_format_version = "2.0"
-}
-
+# ── Poker routes ──────────────────────────────────────────────────────────────
 resource "aws_apigatewayv2_route" "create_room" {
   api_id    = aws_apigatewayv2_api.http.id
   route_key = "POST /poker/createRoom"
-  target    = "integrations/${aws_apigatewayv2_integration.rest_poker.id}"
+  target    = "integrations/${aws_apigatewayv2_integration.rest.id}"
 }
 
 resource "aws_apigatewayv2_route" "get_room" {
   api_id    = aws_apigatewayv2_api.http.id
   route_key = "GET /rooms/{id}"
-  target    = "integrations/${aws_apigatewayv2_integration.rest_poker.id}"
+  target    = "integrations/${aws_apigatewayv2_integration.rest.id}"
 }
 
 resource "aws_apigatewayv2_route" "suggestion" {
   api_id    = aws_apigatewayv2_api.http.id
   route_key = "POST /suggestion"
-  target    = "integrations/${aws_apigatewayv2_integration.rest_poker.id}"
+  target    = "integrations/${aws_apigatewayv2_integration.rest.id}"
 }
 
-resource "aws_lambda_permission" "http_rest_poker" {
-  statement_id  = "AllowHTTPAPIPokerInvoke"
+# ── User routes ───────────────────────────────────────────────────────────────
+resource "aws_apigatewayv2_route" "get_user" {
+  api_id    = aws_apigatewayv2_api.http.id
+  route_key = "GET /user"
+  target    = "integrations/${aws_apigatewayv2_integration.rest.id}"
+}
+
+resource "aws_apigatewayv2_route" "post_user_register" {
+  api_id    = aws_apigatewayv2_api.http.id
+  route_key = "POST /user/register"
+  target    = "integrations/${aws_apigatewayv2_integration.rest.id}"
+}
+
+# ── Lambda permission ─────────────────────────────────────────────────────────
+resource "aws_lambda_permission" "http_rest" {
+  statement_id  = "AllowHTTPAPIInvoke"
   action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.rest_poker.function_name
+  function_name = aws_lambda_function.rest.function_name
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_apigatewayv2_api.http.execution_arn}/*/*"
 }

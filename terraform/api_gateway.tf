@@ -14,7 +14,7 @@ resource "aws_apigatewayv2_stage" "ws_board_prod" {
 resource "aws_apigatewayv2_integration" "ws_board" {
   api_id           = aws_apigatewayv2_api.ws_board.id
   integration_type = "AWS_PROXY"
-  integration_uri  = aws_lambda_function.ws_board.invoke_arn
+  integration_uri  = aws_lambda_function.ws.invoke_arn
 }
 
 resource "aws_apigatewayv2_route" "ws_board_connect" {
@@ -38,7 +38,7 @@ resource "aws_apigatewayv2_route" "ws_board_commands" {
 resource "aws_lambda_permission" "apigw_ws_board" {
   statement_id  = "AllowBoardWSAPIInvoke"
   action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.ws_board.function_name
+  function_name = aws_lambda_function.ws.function_name
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_apigatewayv2_api.ws_board.execution_arn}/*/*"
 }
@@ -59,7 +59,7 @@ resource "aws_apigatewayv2_stage" "ws_poker_prod" {
 resource "aws_apigatewayv2_integration" "ws_poker" {
   api_id           = aws_apigatewayv2_api.ws_poker.id
   integration_type = "AWS_PROXY"
-  integration_uri  = aws_lambda_function.ws_poker.invoke_arn
+  integration_uri  = aws_lambda_function.ws.invoke_arn
 }
 
 resource "aws_apigatewayv2_route" "ws_poker_connect" {
@@ -83,7 +83,7 @@ resource "aws_apigatewayv2_route" "ws_poker_commands" {
 resource "aws_lambda_permission" "apigw_ws_poker" {
   statement_id  = "AllowPokerWSAPIInvoke"
   action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.ws_poker.function_name
+  function_name = aws_lambda_function.ws.function_name
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_apigatewayv2_api.ws_poker.execution_arn}/*/*"
 }

@@ -5,6 +5,7 @@ const log = require('../../utils/logger');
 const sns = new SnsService(process.env.REGION || 'sa-east-1');
 
 exports.handler = async (event) => {
+  log.setCorrelationId(event.requestContext.requestId);
   const start = performance.now();
   const body = JSON.parse(event.body);
 

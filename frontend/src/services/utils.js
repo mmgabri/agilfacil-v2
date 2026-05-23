@@ -75,6 +75,7 @@ export const onSignOut = async () => {
         localStorage.clear();
         sessionStorage.clear();
         logger.info(CTX, 'Logout realizado com sucesso');
+        window.location.replace('/');
     } catch (error) {
         logger.error(CTX, 'Erro ao realizar logout', { message: error.message });
         emitMessage('error', 999)

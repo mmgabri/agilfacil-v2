@@ -27,3 +27,18 @@ variable "alert_email" {
   type        = string
   default     = "marcelomgabriel@gmail.com"
 }
+
+# ─── Cognito / Google OAuth ───────────────────────────────────────────────────
+
+variable "google_client_id" {
+  description = "Client ID do OAuth 2.0 do Google para o Cognito Identity Provider"
+  type        = string
+  default     = "63748523511-n957k8uppag7igta3g50e7npg0b2hhur.apps.googleusercontent.com"
+}
+
+variable "google_client_secret" {
+  description = "Client Secret do OAuth 2.0 do Google para o Cognito Identity Provider"
+  type        = string
+  sensitive   = true
+  default     = "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"
+}

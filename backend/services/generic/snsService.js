@@ -1,4 +1,3 @@
-require('dotenv').config();
 const { SNSClient, PublishCommand } = require('@aws-sdk/client-sns');
 
 class SnsService {

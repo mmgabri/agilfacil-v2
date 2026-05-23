@@ -1,18 +1,23 @@
+// ⚠️  Após rodar `terraform apply`, substitua os dois campos marcados com
+//    "FILL_AFTER_APPLY" pelos valores dos outputs:
+//      terraform output cognito_user_pool_id
+//      terraform output cognito_user_pool_client_id
+
 const awsmobile = {
-    "aws_project_region": "ap-south-1",
-    "aws_cognito_region": "ap-south-1",
-    "aws_user_pools_id": "ap-south-1_nYcPqocLt",
-    "aws_user_pools_web_client_id": "23uraqpbg5r0ljdt2bf016kr6m",
+    "aws_project_region": "sa-east-1",
+    "aws_cognito_region": "sa-east-1",
+    "aws_user_pools_id": "sa-east-1_VBI7mSZY4",
+    "aws_user_pools_web_client_id": "2a9oj07kdi3g2rbvf5ncub38m1",
     "oauth": {
-        "domain": "agilfacilamplifyf27aefbc-f27aefbc-dev.auth.ap-south-1.amazoncognito.com",
+        "domain": "agilfacil-prod-1779048899.auth.sa-east-1.amazoncognito.com",
         "scope": [
             "email",
             "openid",
             "profile",
             "aws.cognito.signin.user.admin"
         ],
-        "redirectSignIn": "https://agilfacil.com.br/boards",
-        "redirectSignOut": "https://agilfacil.com.br/",
+        "redirectSignIn": "http://localhost:3000/boards",   // 👈 prod: "https://agilfacil.com.br/boards"
+        "redirectSignOut": "http://localhost:3000/",         // 👈 prod: "https://agilfacil.com.br/"
         "responseType": "code",
         "options": {
             "prompt": "select_account"

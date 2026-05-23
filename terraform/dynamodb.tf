@@ -60,6 +60,18 @@ resource "aws_dynamodb_table" "room" {
   }
 }
 
+# ── agilfacil_users ──────────────────────────────────────────────────────────
+resource "aws_dynamodb_table" "users" {
+  name         = "agilfacil_users"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "email"
+
+  attribute {
+    name = "email"
+    type = "S"
+  }
+}
+
 # ── agilfacil_connections (sessões WebSocket ativas) ─────────────────────────
 resource "aws_dynamodb_table" "connections" {
   name         = "agilfacil_connections"

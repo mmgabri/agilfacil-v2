@@ -7,6 +7,7 @@ const log = require('../../utils/logger');
 const timeZone = 'America/Sao_Paulo';
 
 exports.handler = async (event) => {
+  log.setCorrelationId(event.requestContext.requestId);
   const body = JSON.parse(event.body);
 
   const roomDb = {

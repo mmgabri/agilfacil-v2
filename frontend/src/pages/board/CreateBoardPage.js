@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { useNavigate, useLocation } from 'react-router-dom'
 import { emitMessage, onSignOut, onGetToken } from '../../services/utils'
 import { fetchAuthSession, getCurrentUser, fetchUserAttributes } from '@aws-amplify/auth';
+import { useAppUser } from '../../context/UserContext';
 import 'react-toastify/dist/ReactToastify.css';
 import { SERVER_BASE_URL } from "../../constants/apiConstants";
 import Header from '../components/Header';
@@ -16,6 +17,7 @@ const CTX = 'CreateBoardPage';
 export const CreateBoardPage = ({ }) => {
   let navigate = useNavigate();
   const location = useLocation();
+  const { userId: contextUserId, userName: contextUserName } = useAppUser();
 
   const [board, setBoard] = useState(null);
   const [userIsAuthenticated, setUserIsAuthenticated] = useState(false);
@@ -49,7 +51,9 @@ export const CreateBoardPage = ({ }) => {
       try {
         const user = await getCurrentUser();
         const attributes = await fetchUserAttributes(user);
-        const userData = { userId: attributes.sub, userName: attributes.name, isVerified: true };
+        const effectiveUserId = contextUserId || attributes.sub;
+        const effectiveName   = contextUserName || attributes.name;
+        const userData = { userId: effectiveUserId, userName: effectiveName, isVerified: true };
         setUserAuthenticated(userData)
       } catch (error) {
         logger.error(CTX, 'Erro ao obter usuário', { message: error.message });

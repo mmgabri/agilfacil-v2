@@ -29,3 +29,24 @@ output "dynamodb_room_table" {
 output "dynamodb_connections_table" {
   value = aws_dynamodb_table.connections.name
 }
+
+output "dynamodb_users_table" {
+  value = aws_dynamodb_table.users.name
+}
+
+# ─── Cognito ──────────────────────────────────────────────────────────────────
+
+output "cognito_user_pool_id" {
+  description = "ID do User Pool — copie para aws_user_pools_id em frontend/src/aws-exports.js"
+  value       = aws_cognito_user_pool.main.id
+}
+
+output "cognito_user_pool_client_id" {
+  description = "Client ID do app web — copie para aws_user_pools_web_client_id em frontend/src/aws-exports.js"
+  value       = aws_cognito_user_pool_client.web.id
+}
+
+output "cognito_domain" {
+  description = "Domínio completo do Cognito Hosted UI"
+  value       = "${aws_cognito_user_pool_domain.main.domain}.auth.${var.aws_region}.amazoncognito.com"
+}

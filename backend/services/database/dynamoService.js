@@ -1,7 +1,7 @@
 const config = require('../../config');
 const { DynamoDBClient, QueryCommand, DeleteItemCommand } = require('@aws-sdk/client-dynamodb');
 const { unmarshall } = require('@aws-sdk/util-dynamodb');
-const { PutCommand, DynamoDBDocumentClient } = require('@aws-sdk/lib-dynamodb');
+const { PutCommand, GetCommand, DynamoDBDocumentClient } = require('@aws-sdk/lib-dynamodb');
 const log = require('../../utils/logger');
 
 const client = new DynamoDBClient({ region: config.REGION });
@@ -134,4 +134,22 @@ const deleteBoardDb = (tableName, boardId, createdAt) => {
   });
 };
 
-module.exports = { putTable, getBoardByUserDb, getBoardDb, getRoomDb, deleteBoardDb };
+// ── User Migration ─────────────────────────────────────────────────────────────
+
+const getUserMigrationByEmail = (tableName, email) => {
+  return new Promise((resolve, reject) => {
+    const start = performance.now();
+    docClient
+      .send(new GetCommand({ TableName: tableName, Key: { email } }))
+      .then((data) => {
+        log.debug('DynamoDB get user migration', { table: tableName, email, found: !!data.Item, elapsedMs: (performance.now() - start).toFixed(3) });
+        resolve(data.Item || null);
+      })
+      .catch((err) => {
+        log.error('DynamoDB get user migration error', { table: tableName, email, error: err.message });
+        reject(err);
+      });
+  });
+};
+
+module.exports = { putTable, getBoardByUserDb, getBoardDb, getRoomDb, deleteBoardDb, getUserMigrationByEmail };

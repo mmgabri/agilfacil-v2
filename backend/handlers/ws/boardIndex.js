@@ -13,7 +13,8 @@ const onConnect = async (event) => {
 
   try {
     const board = await connectClientBoard(idSession, userId);
-    await broadcastToSession(endpoint, idSession, 'data_board', board);
+    // Exclui a própria conexão: AWS não permite PostToConnection durante o $connect dela.
+    await broadcastToSession(endpoint, idSession, 'data_board', board, connectionId);
   } catch (err) {
     log.error('Erro no $connect (board)', { connectionId, userId, idSession, error: err.message });
   }
@@ -84,6 +85,7 @@ const onCommand = async (event) => {
 };
 
 exports.handler = async (event) => {
+  log.setCorrelationId(event.requestContext.requestId);
   switch (event.requestContext.routeKey) {
     case '$connect':            return onConnect(event);
     case '$disconnect':         return onDisconnect(event);

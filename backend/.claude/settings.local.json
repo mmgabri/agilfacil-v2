@@ -3,7 +3,13 @@
     "allow": [
       "Bash(Get-ChildItem -Path \"c:\\\\_git\\\\agilfacil-v2\\\\backend\" -Recurse -Directory)",
       "Bash(Select-Object -ExpandProperty FullName)",
-      "Bash(Sort-Object)"
+      "Bash(Sort-Object)",
+      "Bash(Get-Content \"c:\\\\_git\\\\agilfacil-v2\\\\template.yaml\")",
+      "Bash(Select-Object -First 60)",
+      "Bash(node --check utils/broadcast.js)",
+      "Bash(node --check handlers/ws/pokerIndex.js)",
+      "Bash(node --check handlers/rest/suggestion.js)",
+      "Bash(node --check services/database/dynamoService.js)"
     ]
   }
 }
