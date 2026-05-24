@@ -31,11 +31,10 @@ resource "aws_iam_role_policy" "lambda_rest_policy" {
         Effect = "Allow"
         Action = ["dynamodb:PutItem", "dynamodb:GetItem", "dynamodb:DeleteItem", "dynamodb:Query"]
         Resource = [
-          aws_dynamodb_table.board.arn,
-          "${aws_dynamodb_table.board.arn}/index/*",
+          local.board_table_arn,
+          "${local.board_table_arn}/index/*",
           aws_dynamodb_table.room.arn,
           "${aws_dynamodb_table.room.arn}/index/*",
-          aws_dynamodb_table.users.arn,
         ]
       },
       {
@@ -71,8 +70,8 @@ resource "aws_iam_role_policy" "lambda_ws_policy" {
         Resource = [
           aws_dynamodb_table.connections.arn,
           "${aws_dynamodb_table.connections.arn}/index/*",
-          aws_dynamodb_table.board.arn,
-          "${aws_dynamodb_table.board.arn}/index/*",
+          local.board_table_arn,
+          "${local.board_table_arn}/index/*",
           aws_dynamodb_table.room.arn,
           "${aws_dynamodb_table.room.arn}/index/*",
         ]
@@ -84,6 +83,37 @@ resource "aws_iam_role_policy" "lambda_ws_policy" {
           "${aws_apigatewayv2_api.ws_board.execution_arn}/*",
           "${aws_apigatewayv2_api.ws_poker.execution_arn}/*",
         ]
+      },
+    ]
+  })
+}
+
+# ── agilfacil-auth ────────────────────────────────────────────────────────────
+resource "aws_iam_role" "lambda_auth" {
+  name               = "agilfacil-lambda-auth-role"
+  assume_role_policy = local.lambda_assume_role_policy
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_auth_basic" {
+  role       = aws_iam_role.lambda_auth.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}
+
+resource "aws_iam_role_policy" "lambda_auth_policy" {
+  name = "agilfacil-auth-policy"
+  role = aws_iam_role.lambda_auth.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "cognito-idp:AdminGetUser",
+          "cognito-idp:AdminInitiateAuth",
+          "cognito-idp:AdminRespondToAuthChallenge",
+        ]
+        Resource = aws_cognito_user_pool.main.arn
       },
     ]
   })

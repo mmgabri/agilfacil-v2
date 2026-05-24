@@ -16,7 +16,15 @@ const { getConnection } = require('../../services/connections/connectionsService
 const log = require('../../utils/logger');
 
 exports.handler = async (event) => {
-  const routeKey = event.requestContext.routeKey;
+  const routeKey    = event.requestContext.routeKey;
+  const connectionId = event.requestContext.connectionId;
+
+  log.debug('wsIndex: request', {
+    routeKey,
+    connectionId,
+    service: event.queryStringParameters?.service,
+    body: event.body ? (() => { try { return JSON.parse(event.body); } catch { return event.body; } })() : undefined,
+  });
 
   // ── Comandos de domínio: roteamento direto ─────────────────────────────────
   if (routeKey === 'comand_socket_board') return boardHandler.handler(event);

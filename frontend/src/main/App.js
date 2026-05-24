@@ -2,10 +2,11 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from "react-router-dom";
 import { ToastContainer } from 'react-toastify';
 import styled from "styled-components";
-import { Authenticator, translations, useAuthenticator } from '@aws-amplify/ui-react';
+import { Authenticator, useAuthenticator } from '@aws-amplify/ui-react';
 import '@aws-amplify/ui-react/styles.css';
-import { I18n } from 'aws-amplify/utils';
-import { signUp, signIn, signOut, signInWithRedirect, getCurrentUser, fetchUserAttributes } from 'aws-amplify/auth';
+import { signUp, confirmSignUp, signIn, signInWithRedirect, getCurrentUser, fetchUserAttributes } from 'aws-amplify/auth';
+import { FaEnvelope, FaLock, FaUserCircle, FaEye, FaEyeSlash } from 'react-icons/fa';
+import { FcGoogle } from 'react-icons/fc';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import HomePage from "../pages/generic/HomePage";
@@ -23,303 +24,630 @@ import SolicitaLoginPage from '../pages/generic/SolicitaLoginPage';
 import LoaderPage from '../pages/generic/LoaderPage';
 
 import { useAppUser } from '../context/UserContext';
-import { checkUserMigration, registerUserMigration } from '../services/userService';
-
-I18n.putVocabularies(translations);
-I18n.setLanguage('pt');
+import { getAuthStatus, setNewPassword } from '../services/authService';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Styled components compartilhados
+// Styled components
 // ─────────────────────────────────────────────────────────────────────────────
 
 const StyledToastContainer = styled(ToastContainer)`z-index: 9999;`;
 
 const AuthContainer = styled.div`
+  min-height: 100vh;
+  background: #0f0f0f;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 100vh;
-  background-color: #1c1c1c;
-  color: white;
-  font-family: Arial, sans-serif;
   padding: 24px;
+  font-family: Arial, sans-serif;
 `;
 
-const Card = styled.div`
-  background: #2a2a2a;
-  border-radius: 12px;
-  padding: 32px;
+const GlassCard = styled.div`
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  border-radius: 24px;
+  padding: 36px 40px 32px;
   width: 100%;
-  max-width: 380px;
+  max-width: 420px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+`;
+
+const AvatarCircle = styled.div`
+  width: 82px;
+  height: 82px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  border: 2px solid rgba(255, 255, 255, 0.22);
   display: flex;
-  flex-direction: column;
-  gap: 16px;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 28px;
+  svg { color: rgba(255, 255, 255, 0.45); font-size: 2.6rem; }
 `;
 
-const Title = styled.h2`
-  margin: 0;
-  font-size: 1.4rem;
+const ScreenTitle = styled.h2`
+  text-align: center;
+  letter-spacing: 4px;
+  font-size: 0.95rem;
+  font-weight: 600;
   color: #fff;
+  margin: 0 0 24px 0;
+  text-transform: uppercase;
 `;
 
-const Subtitle = styled.p`
-  margin: 0;
-  color: #aaa;
-  font-size: 0.9rem;
+const TabBar = styled.div`
+  display: flex;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  margin-bottom: 26px;
 `;
 
-const Input = styled.input`
-  padding: 10px 14px;
-  border-radius: 6px;
-  border: 1px solid #444;
-  background: #1c1c1c;
-  color: #fff;
-  font-size: 1rem;
+const TabBtn = styled.button`
+  flex: 1;
+  background: none;
+  border: none;
+  border-bottom: 2px solid ${p => p.$active ? '#1E3A5F' : 'transparent'};
+  margin-bottom: -1px;
+  color: ${p => p.$active ? '#fff' : 'rgba(255,255,255,0.40)'};
+  font-size: 0.80rem;
+  font-weight: ${p => p.$active ? '700' : '400'};
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 7px 0 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  &:hover { color: rgba(255,255,255,0.75); }
+`;
+
+const InputWrap = styled.div`
+  position: relative;
+  margin-bottom: 22px;
+  /* > svg: apenas filhos diretos (ícone da esquerda) — não afeta o EyeBtn */
+  & > svg {
+    position: absolute;
+    left: 2px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(255, 255, 255, 0.35);
+    font-size: 0.82rem;
+    pointer-events: none;
+  }
+`;
+
+const LineInput = styled.input`
   width: 100%;
   box-sizing: border-box;
-  &:focus { outline: none; border-color: #0095f6; }
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.22);
+  color: #fff;
+  font-size: 0.95rem;
+  padding: 10px 4px 10px 26px;
+  outline: none;
+  transition: border-color 0.2s;
+  &::placeholder { color: rgba(255, 255, 255, 0.38); }
+  &:focus { border-bottom-color: rgba(255, 255, 255, 0.65); }
+  &:read-only { opacity: 0.55; cursor: default; }
+
+  /* ── Neutraliza o fundo branco/colorido do autofill do browser ── */
+  &:-webkit-autofill,
+  &:-webkit-autofill:hover,
+  &:-webkit-autofill:focus,
+  &:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0px 1000px #222222 inset !important;
+    box-shadow:         0 0 0px 1000px #222222 inset !important;
+    -webkit-text-fill-color: #fff !important;
+    caret-color: #fff;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.22) !important;
+    border-radius: 0 !important;
+    outline: none !important;
+    transition: background-color 9999s ease-in-out 0s;
+  }
 `;
 
-const PrimaryButton = styled.button`
-  padding: 10px;
-  border-radius: 6px;
-  border: none;
-  background: #0095f6;
-  color: #fff;
-  font-size: 1rem;
-  cursor: pointer;
+const ActionBtn = styled.button`
   width: 100%;
-  &:hover { background: #007acc; }
+  padding: 13px;
+  margin-top: 8px;
+  background: #1E3A5F;
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 0.80rem;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s;
+  &:hover:not(:disabled) { background: #254d7f; }
   &:disabled { opacity: 0.5; cursor: default; }
 `;
 
-const SecondaryButton = styled.button`
-  padding: 10px;
-  border-radius: 6px;
-  border: 1px solid #444;
-  background: transparent;
-  color: #fff;
-  font-size: 0.9rem;
-  cursor: pointer;
+const GoogleBtn = styled.button`
   width: 100%;
-  &:hover { background: #333; }
-`;
-
-const ErrorMsg = styled.p`
-  color: #f44;
+  padding: 10px;
+  margin-top: 12px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.75);
   font-size: 0.85rem;
-  margin: 0;
-`;
-
-const Divider = styled.div`
+  cursor: pointer;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
-  color: #666;
-  font-size: 0.8rem;
-  &::before, &::after { content: ''; flex: 1; border-top: 1px solid #444; }
+  transition: background 0.2s;
+  &:hover { background: rgba(255, 255, 255, 0.13); }
+`;
+
+const AuthDivider = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: rgba(255,255,255,0.25);
+  font-size: 0.75rem;
+  margin-top: 16px;
+  &::before, &::after { content: ''; flex: 1; border-top: 1px solid rgba(255,255,255,0.12); }
+`;
+
+const AuthSubtitle = styled.p`
+  margin: 0 0 6px 0;
+  color: rgba(255,255,255,0.55);
+  font-size: 0.85rem;
+`;
+
+const AuthErrorMsg = styled.p`
+  color: #ff6b6b;
+  font-size: 0.82rem;
+  margin: 4px 0 0 0;
+`;
+
+/* ── Botão olhinho (toggle senha) ────────────────────────────────────────────── */
+const EyeBtn = styled.button`
+  position: absolute;
+  right: 0;
+  bottom: 8px;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.38);
+  cursor: pointer;
+  padding: 4px 2px;
+  line-height: 1;
+  &:hover { color: rgba(255, 255, 255, 0.7); }
+  svg { font-size: 1rem; display: block; }
+`;
+
+/* ── Modal de aviso para usuários migrados ───────────────────────────────────── */
+const ModalOverlay = styled.div`
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 24px;
+`;
+
+const ModalCard = styled.div`
+  background: #1E1E1E;  /* ou #1A1A1A, #212121 */
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 36px 32px 28px;
+  max-width: 360px;
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  text-align: center;
+  box-shadow: 0 12px 48px rgba(0,0,0,0.6);
+`;
+
+const ModalTitle = styled.h3`
+  color: #fff;
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin: 0 0 14px;
+  letter-spacing: 0.5px;
+`;
+
+const ModalText = styled.p`
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.88rem;
+  line-height: 1.6;
+  margin: 0 0 28px;
+`;
+
+const ModalBtn = styled.button`
+  width: 100%;
+  padding: 12px;
+  background: #1E3A5F;
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 0.80rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s;
+  &:hover { background: #254d7f; }
+`;
+
+const ModalCancelBtn = styled.button`
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.38);
+  font-size: 0.80rem;
+  cursor: pointer;
+  &:hover { color: rgba(255, 255, 255, 0.65); }
 `;
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Passo 1 — coleta só o email e verifica status de migração
+// Helpers
 // ─────────────────────────────────────────────────────────────────────────────
 
-const EmailStep = ({ onContinue, isLoading }) => {
-  const [email, setEmail] = useState('');
+/** Valida email exigindo TLD (ex: mar@gmail falha; mar@gmail.com passa) */
+const isValidEmail = (email) =>
+  /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim());
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (email.trim()) onContinue(email.trim());
+// ─────────────────────────────────────────────────────────────────────────────
+// AuthForm — formulário unificado de login / cadastro
+// ─────────────────────────────────────────────────────────────────────────────
+
+const AuthForm = ({ onSignedIn }) => {
+  const [tab, setTab] = useState('entrar'); // 'entrar' | 'cadastrar'
+
+  // ── Campos Entrar ─────────────────────────────────────────────────────────
+  const [loginEmail,    setLoginEmail]    = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+
+  // ── Campos Cadastrar ──────────────────────────────────────────────────────
+  const [signupName,         setSignupName]         = useState('');
+  const [signupEmail,        setSignupEmail]        = useState('');
+  const [signupEmailConfirm, setSignupEmailConfirm] = useState('');
+  const [signupPassword,     setSignupPassword]     = useState('');
+  const [signupConfirm,      setSignupConfirm]      = useState('');
+
+  // ── Controle migração ─────────────────────────────────────────────────────
+  const [isMigrated,       setIsMigrated]       = useState(false);
+  // pendingMigration: { email, name } — preenchido ao detectar usuário migrado;
+  // exibe o popup de aviso antes de trocar de aba
+  const [pendingMigration, setPendingMigration] = useState(null);
+
+  // ── Visibilidade de senha ─────────────────────────────────────────────────
+  const [showLoginPass,   setShowLoginPass]   = useState(false);
+  const [showSignupPass,  setShowSignupPass]  = useState(false);
+  const [showSignupConf,  setShowSignupConf]  = useState(false);
+
+  // ── Confirmação de código (signup novo) ───────────────────────────────────
+  const [phase, setPhase] = useState('form'); // 'form' | 'confirm'
+  const [code,  setCode]  = useState('');
+
+  const [busy,  setBusy]  = useState(false);
+  const [error, setError] = useState('');
+
+  const switchTab = (t) => { setTab(t); setError(''); setIsMigrated(false); };
+
+  // ── Confirma popup e entra na aba Cadastrar com campos pré-preenchidos ────
+  const confirmMigration = () => {
+    setSignupEmail(pendingMigration.email);
+    setSignupName(pendingMigration.name || '');
+    setIsMigrated(true);
+    setTab('cadastrar');
+    setPendingMigration(null);
   };
 
-  return (
-    <Card>
-      <Title>Entrar ou cadastrar</Title>
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <Input
-          type="email"
-          placeholder="Digite seu e-mail"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          autoFocus
-        />
-        <PrimaryButton type="submit" disabled={isLoading}>
-          {isLoading ? 'Verificando...' : 'Continuar'}
-        </PrimaryButton>
-      </form>
-      <Divider>ou</Divider>
-      <SecondaryButton onClick={() => signInWithRedirect({ provider: 'Google' })}>
-        🔵 Entrar com Google
-      </SecondaryButton>
-    </Card>
-  );
-};
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Passo 2b — usuário migrado ainda sem senha no novo sistema
-// ─────────────────────────────────────────────────────────────────────────────
-
-const MigratedSetupForm = ({ email, userName, onSuccess }) => {
-  const [password, setPassword]   = useState('');
-  const [confirm, setConfirm]     = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError]         = useState('');
-
-  const handleSubmit = async (e) => {
+  // ── Aba Entrar: verifica migração antes de validar senha ──────────────────
+  const handleLoginSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    if (password.length < 8) { setError('A senha deve ter no mínimo 8 caracteres'); return; }
-    if (password !== confirm) { setError('As senhas não coincidem'); return; }
-
-    setIsLoading(true);
+    if (!isValidEmail(loginEmail)) return setError('Informe um e-mail válido (ex: nome@dominio.com)');
+    setBusy(true);
     try {
-      // Cria conta no novo Cognito (ignora se já existir — retry seguro)
-      try {
-        await signUp({
-          username: email,
-          password,
-          options: { userAttributes: { email, name: userName } },
-        });
-      } catch (signUpErr) {
-        if (signUpErr.name !== 'UsernameExistsException') throw signUpErr;
+      const result = await getAuthStatus(loginEmail);
+      console.log('[AuthForm] getAuthStatus result:', result);
+
+      if (result.exists && result.status === 'FORCE_CHANGE_PASSWORD') {
+        // Usuário migrado → mostra popup de aviso antes de trocar de aba
+        setPendingMigration({ email: loginEmail, name: result.name || '' });
+        setBusy(false);
+        return;
       }
 
-      // Garante que não há sessão ativa antes de autenticar
-      try { await signOut(); } catch { /* ignora se não havia sessão */ }
-
-      // Autentica
-      await signIn({ username: email, password });
-
-      // Marca migração como concluída e obtém userId efetivo
-      const cognito = await getCurrentUser();
-      const attrs   = await fetchUserAttributes(cognito);
-      const result  = await registerUserMigration({
-        email:      attrs.email,
-        cognitoSub: attrs.sub,
-        userName:   attrs.name || userName,
-      });
-
-      // Notifica o ProtectedRoute com os dados completos — não depende de route mudar
-      onSuccess({ userId: result.userId, userName: attrs.name || userName, email: attrs.email });
+      // Usuário normal → tenta sign-in
+      const { nextStep } = await signIn({ username: loginEmail, password: loginPassword });
+      if (nextStep.signInStep === 'DONE') {
+        await onSignedIn();
+      } else {
+        setError('Etapa adicional de autenticação necessária. Tente novamente.');
+      }
     } catch (err) {
-      setError(err.message || 'Erro ao cadastrar. Tente novamente.');
-      setIsLoading(false);
+      setError(err.message || 'Email ou senha incorretos');
+    } finally {
+      setBusy(false);
     }
   };
 
+  // ── Aba Cadastrar: migrado (cria senha) ou novo (cria conta) ──────────────
+  const handleSignupSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    if (!isValidEmail(signupEmail)) return setError('Informe um e-mail válido (ex: nome@dominio.com)');
+    if (!isMigrated && signupEmail !== signupEmailConfirm) return setError('Os e-mails não coincidem');
+    if (signupPassword.length < 8) return setError('Senha deve ter no mínimo 8 caracteres');
+    if (signupPassword !== signupConfirm) return setError('As senhas não coincidem');
+    setBusy(true);
+    try {
+      if (isMigrated) {
+        await setNewPassword(signupEmail, signupPassword);
+        await signIn({ username: signupEmail, password: signupPassword });
+        await onSignedIn();
+      } else {
+        const { nextStep } = await signUp({
+          username: signupEmail,
+          password: signupPassword,
+          options: { userAttributes: { name: signupName, email: signupEmail } },
+        });
+        if (nextStep.signUpStep === 'CONFIRM_SIGN_UP') {
+          setPhase('confirm');
+        } else {
+          await signIn({ username: signupEmail, password: signupPassword });
+          await onSignedIn();
+        }
+      }
+    } catch (err) {
+      setError(err.message || 'Erro ao processar. Tente novamente.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  // ── Confirmação do código enviado por email ───────────────────────────────
+  const handleConfirmSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setBusy(true);
+    try {
+      await confirmSignUp({ username: signupEmail, confirmationCode: code });
+      await signIn({ username: signupEmail, password: signupPassword });
+      await onSignedIn();
+    } catch (err) {
+      setError(err.message || 'Código inválido');
+      setBusy(false);
+    }
+  };
+
+  // ── Popup de aviso para usuário migrado ───────────────────────────────────
+  const migrationPopup = pendingMigration && (
+    <ModalOverlay>
+      <ModalCard>
+        <AvatarCircle style={{ marginBottom: 20 }}><FaUserCircle /></AvatarCircle>
+        <ModalTitle>Que bom ver você de novo!</ModalTitle>
+        <ModalText>
+          Para continuar acessando sua conta, é necessário cadastrar uma nova senha. Clique em <strong>Continuar</strong> para continuar.
+        </ModalText>
+        <ModalBtn onClick={confirmMigration}>Continuar</ModalBtn>
+        <ModalCancelBtn onClick={() => setPendingMigration(null)}>Cancelar</ModalCancelBtn>
+      </ModalCard>
+    </ModalOverlay>
+  );
+
+  // ── Fase: confirmação de código ───────────────────────────────────────────
+  if (phase === 'confirm') {
+    return (
+      <>
+        {migrationPopup}
+        <GlassCard>
+          <AvatarCircle><FaUserCircle /></AvatarCircle>
+          <ScreenTitle>Confirmar Email</ScreenTitle>
+          <AuthSubtitle style={{ marginBottom: 24 }}>
+            Código enviado para <strong>{signupEmail}</strong>
+          </AuthSubtitle>
+          <form onSubmit={handleConfirmSubmit}>
+            <InputWrap>
+              <LineInput
+                type="text"
+                placeholder="Código de confirmação"
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+                required
+                autoFocus
+              />
+            </InputWrap>
+            {error && <AuthErrorMsg>{error}</AuthErrorMsg>}
+            <ActionBtn type="submit" disabled={busy}>
+              {busy ? 'Confirmando...' : 'Confirmar'}
+            </ActionBtn>
+          </form>
+        </GlassCard>
+      </>
+    );
+  }
+
+  // ── Fase: formulário principal ─────────────────────────────────────────────
   return (
-    <Card>
-      <Title>Olá, {userName}!</Title>
-      <Subtitle>Por favor cadastre sua senha novamente para continuar.</Subtitle>
-      <Subtitle style={{ color: '#888' }}>E-mail: {email}</Subtitle>
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <Input
-          type="password"
-          placeholder="Nova senha (mín. 8 caracteres)"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          autoFocus
-        />
-        <Input
-          type="password"
-          placeholder="Confirme a nova senha"
-          value={confirm}
-          onChange={(e) => setConfirm(e.target.value)}
-          required
-        />
-        {error && <ErrorMsg>{error}</ErrorMsg>}
-        <PrimaryButton type="submit" disabled={isLoading}>
-          {isLoading ? 'Cadastrando...' : 'Cadastrar Senha'}
-        </PrimaryButton>
-      </form>
-    </Card>
+    <>
+      {migrationPopup}
+      <GlassCard>
+        <AvatarCircle><FaUserCircle /></AvatarCircle>
+
+        <TabBar>
+          <TabBtn $active={tab === 'entrar'}    onClick={() => switchTab('entrar')}>Entrar</TabBtn>
+          <TabBtn $active={tab === 'cadastrar'} onClick={() => switchTab('cadastrar')}>Cadastrar</TabBtn>
+        </TabBar>
+
+        {tab === 'entrar' ? (
+          /* ── Entrar ────────────────────────────────────────────────────────── */
+          <form onSubmit={handleLoginSubmit} autoComplete="off">
+            <InputWrap>
+              <FaEnvelope />
+              <LineInput
+                type="email"
+                placeholder="Email"
+                value={loginEmail}
+                onChange={(e) => setLoginEmail(e.target.value)}
+                autoComplete="username"
+                required
+                autoFocus
+              />
+            </InputWrap>
+            <InputWrap>
+              <FaLock />
+              <LineInput
+                type={showLoginPass ? 'text' : 'password'}
+                placeholder="Senha"
+                value={loginPassword}
+                onChange={(e) => setLoginPassword(e.target.value)}
+                autoComplete="current-password"
+                style={{ paddingRight: 30 }}
+                required
+              />
+              <EyeBtn type="button" tabIndex={-1} onClick={() => setShowLoginPass(v => !v)}>
+                {showLoginPass ? <FaEyeSlash /> : <FaEye />}
+              </EyeBtn>
+            </InputWrap>
+            {error && <AuthErrorMsg>{error}</AuthErrorMsg>}
+            <ActionBtn type="submit" disabled={busy}>
+              {busy ? 'Entrando...' : 'Entrar'}
+            </ActionBtn>
+          </form>
+        ) : (
+          /* ── Cadastrar ─────────────────────────────────────────────────────── */
+          <form onSubmit={handleSignupSubmit}>
+            <InputWrap>
+              <FaUserCircle />
+              <LineInput
+                type="text"
+                placeholder="Nome"
+                value={signupName}
+                onChange={(e) => setSignupName(e.target.value)}
+                required
+                readOnly={isMigrated}
+                autoFocus={!isMigrated}
+              />
+            </InputWrap>
+            <InputWrap>
+              <FaEnvelope />
+              <LineInput
+                type="email"
+                placeholder="Email"
+                value={signupEmail}
+                onChange={(e) => setSignupEmail(e.target.value)}
+                required
+                readOnly={isMigrated}
+              />
+            </InputWrap>
+            {!isMigrated && (
+              <InputWrap>
+                <FaEnvelope />
+                <LineInput
+                  type="email"
+                  placeholder="Confirme o e-mail"
+                  value={signupEmailConfirm}
+                  onChange={(e) => setSignupEmailConfirm(e.target.value)}
+                  required
+                />
+              </InputWrap>
+            )}
+            <InputWrap>
+              <FaLock />
+              <LineInput
+                type={showSignupPass ? 'text' : 'password'}
+                placeholder={isMigrated ? 'Crie sua senha (mín. 8 caracteres)' : 'Senha (mín. 8 caracteres)'}
+                value={signupPassword}
+                onChange={(e) => setSignupPassword(e.target.value)}
+                style={{ paddingRight: 30 }}
+                required
+                autoFocus={isMigrated}
+              />
+              <EyeBtn type="button" tabIndex={-1} onClick={() => setShowSignupPass(v => !v)}>
+                {showSignupPass ? <FaEyeSlash /> : <FaEye />}
+              </EyeBtn>
+            </InputWrap>
+            <InputWrap>
+              <FaLock />
+              <LineInput
+                type={showSignupConf ? 'text' : 'password'}
+                placeholder="Confirme a senha"
+                value={signupConfirm}
+                onChange={(e) => setSignupConfirm(e.target.value)}
+                style={{ paddingRight: 30 }}
+                required
+              />
+              <EyeBtn type="button" tabIndex={-1} onClick={() => setShowSignupConf(v => !v)}>
+                {showSignupConf ? <FaEyeSlash /> : <FaEye />}
+              </EyeBtn>
+            </InputWrap>
+            {error && <AuthErrorMsg>{error}</AuthErrorMsg>}
+            <ActionBtn type="submit" disabled={busy}>
+              {busy
+                ? (isMigrated ? 'Salvando...'   : 'Criando conta...')
+                : (isMigrated ? 'Criar Senha'   : 'Criar Conta')}
+            </ActionBtn>
+          </form>
+        )}
+
+        <AuthDivider>ou</AuthDivider>
+        <GoogleBtn onClick={() => signInWithRedirect({ provider: 'Google' })}>
+          <FcGoogle style={{ fontSize: '1.2rem' }} />
+          Entrar com Google
+        </GoogleBtn>
+      </GlassCard>
+    </>
   );
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Configuração estática do Amplify Authenticator
-// ─────────────────────────────────────────────────────────────────────────────
-
-const BASE_FORM_FIELDS = {
-  signUp: {
-    name:  { label: 'Nome', placeholder: 'Digite seu nome', isRequired: true, order: 1 },
-    email: { placeholder: 'Digite seu e-mail', isRequired: true, label: 'Email', order: 2 },
-    confirm_email: {
-      label: 'Confirmar Email',
-      placeholder: 'Digite seu e-mail novamente',
-      isRequired: true,
-      type: 'email',
-      order: 3,
-    },
-  },
-};
-
-const services = {
-  async validateCustomSignUp(formData) {
-    if (!formData.confirm_email) return { confirm_email: 'Por favor confirme seu e-mail' };
-    if (formData.email !== formData.confirm_email) return { confirm_email: 'Os e-mails não coincidem' };
-  },
-  async handleSignUp(input) {
-    const { confirm_email, ...userAttributes } = input.options?.userAttributes ?? {};
-    return signUp({
-      username: input.username,
-      password: input.password,
-      options: { ...input.options, userAttributes },
-    });
-  },
-};
-
-// ─────────────────────────────────────────────────────────────────────────────
-// ProtectedRoute — máquina de estados de autenticação
+// ProtectedRoute
 // ─────────────────────────────────────────────────────────────────────────────
 
 const ProtectedRoute = ({ children }) => {
   const { route } = useAuthenticator((context) => [context.route]);
-  const navigate = useNavigate();
+  const navigate  = useNavigate();
   const { setUser, clearUser, userId: contextUserId } = useAppUser();
 
-  // Etapas: 'email' | 'checking' | 'normalAuth' | 'migratedSetup'
-  const [authStep, setAuthStep]           = useState('email');
-  const [checkedEmail, setCheckedEmail]   = useState('');
-  const [migrationUser, setMigrationUser] = useState(null); // { userName }
-  const [forceAuth, setForceAuth]         = useState(false); // true após migração concluída
-  // isPostAuthDone: garante que children só renderizam após o userId estar no contexto.
-  // Inicia true se o contexto já tem userId (navegação entre rotas protegidas).
   const [isPostAuthDone, setIsPostAuthDone] = useState(() => Boolean(contextUserId));
+  const [isInitializing, setIsInitializing] = useState(true);
   const postAuthRunning = useRef(false);
 
-  // ── formFields com email pré-preenchido (useMemo evita nova referência a cada render) ──
-  const formFields = React.useMemo(() => ({
-    signIn: {
-      username: { placeholder: 'Digite seu e-mail', isRequired: true, label: 'Email', order: 1, defaultValue: checkedEmail },
-    },
-    ...BASE_FORM_FIELDS,
-  }), [checkedEmail]);
-
-  // ── Pós-autenticação: registrar na tabela e popular UserContext ─────────────
+  // ── Lê atributos do Cognito e popula o UserContext ────────────────────────
   const handlePostAuth = async () => {
     if (postAuthRunning.current) return;
     postAuthRunning.current = true;
     try {
-      const cognito  = await getCurrentUser();
-      const attrs    = await fetchUserAttributes(cognito);
-      const result   = await registerUserMigration({
-        email:      attrs.email,
-        cognitoSub: attrs.sub,
-        userName:   attrs.name || '',
-      });
-      setUser({ userId: result.userId, userName: attrs.name || '', email: attrs.email });
+      const cognito = await getCurrentUser();
+      const attrs   = await fetchUserAttributes(cognito);
+      // Usuários migrados têm custom:legacy_id com o sub do pool antigo.
+      // Novos usuários usam o sub do Cognito atual.
+      const userId   = attrs['custom:legacy_id'] || attrs.sub;
+      const userName = attrs.name || '';
+      setUser({ userId, userName, email: attrs.email });
     } catch (err) {
       console.error('[ProtectedRoute] handlePostAuth error:', err);
     } finally {
       postAuthRunning.current = false;
-      setIsPostAuthDone(true); // libera o render de children independente de sucesso/erro
+      setIsPostAuthDone(true);
     }
   };
 
+  // ── Verifica sessão existente no mount ────────────────────────────────────
+  useEffect(() => {
+    if (contextUserId) {
+      setIsPostAuthDone(true);
+      setIsInitializing(false);
+      return;
+    }
+    getCurrentUser()
+      .then(() => handlePostAuth())
+      .catch(() => { /* sem sessão — mostra formulário */ })
+      .finally(() => setIsInitializing(false));
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Detecta autenticação via Google OAuth (Amplify gerencia o redirect) ───
   useEffect(() => {
     switch (route) {
       case 'authenticated':
@@ -329,85 +657,30 @@ const ProtectedRoute = ({ children }) => {
           if (redirectTo && redirectTo !== '/login') navigate(redirectTo);
         });
         break;
-
       case 'signIn':
-        // onSignOut já faz window.location.replace('/') — não precisa resetar authStep aqui
         clearUser();
         break;
-
       default:
         break;
     }
   }, [route]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Salva URL antes de redirecionar para login ──────────────────────────────
+  // ── Salva URL antes do redirect para login ────────────────────────────────
   useEffect(() => {
     if (route === 'signIn') {
       sessionStorage.setItem('AGILFACIL_redirectAfterLogin', window.location.pathname);
     }
   }, [route]);
 
-  // ── Step 1: passo inicial de e-mail ─────────────────────────────────────────
-  const handleEmailStep = async (email) => {
-    setCheckedEmail(email);
-    setAuthStep('checking');
-    try {
-      const result = await checkUserMigration(email);
-      if (result.found && result.migrated === false) {
-        // Usuário do sistema antigo ainda sem senha → tela de boas-vindas
-        setMigrationUser({ userName: result.userName });
-        setAuthStep('migratedSetup');
-      } else {
-        // 404 (novo usuário) OU migrado concluído → fluxo normal do Amplify
-        setAuthStep('normalAuth');
-      }
-    } catch {
-      setAuthStep('normalAuth'); // fallback em caso de erro na API
-    }
-  };
+  // ── Render ────────────────────────────────────────────────────────────────
+  if (isInitializing)  return <LoaderPage />;
+  if (isPostAuthDone)  return children;
 
-  if (route !== 'authenticated' && !forceAuth) {
-    if (authStep === 'email' || authStep === 'checking') {
-      return (
-        <AuthContainer>
-          <EmailStep onContinue={handleEmailStep} isLoading={authStep === 'checking'} />
-        </AuthContainer>
-      );
-    }
-
-    if (authStep === 'migratedSetup') {
-      return (
-        <AuthContainer>
-          <MigratedSetupForm
-            email={checkedEmail}
-            userName={migrationUser.userName}
-            onSuccess={({ userId, userName: uName, email: uEmail }) => {
-              setUser({ userId, userName: uName, email: uEmail });
-              setIsPostAuthDone(true);
-              setForceAuth(true);
-            }}
-          />
-        </AuthContainer>
-      );
-    }
-
-    // authStep === 'normalAuth'
-    return (
-      <AuthContainer>
-        <Authenticator
-          socialProviders={["google"]}
-          formFields={formFields}
-          services={services}
-          hideSignUp={false}
-        />
-      </AuthContainer>
-    );
-  }
-
-  // Autenticado mas handlePostAuth ainda não concluiu — aguarda userId no contexto
-  if (!isPostAuthDone) return <LoaderPage />;
-
-  return children;
+  return (
+    <AuthContainer>
+      <AuthForm onSignedIn={handlePostAuth} />
+    </AuthContainer>
+  );
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -419,18 +692,18 @@ function App() {
     <>
       <StyledToastContainer pauseOnFocusLoss={false} />
       <Routes>
-        <Route path="/login"          element={<ProtectedRoute><SolicitaLoginPage /></ProtectedRoute>} />
-        <Route exact path="/"         element={<HomePage />} />
-        <Route exact path="/about"    element={<AboutPage />} />
-        <Route path="/room/create"    element={<CreateAndEnterPage />} />
-        <Route exact path="room"      element={<RoomPage />} />
-        <Route path="/room/guest/:id" element={<GuestUrlPage />} />
-        <Route path="/notification"   element={<NotificationPage />} />
-        <Route path="/board"          element={<BoardPage />} />
+        <Route path="/login"             element={<ProtectedRoute><SolicitaLoginPage /></ProtectedRoute>} />
+        <Route exact path="/"            element={<HomePage />} />
+        <Route exact path="/about"       element={<AboutPage />} />
+        <Route path="/room/create"       element={<CreateAndEnterPage />} />
+        <Route exact path="room"         element={<RoomPage />} />
+        <Route path="/room/guest/:id"    element={<GuestUrlPage />} />
+        <Route path="/notification"      element={<NotificationPage />} />
+        <Route path="/board"             element={<BoardPage />} />
         <Route path="/board/guest/:id"   element={<GuestUrlBoardPage />} />
         <Route path="/board/export/:id"  element={<ExportPDFPage />} />
-        <Route path="/board/create"  element={<ProtectedRoute><CreateBoardPage /></ProtectedRoute>} />
-        <Route path="/boards"        element={<ProtectedRoute><BoardListPage /></ProtectedRoute>} />
+        <Route path="/board/create"      element={<ProtectedRoute><CreateBoardPage /></ProtectedRoute>} />
+        <Route path="/boards"            element={<ProtectedRoute><BoardListPage /></ProtectedRoute>} />
       </Routes>
     </>
   );

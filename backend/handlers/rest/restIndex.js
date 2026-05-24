@@ -5,6 +5,8 @@
  * Roteia todas as requisições HTTP por routeKey.
  */
 
+const log = require('../../utils/logger');
+
 const routes = {
   // ── Board ──────────────────────────────────────────────────────────────────
   'GET /healthcheck':                       require('./healthcheck'),
@@ -16,15 +18,30 @@ const routes = {
   'POST /poker/createRoom':                 require('./createRoom'),
   'GET /rooms/{id}':                        require('./getRoom'),
   'POST /suggestion':                       require('./suggestion'),
-  // ── Users ──────────────────────────────────────────────────────────────────
-  'GET /user':                              require('./getUser'),
-  'POST /user/register':                    require('./registerUser'),
 };
 
 exports.handler = async (event) => {
-  const handler = routes[event.routeKey];
+  const routeKey = event.routeKey;
+
+  log.debug('restIndex: request', {
+    routeKey,
+    queryStringParameters: event.queryStringParameters,
+    body: event.body ? (() => { try { return JSON.parse(event.body); } catch { return event.body; } })() : undefined,
+  });
+
+  const handler = routes[routeKey];
   if (!handler) {
-    return { statusCode: 404, body: JSON.stringify({ error: 'Rota não encontrada' }) };
+    const res = { statusCode: 404, body: JSON.stringify({ error: 'Rota não encontrada' }) };
+    log.debug('restIndex: response', { routeKey, statusCode: 404 });
+    return res;
   }
-  return handler.handler(event);
+
+  try {
+    const response = await handler.handler(event);
+    log.debug('restIndex: response', { routeKey, statusCode: response.statusCode });
+    return response;
+  } catch (err) {
+    log.error('restIndex: erro não tratado', { routeKey, message: err.message });
+    return { statusCode: 500, body: JSON.stringify({ error: 'Erro interno' }) };
+  }
 };

@@ -35,6 +35,20 @@ resource "aws_cognito_user_pool" "main" {
     case_sensitive = false
   }
 
+  # Atributo customizado para preservar o userId legado (sub do Cognito antigo)
+  # Usado por usuários migrados do pool anterior — novos usuários não têm este atributo.
+  schema {
+    attribute_data_type      = "String"
+    name                     = "legacy_id"
+    mutable                  = true
+    developer_only_attribute = false
+    required                 = false
+    string_attribute_constraints {
+      min_length = "0"
+      max_length = "36"
+    }
+  }
+
   mfa_configuration = "OFF"
 
   # Recuperação de conta
@@ -126,6 +140,7 @@ resource "aws_cognito_user_pool_client" "web" {
   }
 
   explicit_auth_flows = [
+    "ALLOW_ADMIN_USER_PASSWORD_AUTH",  # necessário para AdminInitiateAuth na Lambda auth
     "ALLOW_CUSTOM_AUTH",
     "ALLOW_REFRESH_TOKEN_AUTH",
     "ALLOW_USER_PASSWORD_AUTH",

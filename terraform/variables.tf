@@ -5,9 +5,9 @@ variable "aws_region" {
 }
 
 variable "lambda_runtime" {
-  description = "Runtime dos Lambdas WebSocket"
+  description = "Runtime dos Lambdas"
   type        = string
-  default     = "nodejs18.x"
+  default     = "nodejs22.x"
 }
 
 variable "lambda_timeout" {
@@ -41,4 +41,17 @@ variable "google_client_secret" {
   type        = string
   sensitive   = true
   default     = "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"
+}
+
+variable "board_table_name" {
+  description = "Nome da tabela DynamoDB de boards. Deixe vazio para usar a tabela criada pelo Terraform (agilfacil_board). Defina 'teste2_board' enquanto a tabela migrada tiver esse nome."
+  type        = string
+  default     = ""
+}
+
+variable "migration_secret" {
+  description = "Segredo HMAC para geração determinística da senha temporária de usuários migrados"
+  type        = string
+  sensitive   = true
+  default     = "a3f7c2e8-9b4d-4f1a-8c52-6e7d9b3a1f4c"
 }

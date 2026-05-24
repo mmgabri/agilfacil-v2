@@ -24,10 +24,29 @@ resource "aws_lambda_function" "rest" {
   environment {
     variables = {
       REGION      = var.aws_region
-      TABLE_BOARD = aws_dynamodb_table.board.name
+      TABLE_BOARD = local.board_table_name
       TABLE_ROOM  = aws_dynamodb_table.room.name
-      TABLE_USERS = aws_dynamodb_table.users.name
       TOPIC_ARN   = aws_sns_topic.alerts.arn
+    }
+  }
+}
+
+# ── agilfacil-auth ────────────────────────────────────────────────────────────
+resource "aws_lambda_function" "auth" {
+  function_name    = "agilfacil-auth"
+  role             = aws_iam_role.lambda_auth.arn
+  handler          = "handlers/auth/authIndex.handler"
+  runtime          = var.lambda_runtime
+  timeout          = var.lambda_timeout
+  filename         = data.archive_file.backend.output_path
+  source_code_hash = data.archive_file.backend.output_base64sha256
+
+  environment {
+    variables = {
+      REGION           = var.aws_region
+      USER_POOL_ID     = aws_cognito_user_pool.main.id
+      CLIENT_ID        = aws_cognito_user_pool_client.web.id
+      MIGRATION_SECRET = var.migration_secret
     }
   }
 }
@@ -45,8 +64,7 @@ resource "aws_lambda_function" "ws" {
   environment {
     variables = {
       REGION            = var.aws_region
-      #TABLE_BOARD       = aws_dynamodb_table.board.name
-      TABLE_BOARD       = "teste2_board"
+      TABLE_BOARD       = local.board_table_name
       TABLE_ROOM        = aws_dynamodb_table.room.name
       TABLE_CONNECTIONS = aws_dynamodb_table.connections.name
     }

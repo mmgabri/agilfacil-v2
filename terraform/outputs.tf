@@ -30,11 +30,7 @@ output "dynamodb_connections_table" {
   value = aws_dynamodb_table.connections.name
 }
 
-output "dynamodb_users_table" {
-  value = aws_dynamodb_table.users.name
-}
-
-# ─── Cognito ──────────────────────────────────────────────────────────────────
+# ─── Cognito ──────────────────────────────��───────────────────────────────────
 
 output "cognito_user_pool_id" {
   description = "ID do User Pool — copie para aws_user_pools_id em frontend/src/aws-exports.js"
