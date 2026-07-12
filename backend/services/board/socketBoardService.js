@@ -235,7 +235,7 @@ const deleteColumn = async (boardId, index) => {
 };
 
 
-const addColumn = async (boardId, newCollumn) => {
+const addColumn = async (boardId, newColumn) => {
 
   const boardData = await getBoardDb(config.TABLE_BOARD, boardId);
 
@@ -245,7 +245,7 @@ const addColumn = async (boardId, newCollumn) => {
 
   // Adiciona a coluna pelo índice
   const updatedBoardData = { ...boardData };
-  updatedBoardData.columns.push(newCollumn);
+  updatedBoardData.columns.push(newColumn);
 
 
   await putTable(config.TABLE_BOARD, updatedBoardData);

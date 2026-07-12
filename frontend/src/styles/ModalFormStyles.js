@@ -1,79 +1,113 @@
 import styled from 'styled-components';
 
+// ─── Design tokens — "Dark Premium" ───────────────────────────────────────────
+// Mesmo sistema visual do Header / BoardListPage.js / BoardPageMock.js.
+
+const TEXT   = '#f5f5f7';
+const MUTED  = 'rgba(245,245,247,0.42)';
+const MUTED2 = 'rgba(245,245,247,0.62)';
+const BORDER = 'rgba(255,255,255,0.07)';
+const ACCENT       = '#8b7cf6';
+const ACCENT_GLOW  = 'rgba(139,124,246,0.18)';
+const ACCENT_GRAD  = 'linear-gradient(135deg, #9a8bfb 0%, #7c6cf0 100%)';
+
 export const Title = styled.h2`
-  font-size: 20px;
-  color: #C0C0C0;
+  font-size: 16px;
+  font-weight: 700;
+  color: ${TEXT};
   text-align: center;
-  margin-bottom: 25px;
+  margin: 0 0 20px;
 `;
 
 export const TitleAddCard = styled.h2`
-  font-size: 20px;
-  color: #c0c0c0;
+  font-size: 16px;
+  font-weight: 700;
+  color: ${TEXT};
   text-align: center;
-  margin-bottom: 25px;
+  margin: 0 0 20px;
 `;
 
 export const FormContainer = styled.div`
-  max-width: 500px; /* Largura máxima do container */
-  margin: 20px auto; /* Centralizando horizontalmente */
-  padding: 10px; /* Espaçamento interno */
-  border-radius: 10px; /* Bordas arredondadas */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Sombra para efeito de profundidade */
-  color: #C0C0C0; /* Cor do texto */
-  background-color: #2c2c2c;
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 4px;
+  color: ${TEXT};
 `;
-// Estilizando o FormGroup
+
 export const FormGroup = styled.div`
-  margin-bottom: 15px; /* Espaçamento entre os grupos de formulário */
+  margin-bottom: 15px;
+
+  label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: ${MUTED2};
+    font-size: 12px;
+  }
 `;
 
 export const Input = styled.input`
-  width: 100%; /* O campo de entrada ocupa toda a largura do grupo */
-  padding: 10px; /* Espaço interno no campo */
-  border: 1px solid #ccc; /* Borda padrão */
-  border-radius: 5px; /* Bordas arredondadas */
-  font-size: 13px; /* Tamanho da fonte do campo de entrada */
-  background-color: #ffffff; /* Cor de fundo do campo */
-  
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: 1px solid ${BORDER};
+  border-radius: 10px;
+  font-size: 13.5px;
+  background: rgba(255, 255, 255, 0.045);
+  color: ${TEXT};
+  outline: none;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+
+  &::placeholder {
+    color: ${MUTED};
+  }
+
   &:focus {
-    border-color: #10b981; /* Cor da borda ao focar no campo */
-    outline: none; /* Remove a borda padrão de foco */
+    border-color: ${ACCENT}70;
+    box-shadow: 0 0 0 3px ${ACCENT_GLOW};
   }
 `;
 
 export const TextArea = styled.textarea`
-  width: 100%; /* O campo de texto ocupa toda a largura do grupo */
-  padding: 10px; /* Espaço interno no campo */
-  margin-botton: 300px;
-  border: 1px solid #ccc; /* Borda padrão */
-  border-radius: 5px; /* Bordas arredondadas */
-  font-size: 13px; /* Tamanho da fonte do campo de entrada */
-  background-color: #ffffff; /* Cor de fundo do campo */
-  resize: none; /* Impede o redimensionamento do campo de texto */
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: 1px solid ${BORDER};
+  border-radius: 10px;
+  font-size: 13.5px;
+  background: rgba(255, 255, 255, 0.045);
+  color: ${TEXT};
+  outline: none;
+  resize: none;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+
+  &::placeholder {
+    color: ${MUTED};
+  }
 
   &:focus {
-    border-color: #10b981; /* Cor da borda ao focar no campo */
-    outline: none; /* Remove a borda padrão de foco */
+    border-color: ${ACCENT}70;
+    box-shadow: 0 0 0 3px ${ACCENT_GLOW};
   }
 `;
 
 export const SubmitButton = styled.button`
   display: inline-block;
   width: 100%;
-  padding: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  color: #fff;
-  background: #1E3A5F;
+  padding: 11px;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #0a0a0d;
+  background: ${ACCENT_GRAD};
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
-  margin-top: 0px;
-  height: 45px;
-  transition: transform 0.1s ease-in-out; /* Suaviza a transformação */
+  margin-top: 4px;
+  box-shadow: 0 4px 18px ${ACCENT_GLOW};
+  transition: filter 0.15s ease, transform 0.1s ease;
 
   &:hover {
-    transform: scale(1.05); 
+    filter: brightness(1.08);
+    transform: translateY(-1px);
   }
  `;

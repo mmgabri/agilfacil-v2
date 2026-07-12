@@ -12,7 +12,14 @@ html, body, #root {
   .dropdown-toggle::after {
     display: none;
   }
-  
+
+  /* Sobrescreve o hover branco padrão do react-bootstrap nos menus (⋮) do board */
+  .dropdown-menu .dropdown-item:hover,
+  .dropdown-menu .dropdown-item:focus {
+    background-color: rgba(139, 124, 246, 0.18) !important;
+    color: #a996ff !important;
+  }
+
   /* Importando a fonte Poppins do Google Fonts */
   @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
   

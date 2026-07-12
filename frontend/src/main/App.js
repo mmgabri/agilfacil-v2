@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, lazy, Suspense } from 'react';
 import { useNavigate } from "react-router-dom";
 import { ToastContainer } from 'react-toastify';
 import styled from "styled-components";
@@ -8,23 +8,27 @@ import { signUp, confirmSignUp, signIn, signInWithRedirect, getCurrentUser, fetc
 import { FaEnvelope, FaLock, FaUserCircle, FaEye, FaEyeSlash } from 'react-icons/fa';
 import { FcGoogle } from 'react-icons/fc';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-
-import HomePage from "../pages/generic/HomePage";
-import AboutPage from "../pages/generic/AboutPage";
-import CreateAndEnterPage from "../pages/poker/CreateAndEnterRoomPage";
-import RoomPage from "../pages/poker/RoomPage";
-import GuestUrlPage from "../pages/poker/GuestUrlPage";
-import NotificationPage from "../pages/poker/NotificationPage";
-import BoardPage from "../pages/board/BoardPage";
-import CreateBoardPage from "../pages/board/CreateBoardPage";
-import BoardListPage from "../pages/board/BoardListPage";
-import GuestUrlBoardPage from "../pages/board/GuestUrlBoardPage";
-import ExportPDFPage from "../pages/board/ExportPDFPage";
-import SolicitaLoginPage from '../pages/generic/SolicitaLoginPage';
-import LoaderPage from '../pages/generic/LoaderPage';
-
 import { useAppUser } from '../context/UserContext';
 import { getAuthStatus, setNewPassword } from '../services/authService';
+
+// Carregamento síncrono — usados no fluxo de auth (precisam estar prontos imediatamente)
+import LoaderPage       from '../pages/generic/LoaderPage';
+import SolicitaLoginPage from '../pages/generic/SolicitaLoginPage';
+
+// Carregamento lazy — só baixa o código quando a rota for acessada
+const HomePage           = lazy(() => import('../pages/generic/HomePage'));
+const AboutPage          = lazy(() => import('../pages/generic/AboutPage'));
+const BoardPage          = lazy(() => import('../pages/board/BoardPage'));
+const BoardListPage      = lazy(() => import('../pages/board/BoardListPage'));
+const CreateBoardPage    = lazy(() => import('../pages/board/CreateBoardPage'));
+const GuestUrlBoardPage  = lazy(() => import('../pages/board/GuestUrlBoardPage'));
+const ExportPDFPage      = lazy(() => import('../pages/board/ExportPDFPage'));
+const BoardPageMock      = lazy(() => import('../pages/board/BoardPageMock'));
+const BoardListPageMock  = lazy(() => import('../pages/board/BoardListPageMock'));
+const CreateAndEnterPage = lazy(() => import('../pages/poker/CreateAndEnterRoomPage'));
+const RoomPage           = lazy(() => import('../pages/poker/RoomPage'));
+const GuestUrlPage       = lazy(() => import('../pages/poker/GuestUrlPage'));
+const NotificationPage   = lazy(() => import('../pages/poker/NotificationPage'));
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Styled components
@@ -691,20 +695,24 @@ function App() {
   return (
     <>
       <StyledToastContainer pauseOnFocusLoss={false} />
-      <Routes>
-        <Route path="/login"             element={<ProtectedRoute><SolicitaLoginPage /></ProtectedRoute>} />
-        <Route exact path="/"            element={<HomePage />} />
-        <Route exact path="/about"       element={<AboutPage />} />
-        <Route path="/room/create"       element={<CreateAndEnterPage />} />
-        <Route exact path="room"         element={<RoomPage />} />
-        <Route path="/room/guest/:id"    element={<GuestUrlPage />} />
-        <Route path="/notification"      element={<NotificationPage />} />
-        <Route path="/board"             element={<BoardPage />} />
-        <Route path="/board/guest/:id"   element={<GuestUrlBoardPage />} />
-        <Route path="/board/export/:id"  element={<ExportPDFPage />} />
-        <Route path="/board/create"      element={<ProtectedRoute><CreateBoardPage /></ProtectedRoute>} />
-        <Route path="/boards"            element={<ProtectedRoute><BoardListPage /></ProtectedRoute>} />
-      </Routes>
+      <Suspense fallback={<LoaderPage />}>
+        <Routes>
+          <Route path="/login"             element={<ProtectedRoute><SolicitaLoginPage /></ProtectedRoute>} />
+          <Route exact path="/"            element={<HomePage />} />
+          <Route exact path="/about"       element={<AboutPage />} />
+          <Route path="/room/create"       element={<CreateAndEnterPage />} />
+          <Route exact path="room"         element={<RoomPage />} />
+          <Route path="/room/guest/:id"    element={<GuestUrlPage />} />
+          <Route path="/notification"      element={<NotificationPage />} />
+          <Route path="/board/mock"         element={<BoardPageMock />} />
+          <Route path="/boards/mock"        element={<BoardListPageMock />} />
+          <Route path="/board"             element={<BoardPage />} />
+          <Route path="/board/guest/:id"   element={<GuestUrlBoardPage />} />
+          <Route path="/board/export/:id"  element={<ExportPDFPage />} />
+          <Route path="/board/create"      element={<ProtectedRoute><CreateBoardPage /></ProtectedRoute>} />
+          <Route path="/boards"            element={<ProtectedRoute><BoardListPage /></ProtectedRoute>} />
+        </Routes>
+      </Suspense>
     </>
   );
 }

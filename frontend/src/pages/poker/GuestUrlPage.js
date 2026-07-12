@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import { v4 as uuidv4 } from 'uuid';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate, useParams } from 'react-router-dom'
 import { getCurrentUser, fetchUserAttributes, fetchAuthSession } from '@aws-amplify/auth';
-import { SERVER_BASE_URL } from "../../constants/apiConstants";
+import { getRoom as fetchRoom } from '../../services/pokerService';
 import styled from 'styled-components';
 import Header from '../components/Header';
 import { emitMessage, formatdateTime, onSignOut } from '../../services/utils'
@@ -65,10 +64,9 @@ export const GuestUrlPage = ({ }) => {
         };
 
         const getRoom = async () => {
-            axios
-                .get(`${SERVER_BASE_URL}/rooms/${id}`)
-                .then((response) => {
-                    setRoomData(response.data)
+            fetchRoom(id)
+                .then((data) => {
+                    setRoomData(data)
                 })
                 .catch((error) => {
                     navigate('/notification', { state: { statusCode: error.response?.status } });

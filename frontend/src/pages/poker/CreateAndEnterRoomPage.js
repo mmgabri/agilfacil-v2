@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { getCurrentUser, fetchUserAttributes, fetchAuthSession } from '@aws-amplify/auth';
 import { useAppUser } from '../../context/UserContext';
-import axios from "axios";
 import { useNavigate } from 'react-router-dom';
 import { emitMessage, onSignOut, onGetToken } from '../../services/utils'
+import { getRoom, createRoom } from '../../services/pokerService'
 import { v4 as uuidv4 } from 'uuid';
 import SuggestionForm from '../components/SuggestionForm'
 import Header from '../components/Header';
 import LoaderPage from '../generic/LoaderPage';
 import styled from "styled-components";
-import { SERVER_BASE_URL } from "../../constants/apiConstants";
 import { FormGroup, SubmitButton } from '../../styles/FormStyle'
 import localStorageService from "../../services/localStorageService";
 import logger from '../../services/logger';
@@ -93,11 +92,11 @@ function CreateAndEnterRoomPage() {
 
         try {
             setIsLoading(true)
-            const response = await axios.post(SERVER_BASE_URL + '/poker/createRoom', { roomName: formData.roomName, nickName: formData.nickName, userId: userAuthenticated.userId, userName: userAuthenticated.userName })
+            const roomData = await createRoom({ roomName: formData.roomName, nickName: formData.nickName, userId: userAuthenticated.userId, userName: userAuthenticated.userName })
             setIsLoading(false)
-            logger.info(CTX, `Sala criada roomId=${response.data?.roomId ?? '?'}`);
+            logger.info(CTX, `Sala criada roomId=${roomData?.roomId ?? '?'}`);
             const userData = { ...userAuthenticated, nickName: formData.nickName, isRoomCreator: true };
-            navigate('/room', { state: { roomData: response.data, userLogged: userData } });
+            navigate('/room', { state: { roomData, userLogged: userData } });
         } catch (error) {
             setIsLoading(false)
             logger.error(CTX, 'Erro ao criar sala', { message: error.message, status: error.response?.status });
@@ -112,11 +111,11 @@ function CreateAndEnterRoomPage() {
 
         try {
             setIsLoading(true)
-            const response = await axios.get(`${SERVER_BASE_URL}/rooms/${formData.roomId}`)
+            const roomData = await getRoom(formData.roomId)
             logger.info(CTX, `Sala encontrada roomId=${formData.roomId}`);
             const userData = { ...userAuthenticated, nickName: formData.nickName, isRoomCreator: false };
             setIsLoading(false)
-            navigate('/room', { state: { roomData: response.data, userLogged: userData } });
+            navigate('/room', { state: { roomData, userLogged: userData } });
         } catch (error) {
             setIsLoading(false)
             logger.warn(CTX, `Sala não encontrada roomId="${formData.roomId}"`, { status: error.response?.status });

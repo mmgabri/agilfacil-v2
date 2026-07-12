@@ -60,7 +60,7 @@ const onCommand = async (event) => {
         log.debug('Board combine card', { boardId: body.boardId, source: body.source, combine: body.combine });
         board = await processCombine(body.boardId, body.source, body.combine); break;
       case 'delete_column':              board = await deleteColumn(body.boardId, body.index); break;
-      case 'add_collumn':               board = await addColumn(body.boardId, body.newCollumn); break;
+      case 'add_column':                board = await addColumn(body.boardId, body.newColumn); break;
       case 'update_title_column':       board = await updateTitleColumn(body.boardId, body.content, body.index); break;
       case 'update_color_cards':        board = await updatecolorCards(body.boardId, body.colorCards, body.index); break;
       case 'update_like':               board = await updateLike(body.boardId, body.isIncrement, body.indexCard, body.indexColumn); break;

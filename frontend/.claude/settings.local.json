@@ -3,7 +3,17 @@
     "allow": [
       "Bash(Get-ChildItem -Path \"c:\\\\_git\\\\agilfacil-v2\\\\frontend\\\\src\" -Recurse -Force)",
       "Bash(Select-Object -ExpandProperty FullName)",
-      "Bash(Sort-Object)"
+      "Bash(Sort-Object)",
+      "Bash(curl -sf http://localhost:3000/board/mock -o /dev/null -w \"%{http_code}\\\\n\")",
+      "Read(//c//**)",
+      "Bash(curl -sf http://localhost:3000/board -o /dev/null -w \"%{http_code}\\\\n\")",
+      "Bash(curl -sf http://localhost:3000/ -o /dev/null -w \"%{http_code}\\\\n\")",
+      "Bash(curl -sf http://localhost:3000/boards -o /dev/null -w \"%{http_code}\\\\n\")",
+      "Bash(npm start *)",
+      "Bash(disown)",
+      "Bash(grep -n \"Failed to compile\\\\|Module not found\\\\|SyntaxError\\\\|@hello-pangea\" /tmp/devserver.log 2>/dev/null | head -20)",
+      "Read(//tmp/**)",
+      "Bash(taskkill //PID 3400 //T //F)"
     ]
   }
 }
