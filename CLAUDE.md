@@ -78,7 +78,7 @@ Routes and the `<ProtectedRoute>` auth wrapper are defined in [frontend/src/main
 | `backend/.env` | `NODE_ENV`, `REGION`, `SNS_ARN` |
 | `backend/config.js` | Port, CORS origins, DynamoDB table/index names |
 | `frontend/src/aws-exports.js` | Cognito user pool and app client IDs; update `redirectSignIn`/`redirectSignOut` for local dev |
-| `frontend/src/constants/apiConstants.js` | `SERVER_BASE_URL` and `FRONT_BASE_URL` — must match the target environment (dev/prod) |
+| `frontend/.env.development` / `frontend/.env.production` | `REACT_APP_FRONT_BASE_URL`, `REACT_APP_SERVER_BASE_URL`, `REACT_APP_WS_BOARD_URL`, `REACT_APP_WS_POKER_URL` — not versioned; loaded automatically by CRA based on `npm start`/`npm run build`. `frontend/src/constants/apiConstants.js` reads these with safe fallback defaults, so it no longer needs manual edits per environment. |
 
 ## Common development tasks
 
@@ -92,4 +92,4 @@ Routes and the `<ProtectedRoute>` auth wrapper are defined in [frontend/src/main
 - **DynamoDB locally**: set `AWS_PROFILE` or equivalent env vars; NeDB fallback activates automatically if DynamoDB is unreachable.
 - **CORS**: allowed origins are in `backend/config.js`; update when adding environments.
 - **Cognito local testing**: update `redirectSignIn`/`redirectSignOut` in `aws-exports.js` and the corresponding Allowed callback/sign-out URLs in the Cognito console.
-- **Production deploy**: after launching a new AWS instance, update the IP in the CloudFlare dashboard. Also update the `apiConstants.js` environment URLs before building the frontend.
+- **Production deploy**: after launching a new AWS instance, update the IP in the CloudFlare dashboard. Also update the URLs in `frontend/.env.production` (not committed — create/edit locally) before building the frontend.
