@@ -1,6 +1,10 @@
 const { putTable, getRoomDb } = require('./../database/dynamoService');
 const config = require('../../config');
 
+const getRoom = async (roomId) => {
+  return getRoomDb(config.TABLE_ROOM, roomId);
+};
+
 const connectClient = async (nickName, userId, roomId) => {
   const roomData = await getRoomDb(config.TABLE_ROOM, roomId);
 
@@ -67,4 +71,4 @@ const updateVote = async (roomId, userId, vote) => {
   }
 };
 
-module.exports = { connectClient, desconnectClient, updateStatusRoom, updateVote };
+module.exports = { getRoom, connectClient, desconnectClient, updateStatusRoom, updateVote };

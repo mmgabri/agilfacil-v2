@@ -1,11 +1,9 @@
 import React, { useState } from 'react';
-import axios from "axios";
-import { SERVER_BASE_URL } from "../../../constants/apiConstants";
 import Modal from '../../components/Modal';
 import { toast } from 'react-toastify';
 import {FormContainer, FormGroup, Input, SubmitButton } from '../../../styles/ModalFormStyles';
 
-const ModalAddCollumn = ({ isOpen, onClose, onSubmit}) => {
+const ModalAddColumn = ({ isOpen, onClose, onSubmit}) => {
     const [formData, setFormData] = useState({
         userName: '',
         roomId: '',
@@ -51,4 +49,4 @@ const ModalAddCollumn = ({ isOpen, onClose, onSubmit}) => {
     );
 };
 
-export default ModalAddCollumn;
+export default ModalAddColumn;

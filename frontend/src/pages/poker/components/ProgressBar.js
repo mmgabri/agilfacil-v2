@@ -19,43 +19,41 @@ const Progress = ({ roomData }) => {
 
     return (
         <ProgressContainer>
-            <ProgressBar style={{ width: `${value}%` }}>{value}%</ProgressBar>
+            <ProgressFill style={{ width: `${value}%` }}>
+                {value > 12 && <span>{value}%</span>}
+            </ProgressFill>
         </ProgressContainer>
     );
 };
 
 export default Progress;
 
+const BORDER = 'rgba(255,255,255,0.07)';
+const GREEN  = '#4ade80';
 
-
-// Estilização do contêiner da barra de progresso
 export const ProgressContainer = styled.div`
   width: 100%;
-  max-width: 600px; /* Ajuste o valor conforme necessário */
-  background-color: #e0e0e0;
+  max-width: 600px;
+  height: 26px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid ${BORDER};
   border-radius: 8px;
-  overflow: auto;
-  margin: 1rem auto; /* Centraliza o contêiner horizontalmente */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  margin-bottom: 0.0rem;
-  margin-top: 0.0rem;
+  overflow: hidden;
+  margin: 0 auto 20px;
 `;
 
-// Estilização da barra de progresso
-export const ProgressBar = styled.div`
-  height: 30px;
-  background-color: #4caf50;
-  text-align: center;
-  line-height: 30px; /* Centraliza o texto verticalmente */
-  color: white;
-  font-weight: bold;
-  border-radius: 8px 0 0 8px; /* Canto arredondado no lado esquerdo */
+export const ProgressFill = styled.div`
+  height: 100%;
+  min-width: 0%;
+  background: ${GREEN};
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 8px;
+  box-sizing: border-box;
+  color: #0a0a0d;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 8px 0 0 8px;
   transition: width 0.4s ease;
-`;
-
-// Estilização do título
-export const ProgressTitle = styled.div`
-  text-align: center;
-  font-size: 1.2rem;
-  margin-bottom: 0.5rem;
 `;

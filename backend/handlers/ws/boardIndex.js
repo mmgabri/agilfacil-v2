@@ -1,6 +1,6 @@
 const { saveConnection, getConnection, deleteConnection } = require('../../services/connections/connectionsService');
-const { connectClientBoard, disconnectClientBoard, addCardBoard, reorderBoard, processCombine, deleteColumn, addColumn, updateTitleColumn, updateLike, deleteCard, deleteAllCard, saveCard, updatecolorCards, setIsObfuscatedBoardLevel, setIsObfuscatedColumnLevel } = require('../../services/board/socketBoardService');
-const { broadcastToSession } = require('../../utils/broadcast');
+const { getBoard, connectClientBoard, disconnectClientBoard, addCardBoard, reorderBoard, processCombine, deleteColumn, addColumn, updateTitleColumn, updateLike, deleteCard, deleteAllCard, saveCard, updatecolorCards, setIsObfuscatedBoardLevel, setIsObfuscatedColumnLevel } = require('../../services/board/socketBoardService');
+const { broadcastToSession, sendToConnection } = require('../../utils/broadcast');
 const log = require('../../utils/logger');
 
 const onConnect = async (event) => {
@@ -48,6 +48,16 @@ const onCommand = async (event) => {
   log.info('Board command received', { command: body.comand, boardId: body.boardId });
 
   try {
+    if (body.comand === 'sync_board') {
+      // Cliente recém-conectado: o broadcast do $connect exclui a própria
+      // conexão (limitação da AWS), então ele pede o estado atual aqui,
+      // já numa invocação separada onde PostToConnection para si mesmo funciona.
+      const board = await getBoard(body.boardId);
+      await sendToConnection(endpoint, event.requestContext.connectionId, 'data_board', board);
+      log.debug('Board synced', { boardId: body.boardId, connectionId: event.requestContext.connectionId, elapsedMs: (performance.now() - start).toFixed(3) });
+      return { statusCode: 200 };
+    }
+
     let board;
     switch (body.comand) {
       case 'add_card_board':
@@ -60,7 +70,7 @@ const onCommand = async (event) => {
         log.debug('Board combine card', { boardId: body.boardId, source: body.source, combine: body.combine });
         board = await processCombine(body.boardId, body.source, body.combine); break;
       case 'delete_column':              board = await deleteColumn(body.boardId, body.index); break;
-      case 'add_collumn':               board = await addColumn(body.boardId, body.newCollumn); break;
+      case 'add_column':                board = await addColumn(body.boardId, body.newColumn); break;
       case 'update_title_column':       board = await updateTitleColumn(body.boardId, body.content, body.index); break;
       case 'update_color_cards':        board = await updatecolorCards(body.boardId, body.colorCards, body.index); break;
       case 'update_like':               board = await updateLike(body.boardId, body.isIncrement, body.indexCard, body.indexColumn); break;

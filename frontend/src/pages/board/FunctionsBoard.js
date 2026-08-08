@@ -189,8 +189,8 @@ export const addCard = (boardData, newCard, indexColumn) => {
   return updatedBoardData;
 }
 
-export const addCollumn = (boardData, newCollumn) => {
+export const addColumn = (boardData, newColumn) => {
   const updatedBoardData = { ...boardData };
-  updatedBoardData.columns.push(newCollumn);
+  updatedBoardData.columns.push(newColumn);
   return updatedBoardData;
 }

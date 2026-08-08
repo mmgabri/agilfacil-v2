@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from 'react-router-dom'
 import { fetchAuthSession } from '@aws-amplify/auth';
-import 'bootstrap/dist/css/bootstrap.min.css';
+import styled from 'styled-components';
 import { useSocket } from "../../customHooks/useSocket";
-import "../../styles/Room.css"
 import Header from '../components/Header';
+import Sidebar from '../components/Sidebar';
 import StatusSection from '../poker/components/StatusSection';
 import Users from '../poker/components/Users';
 import VotingCards from '../poker/components/VotingCards';
@@ -72,13 +72,11 @@ export const RoomPage = ({ }) => {
 
 
   return (
+    <PageBackground>
+      <AmbientGlow />
 
-    <div className="bg-black-custom">
       <Header
-        userName={userLogged.nickName}
-        roomName={roomData.roomName}
-        subText={'Planning Poker'}
-        showSuggestionsModal={() => setModalOpen(true)}
+        boardName={roomData.roomName}
         showInviteModal={() => setShowInvite(true)}
         handleCloseInvite={() => setShowInvite(false)}
         isUserLogged={userIsAuthenticated}
@@ -86,35 +84,61 @@ export const RoomPage = ({ }) => {
         signOut={onSignOut}
         goHome={() => navigate('/')} />
 
-      <StatusSection roomData={roomData} isRoomCreator={userLogged.isRoomCreator} handlerupdateStatusRoom={handlerUpdateStatusRoom} />
-      {showInvite && <Invite id={roomData.roomId} onClose={() => setShowInvite(false)} service={'poker'} />}
+      <Layout>
+        <Sidebar onSuggestions={() => setModalOpen(true)} />
 
-      {roomData.status == "VOTACAO_FINALIZADA"
-        ?
-        <div className="user-box">
-          <div style={{ flex: 1, minWidth: '300px' }}>
-            <Progress roomData={roomData} />
-            <Users roomData={roomData} />
-          </div>
-          <div>
-            <VotingResults roomData={roomData} cards={cards} />
-          </div>
-        </div>
-        : <>
+        <Content>
+          <StatusSection roomData={roomData} isRoomCreator={userLogged.isRoomCreator} handlerupdateStatusRoom={handlerUpdateStatusRoom} />
+
           {roomData.status == "VOTACAO_EM_ANDAMENTO" || roomData.status == "VOTACAO_FINALIZADA"
             ? <Progress roomData={roomData} />
             : <></>}
           <Users roomData={roomData} />
-        </>
-      }
 
+          {roomData.status == "VOTACAO_EM_ANDAMENTO" || roomData.status == "VOTACAO_FINALIZADA"
+            ? <VotingCards onCardClick={onCardClick} cards={cards} nota={nota} />
+            : <></>}
+        </Content>
+      </Layout>
 
-      {roomData.status == "VOTACAO_EM_ANDAMENTO" || roomData.status == "VOTACAO_FINALIZADA"
-        ? <VotingCards onCardClick={onCardClick} cards={cards} nota={nota} />
-        : <></>}
+      {roomData.status == "VOTACAO_FINALIZADA" && <VotingResults roomData={roomData} cards={cards} />}
 
+      {showInvite && <Invite id={roomData.roomId} onClose={() => setShowInvite(false)} service={'poker'} />}
       {isModalOpen && <SuggestionForm onClose={() => setModalOpen(false)} />}
-    </div>
+    </PageBackground>
   );
 }
 export default RoomPage
+
+// ─── Design tokens — "Dark Premium" ───────────────────────────────────────────
+// Mesmo sistema visual do Header / BoardPage.js / BoardListPage.js.
+
+const BG          = '#0a0a0d';
+const ACCENT_GLOW = 'rgba(139,124,246,0.18)';
+
+const PageBackground = styled.div`
+  position: relative;
+  min-height: 100vh;
+  background: ${BG};
+`;
+
+const AmbientGlow = styled.div`
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(1100px 480px at 50% -8%, ${ACCENT_GLOW}, transparent 65%);
+`;
+
+const Layout = styled.div`
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+`;
+
+const Content = styled.div`
+  flex: 1;
+  min-width: 0;
+  padding: 24px 24px 40px;
+`;

@@ -1,6 +1,6 @@
 const { saveConnection, getConnection, deleteConnection } = require('../../services/connections/connectionsService');
-const { connectClient, desconnectClient, updateStatusRoom, updateVote } = require('../../services/poker/socketPokerService');
-const { broadcastToSession } = require('../../utils/broadcast');
+const { getRoom, connectClient, desconnectClient, updateStatusRoom, updateVote } = require('../../services/poker/socketPokerService');
+const { broadcastToSession, sendToConnection } = require('../../utils/broadcast');
 const cloudWatch = require('../../services/generic/cloudWatchLoggerService');
 const log = require('../../utils/logger');
 
@@ -62,6 +62,16 @@ const onCommand = async (event) => {
 
   try {
     switch (body.comand) {
+      case 'sync_room': {
+        // Cliente recém-conectado: o broadcast do $connect exclui a própria
+        // conexão (limitação da AWS), então ele pede o estado atual aqui,
+        // já numa invocação separada onde PostToConnection para si mesmo funciona.
+        const room = await getRoom(body.roomId);
+        await sendToConnection(endpoint, event.requestContext.connectionId, 'data_room', room);
+        const elapsed = (performance.now() - start).toFixed(3);
+        log.debug('Poker room synced', { roomId: body.roomId, connectionId: event.requestContext.connectionId, elapsedMs: elapsed });
+        break;
+      }
       case 'update_status_room': {
         const room = await updateStatusRoom(body.roomId, body.status);
         await broadcastToSession(endpoint, body.roomId, 'data_room', room);

@@ -1,4 +1,4 @@
-import { React, useState } from 'react';
+import React from 'react';
 import styled from 'styled-components';
 
 const VotingCards = ({ onCardClick, nota, cards }) => {
@@ -7,115 +7,77 @@ const VotingCards = ({ onCardClick, nota, cards }) => {
         <Container>
             <CardList>
                 {cards.map((card, index) => (
-                    card === nota
-                        ? <CardSelected key={index} onClick={() => onCardClick(card)}>
-                            {card}
-                        </CardSelected>
-                        : <Card key={index} onClick={() => onCardClick(card)}>
-                            {card}
-                        </Card>
+                    <Card
+                        key={index}
+                        $selected={card === nota}
+                        onClick={() => onCardClick(card)}
+                    >
+                        {card}
+                    </Card>
                 ))}
             </CardList>
         </Container>
     );
 };
 
-
-export const CardContainer = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 1rem;
-  padding: 1rem;
-  background-color: #1C1C1C;
-`;
-
-export const Card = styled.div`
-  background-color: #C0C0C0;
-  border: 2px solid #ddd;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 80px;
-  height: 80px;
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: #333;
-  cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
-  
-  &:hover {
-    transform: scale(1.05);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
-  }
-  
-  @media (max-width: 600px) {
-    width: 80px;
-    height: 80px;
-    font-size: 1.2rem;
-  }
-`;
-
-export const CardSelected = styled.div`
-  background-color: #4caf50;
-  border: 2px solid #ddd;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 80px;
-  height: 80px;
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: #333;
-  cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
-  
-  &:hover {
-    transform: scale(1.05);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
-  }
-  
-  @media (max-width: 600px) {
-    width: 80px;
-    height: 80px;
-    font-size: 1.2rem;
-  }
-`;
-
-
-export const CardList = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 1rem;
-`;
+const TEXT         = '#f5f5f7';
+const BORDER       = 'rgba(255,255,255,0.07)';
+const ACCENT       = '#8b7cf6';
+const ACCENT_SOFT  = '#a996ff';
+const ACCENT_GLOW  = 'rgba(139,124,246,0.18)';
+const ACCENT_GRAD  = 'linear-gradient(135deg, #9a8bfb 0%, #7c6cf0 100%)';
 
 export const Container = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 2rem;
-  background-color: #1C1C1C;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  max-width: 90vw;
-  margin: 1rem auto;
+  padding: 24px 16px;
+  margin-top: 8px;
+`;
+
+export const CardList = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px;
+`;
+
+export const Card = styled.div`
+  background: ${({ $selected }) => ($selected ? ACCENT_GRAD : 'rgba(255,255,255,0.03)')};
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid ${({ $selected }) => ($selected ? 'transparent' : BORDER)};
+  border-radius: 12px;
+  box-shadow: ${({ $selected }) => ($selected ? `0 8px 28px ${ACCENT_GLOW}` : '0 4px 16px rgba(0,0,0,0.3)')};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 68px;
+  height: 92px;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: ${({ $selected }) => ($selected ? '#0a0a0d' : TEXT)};
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+
+  &:hover {
+    transform: translateY(-6px);
+    border-color: ${({ $selected }) => ($selected ? 'transparent' : `${ACCENT}70`)};
+    box-shadow: ${({ $selected }) => ($selected ? `0 10px 32px ${ACCENT_GLOW}` : `0 8px 24px rgba(0,0,0,0.4), 0 0 0 1px ${ACCENT_GLOW}`)};
+  }
 
   @media (max-width: 600px) {
-    max-width: 95vw;
-    padding: 1rem;
+    width: 56px;
+    height: 78px;
+    font-size: 1.15rem;
   }
 `;
 
-
 export const Title = styled.h2`
-  margin-bottom: 1.5rem;
-  font-size: 1.2rem;
-  color: #C0C0C0;
+  margin-bottom: 1.2rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: ${ACCENT_SOFT};
   text-align: center;
 `;
 

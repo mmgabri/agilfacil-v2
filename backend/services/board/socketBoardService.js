@@ -2,6 +2,10 @@ const config = require('../../config');
 const { putTable, getBoardDb } = require('../database/dynamoService');
 
 
+const getBoard = async (boardId) => {
+  return getBoardDb(config.TABLE_BOARD, boardId);
+};
+
 const connectClientBoard = async (boardId, userId) => {
 
   const boardData = await getBoardDb(config.TABLE_BOARD, boardId);
@@ -235,7 +239,7 @@ const deleteColumn = async (boardId, index) => {
 };
 
 
-const addColumn = async (boardId, newCollumn) => {
+const addColumn = async (boardId, newColumn) => {
 
   const boardData = await getBoardDb(config.TABLE_BOARD, boardId);
 
@@ -245,7 +249,7 @@ const addColumn = async (boardId, newCollumn) => {
 
   // Adiciona a coluna pelo índice
   const updatedBoardData = { ...boardData };
-  updatedBoardData.columns.push(newCollumn);
+  updatedBoardData.columns.push(newColumn);
 
 
   await putTable(config.TABLE_BOARD, updatedBoardData);
@@ -432,4 +436,4 @@ const saveCard = async (boardId, content, indexCard, indexColumn) => {
   return updatedBoardData;
 };
 
-module.exports = { connectClientBoard, addCardBoard, reorderBoard, processCombine, deleteColumn, addColumn, updateTitleColumn, updateLike, deleteCard, deleteAllCard, saveCard, updatecolorCards, setIsObfuscatedBoardLevel, setIsObfuscatedColumnLevel, disconnectClientBoard };
+module.exports = { getBoard, connectClientBoard, addCardBoard, reorderBoard, processCombine, deleteColumn, addColumn, updateTitleColumn, updateLike, deleteCard, deleteAllCard, saveCard, updatecolorCards, setIsObfuscatedBoardLevel, setIsObfuscatedColumnLevel, disconnectClientBoard };

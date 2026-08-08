@@ -1,33 +1,28 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
-import { v4 as uuidv4 } from 'uuid';
+import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from 'react-router-dom'
-import { emitMessage, onSignOut, onGetToken } from '../../services/utils'
+import styled from 'styled-components';
+import { emitMessage, onSignOut } from '../../services/utils'
 import { fetchAuthSession, getCurrentUser, fetchUserAttributes } from '@aws-amplify/auth';
 import { useAppUser } from '../../context/UserContext';
 import 'react-toastify/dist/ReactToastify.css';
-import { SERVER_BASE_URL } from "../../constants/apiConstants";
 import Header from '../components/Header';
 import SuggestionForm from '../components/SuggestionForm'
-import { FormContainer, Title, FormGroup, CheckboxLabel, CheckboxWrapper, StyledForm, SubmitButton, RemoveIcon, AddColumnIcon } from '../../styles/FormStyle'
+import { CreateBoardForm } from './CreateBoardModal';
 import logger from '../../services/logger';
 
 const CTX = 'CreateBoardPage';
+
+const BG          = '#0a0a0d';
+const TEXT        = '#f5f5f7';
+const BORDER_STRONG = 'rgba(255,255,255,0.14)';
+const ACCENT_GLOW = 'rgba(139,124,246,0.18)';
 
 export const CreateBoardPage = ({ }) => {
   let navigate = useNavigate();
   const location = useLocation();
   const { userId: contextUserId, userName: contextUserName } = useAppUser();
 
-  const [board, setBoard] = useState(null);
   const [userIsAuthenticated, setUserIsAuthenticated] = useState(false);
-
-  const [formData, setFormData] = useState({
-    boardName: "",
-    areaName: "",
-    squadName: "",
-    columns: [{ id: uuidv4(), title: "", colorCards: "#F0E68C", isObfuscated: false, cards: [] }]
-  });
   const [isModalOpen, setModalOpen] = useState(false);
   const [userAuthenticated, setUserAuthenticated] = useState({});
 
@@ -37,11 +32,7 @@ export const CreateBoardPage = ({ }) => {
     const checkAuth = async () => {
       try {
         const session = await fetchAuthSession();
-        if (session.tokens == undefined) {
-          setUserIsAuthenticated(false)
-        } else {
-          setUserIsAuthenticated(true)
-        }
+        setUserIsAuthenticated(session.tokens !== undefined);
       } catch (error) {
         setUserIsAuthenticated(false)
       }
@@ -53,8 +44,7 @@ export const CreateBoardPage = ({ }) => {
         const attributes = await fetchUserAttributes(user);
         const effectiveUserId = contextUserId || attributes.sub;
         const effectiveName   = contextUserName || attributes.name;
-        const userData = { userId: effectiveUserId, userName: effectiveName, isVerified: true };
-        setUserAuthenticated(userData)
+        setUserAuthenticated({ userId: effectiveUserId, userName: effectiveName, isVerified: true })
       } catch (error) {
         logger.error(CTX, 'Erro ao obter usuário', { message: error.message });
         emitMessage('error', 999)
@@ -67,106 +57,18 @@ export const CreateBoardPage = ({ }) => {
       buildUserAuthenticated()
     }
 
-    if (location.state?.board) {
-      setBoard(location.state.board);
-      setFormData({
-        boardName: location.state.board.boardName,
-        areaName: location.state.board.areaName,
-        squadName: location.state.board.squadName,
-        columns: location.state.board.columns.map(column => ({
-          ...column,
-          cards: []
-        })),
-      });
-    }
-
     checkAuth();
+  }, [location.state?.userAuthenticated]);
 
-  }, [location.state?.board, location.state?.userAuthenticated]);
-
-  const handleFieldChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: value
-    }));
+  const handleCreated = (boardData) => {
+    const userData = { ...userAuthenticated, isBoardCreator: true };
+    navigate('/board', { state: { boardData, userAuthenticated: userData } });
   };
-
-  const handleColumnChange = (e, columnId) => {
-    const { value } = e.target;
-    setFormData((prevData) => ({
-      ...prevData,
-      columns: prevData.columns.map((column) =>
-        column.id === columnId ? { ...column, title: value } : column
-      )
-    }));
-  };
-
-  const handleAddColumn = () => {
-    const newColumn = {
-      id: uuidv4(),
-      title: "",
-      colorCards: "#F0E68C",
-      isObfuscated: false,
-      cards: []
-    };
-    setFormData((prevData) => ({
-      ...prevData,
-      columns: [...prevData.columns, newColumn]
-    }));
-  };
-
-  const handleRemoveColumn = (columnId) => {
-    setFormData((prevData) => ({
-      ...prevData,
-      columns: prevData.columns.filter((col) => col.id !== columnId)
-    }));
-  };
-
-
-  const handleSubmit = async e => {
-    e.preventDefault()
-
-    logger.info(CTX, `Criando board boardName="${formData.boardName}" colunas=${formData.columns.length}`);
-    const token = await onGetToken()
-
-    try {
-      const response = await axios.post(SERVER_BASE_URL + '/board/createBoard', { creatorId: userAuthenticated.userId, userName: userAuthenticated.userName, boardName: formData.boardName, squadName: formData.squadName, areaName: formData.areaName, columns: formData.columns }, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-      })
-      logger.info(CTX, `Board criado boardId=${response.data?.boardId ?? '?'}`);
-      const userData = { ...userAuthenticated, isBoardCreator: true };
-      navigate('/board', { state: { boardData: response.data, userAuthenticated: userData } });
-    } catch (error) {
-      logger.error(CTX, 'Erro ao criar Board', { message: error.message, status: error.response?.status });
-      emitMessage('error', 906, 3000)
-    }
-  }
-
-  const handleKeepCardsChange = (columnId, isChecked) => {
-
-    setFormData((prevFormData) => ({
-      ...prevFormData,
-      columns: prevFormData.columns.map((column) => {
-        if (column.id === columnId) {
-          return {
-            ...column,
-            cards: isChecked
-              ? board.columns.find(c => c.id === columnId)?.cards || []
-              : []
-          };
-        }
-        return column;
-      })
-    }));
-  };
-
 
   return (
-    <div className="bg-black-custom">
+    <PageBackground>
+      <AmbientGlow />
+
       <Header
         subText={'Board Interativo'}
         showSuggestionsModal={() => setModalOpen(true)}
@@ -175,78 +77,61 @@ export const CreateBoardPage = ({ }) => {
         signOut={onSignOut}
         goHome={() => navigate('/')} />
 
-      <FormContainer>
-        <Title>Preencha os campos abaixo para criar o Board interativo</Title>
-        <StyledForm onSubmit={handleSubmit}>
-          <FormGroup>
-            <label htmlFor="boardName">Nome do Board*</label>
-            <input
-              type="text"
-              id="boardName"
-              name="boardName"
-              value={formData.boardName}
-              onChange={handleFieldChange}
-              placeholder="Digite o nome do board"
-              required
-              maxLength={55}
-            />
-          </FormGroup>
-          <FormGroup>
-            <label htmlFor="squadName">Squad</label>
-            <input
-              type="text"
-              id="squadName"
-              name="squadName"
-              value={formData.squadName}
-              onChange={handleFieldChange}
-              placeholder="Digite o nome da squad"
-              maxLength={30}
-            />
-          </FormGroup>
-          <FormGroup>
-            <label htmlFor="areaName">Área</label>
-            <input
-              type="text"
-              id="areaName"
-              name="areaName"
-              value={formData.areaName}
-              onChange={handleFieldChange}
-              placeholder="Digite o nome da área (comunidade, gerência, etc)"
-              maxLength={30}
-            />
-          </FormGroup>
-          <FormGroup>
-            <label>Colunas do board *</label>
-            {formData.columns.map((column, index) => (
-              <div key={column.id} style={{ display: "flex", alignItems: "center", marginBottom: 8 }}>
-                <input
-                  type="text"
-                  placeholder={`Título da Coluna ${index + 1}`}
-                  value={column.title}
-                  onChange={(e) => handleColumnChange(e, column.id)}
-                  required
-                  style={{ marginRight: 8 }}
-                />
-                <RemoveIcon onClick={() => handleRemoveColumn(column.id)} />
-                {board && (
-                  <CheckboxWrapper>
-                    <input
-                      type="checkbox"
-                      onChange={(e) => handleKeepCardsChange(column.id, e.target.checked)}
-                    />
-                    <CheckboxLabel>Manter cards</CheckboxLabel>
-                  </CheckboxWrapper>
-                )}
-              </div>
-            ))}
-            <AddColumnIcon onClick={handleAddColumn} />
-          </FormGroup>
-          <SubmitButton type="submit">Criar Board</SubmitButton>
-        </StyledForm>
-      </FormContainer>
-      {isModalOpen && <SuggestionForm onClose={() => setModalOpen(false)} />}
-    </div>
+      <Centered>
+        <Panel>
+          <PanelTitle>{location.state?.board ? 'Clonar board' : 'Criar novo board'}</PanelTitle>
+          <CreateBoardForm
+            initialBoard={location.state?.board}
+            userAuthenticated={userAuthenticated}
+            onCreated={handleCreated}
+          />
+        </Panel>
+      </Centered>
 
+      {isModalOpen && <SuggestionForm onClose={() => setModalOpen(false)} />}
+    </PageBackground>
   );
 };
-export default CreateBoardPage 
+
+const PageBackground = styled.div`
+  position: relative;
+  min-height: 100vh;
+  background: ${BG};
+`;
+
+const AmbientGlow = styled.div`
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(1100px 480px at 50% -8%, ${ACCENT_GLOW}, transparent 65%);
+`;
+
+const Centered = styled.div`
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+  padding: 48px 20px;
+`;
+
+const Panel = styled.div`
+  width: 100%;
+  max-width: 480px;
+  background: rgba(255, 255, 255, 0.028);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  border: 1px solid ${BORDER_STRONG};
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 4px 32px rgba(0, 0, 0, 0.35);
+`;
+
+const PanelTitle = styled.h1`
+  margin: 0 0 18px;
+  font-size: 16px;
+  font-weight: 700;
+  color: ${TEXT};
+`;
+
+export default CreateBoardPage

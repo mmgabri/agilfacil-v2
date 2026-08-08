@@ -35,4 +35,23 @@ const broadcastToSession = async (endpoint, idSession, type, data, excludeConnec
   );
 };
 
-module.exports = { broadcastToSession };
+// Envia { type, data } para uma única conexão específica.
+// Usado quando um cliente recém-conectado precisa do estado atual, já que
+// broadcastToSession exclui a própria conexão durante o $connect (ver acima).
+const sendToConnection = async (endpoint, connectionId, type, data) => {
+  const client = new ApiGatewayManagementApiClient({ endpoint });
+  const message = Buffer.from(JSON.stringify({ type, data }));
+
+  try {
+    await client.send(new PostToConnectionCommand({ ConnectionId: connectionId, Data: message }));
+  } catch (err) {
+    if (err.$metadata?.httpStatusCode === 410) {
+      log.debug('Removendo conexão stale', { connectionId });
+      await deleteConnection(connectionId);
+    } else {
+      log.error('Erro ao enviar para connectionId', { connectionId, error: err.message });
+    }
+  }
+};
+
+module.exports = { broadcastToSession, sendToConnection };

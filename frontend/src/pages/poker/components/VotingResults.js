@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import Draggable from 'react-draggable';
 import styled from 'styled-components';
 import { FaUsers } from 'react-icons/fa';
 import { TbCards } from "react-icons/tb";
 import { FaChartLine } from "react-icons/fa6";
+import { MdDragIndicator } from "react-icons/md";
 
 const VotingResults = ({ roomData, cards }) => {
+  const nodeRef = useRef(null);
 
   const groupedByVote = roomData.users.reduce((acc, user) => {
     if (!acc[user.vote]) {
@@ -65,177 +67,159 @@ const VotingResults = ({ roomData, cards }) => {
   }
 
   return (
-    <Draggable>
-      <ModalContainer>
-        <ModalContent>
-          <ResultsContainer>
-            <DetailsHeader>Média dos votos:</DetailsHeader>
-            <ResultValueAverage>
-              <FaChartLine size={17} />
-              {averageVotes()}
-            </ResultValueAverage>
+    <Draggable nodeRef={nodeRef} handle=".drag-handle" bounds="body" defaultPosition={{ x: 0, y: 0 }}>
+      <FloatingPanel ref={nodeRef}>
+        <DragHandle className="drag-handle">
+          <MdDragIndicator size={18} />
+          <span>Média dos votos</span>
+          <MdDragIndicator size={18} />
+        </DragHandle>
 
-            <DetailsHeader>Nota x Votação:</DetailsHeader>
+        <PanelBody>
+          <ResultValueAverage>
+            <FaChartLine size={15} />
+            {averageVotes() || '—'}
+          </ResultValueAverage>
+
+          <DetailsHeader>Nota × Votação</DetailsHeader>
+          <ResultList>
             {results.map((result) => (
               <ResultItem key={result.label}>
                 <ResultLabel>
-                  <TbCards size={20} />
+                  <TbCards size={16} />
                   {result.label}
                 </ResultLabel>
                 <ResultValue>
-                  <FaUsers size={18} />
+                  <FaUsers size={13} />
                   {result.value}
                 </ResultValue>
               </ResultItem>
             ))}
-          </ResultsContainer>
-        </ModalContent>
-      </ModalContainer>
+          </ResultList>
+        </PanelBody>
+      </FloatingPanel>
     </Draggable>
   );
 };
 
+const TEXT          = '#f5f5f7';
+const MUTED2        = 'rgba(245,245,247,0.62)';
+const BORDER        = 'rgba(255,255,255,0.07)';
+const BORDER_STRONG = 'rgba(255,255,255,0.14)';
+const ACCENT_SOFT   = '#a996ff';
+const ACCENT_GLOW   = 'rgba(139,124,246,0.18)';
+const ACCENT_GRAD   = 'linear-gradient(135deg, #9a8bfb 0%, #7c6cf0 100%)';
 
-const ResultsContainer = styled.div`
+const FloatingPanel = styled.div`
+  position: fixed;
+  top: 88px;
+  right: 24px;
+  z-index: 500;
+  width: 260px;
+  background: #141418;
+  border: 1px solid ${BORDER_STRONG};
+  border-radius: 16px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+`;
+
+const DragHandle = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 10px 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid ${BORDER};
+  color: ${MUTED2};
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  cursor: grab;
+  user-select: none;
+  transition: background 0.15s ease, color 0.15s ease;
+
+  svg {
+    color: ${MUTED2};
+    flex-shrink: 0;
+  }
+
+  &:hover {
+    background: ${ACCENT_GLOW};
+    color: ${ACCENT_SOFT};
+    svg { color: ${ACCENT_SOFT}; }
+  }
+
+  &:active {
+    cursor: grabbing;
+  }
+`;
+
+const PanelBody = styled.div`
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: 0.5rem 0.3rem;
-  background: #1E3A5F;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  margin: 0.5rem;
-  border: 1px solid #ddd;
-  max-width: 90%;
-  box-sizing: border-box;
-  flex: 1;
-  margin-right: -15px;
+  align-items: stretch;
+  padding: 16px 18px 18px;
 `;
 
 const DetailsHeader = styled.h2`
-  margin-bottom: 0.rem;
-  font-size: 1.0rem;
-  color: #FFFFFF;
+  font-size: 12px;
+  color: ${MUTED2};
   text-align: center;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  margin: 14px 0 10px;
 `;
 
+const ResultList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
 
 const ResultItem = styled.div`
-  background-color: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  padding: 0.4rem 0.4rem;
-  margin: 0.25rem 0;
-  justify-items: center; // Centraliza os itens horizontalmente no grid
-  width: 80%;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.4rem;
-  align-items: center;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.04);
-  transition: background-color 0.3s, transform 0.2s;
-
-`;
-
-const ResultLabel2 = styled.span`
-  font-size: 0.8rem;
-  color: #1a56db; // Azul mais escuro
-  background-color: #e0e7ff;
-  border: 2px solid #1a56db;
-  padding: 0.5rem 1.1rem; 
-  border-radius: 8px;
-  font-weight: bold;
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 0.7rem;
-  box-shadow: 0 2px 4px rgba(37, 99, 235, 0.1);
-  transition: all 0.2s ease;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid ${BORDER};
+  border-radius: 10px;
 `;
 
 const ResultLabel = styled.span`
-  font-size: 0.8rem;
-  color: #1a56db; // Azul mais escuro
-  background-color: #e0e7ff;
-  border: 2px solid #1a56db;
-  padding: 0.5rem 1.1rem; 
-  border-radius: 8px;
-  font-weight: bold;
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 0.5rem; // Reduzido o gap entre os elementos
-  box-shadow: 0 2px 4px rgba(5, 150, 105, 0.1);
-  transition: all 0.2s ease;
-  min-width: 45px; // Reduzido o min-width
-  width: fit-content;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: ${TEXT};
 `;
 
 const ResultValue = styled.span`
-  font-size: 0.8rem;
-  color: #1a56db; // Azul mais escuro
-  background-color: #e0e7ff;
-  border: 2px solid #1a56db;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: ${ACCENT_SOFT};
+`;
 
-  padding: 0.5rem 1.1rem; 
-  border-radius: 8px;
-  font-weight: bold;
+const ResultValueAverage = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem; // Reduzido o gap entre os elementos
-  box-shadow: 0 2px 4px rgba(5, 150, 105, 0.1);
-  transition: all 0.2s ease;
-  min-width: 45px; // Reduzido o min-width
-  width: fit-content;
-`;
-
-const ResultValueAverage = styled.span`
-  font-size: 0.9rem;
-  color: #047857; 
-  background-color: #d1fae5;
-  border: 2px solid #047857;
-  padding-right: 1rem;
-  padding-left: 1rem;
-  padding-top: 0.5rem;
-  padding-bottom: 0.5rem;
-  margin-bottom: 1rem;
-  border-radius: 8px;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.7rem;
-  box-shadow: 0 2px 4px rgba(5, 150, 105, 0.1);
-  transition: all 0.2s ease;
-`;
-
-const ModalContainer = styled.div`
-    position: fixed;
-    right: 0;
-    top: 35px;
-    width: 300px;
-    height: 500vh;
-    background: transparent;
-    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.2);
-    padding: 20px;
-    z-index: 1000;
-    overflow-y: auto;
-    align-items: right;
-    cursor: move;
-`;
-
-const ModalContent = styled.div`
-    display: flex;
-    flex-direction: column;
-    align-items: right;
-    background: transparent;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: ${ACCENT_GRAD};
+  color: #0a0a0d;
+  font-size: 15px;
+  font-weight: 700;
+  box-shadow: 0 4px 18px ${ACCENT_GLOW};
 `;
 
 export default VotingResults;

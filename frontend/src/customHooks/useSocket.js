@@ -55,8 +55,8 @@ export const useSocket = (userName, userId, idSession, service) => {
     send({ action: 'comand_socket_board', comand: 'set_is_obfuscated_column_level', boardId: idSession, isObfuscated: payload.isObfuscated, index: payload.index });
   }, [send, idSession]);
 
-  const addCollumnSocket = useCallback((payload) => {
-    send({ action: 'comand_socket_board', comand: 'add_collumn', boardId: idSession, newCollumn: payload.newCollumn });
+  const addColumnSocket = useCallback((payload) => {
+    send({ action: 'comand_socket_board', comand: 'add_column', boardId: idSession, newColumn: payload.newColumn });
   }, [send, idSession]);
 
   const updateTitleColumnSocket = useCallback((payload) => {
@@ -104,6 +104,14 @@ export const useSocket = (userName, userId, idSession, service) => {
     ws.onopen = () => {
       logger.info(CTX, `WebSocket conectado service=${service} idSession=${idSession}`);
       setConnected(true);
+      // O broadcast do $connect no backend exclui a própria conexão (limitação
+      // da AWS: PostToConnection não funciona para a conexão ainda em $connect),
+      // então o cliente recém-conectado pede o estado atual explicitamente aqui.
+      const syncPayload = service === 'poker'
+        ? { action: 'comand_socket_poker', comand: 'sync_room', roomId: idSession }
+        : { action: 'comand_socket_board', comand: 'sync_board', boardId: idSession };
+      logger.debug(CTX, `→ send action=${syncPayload.action} comand=${syncPayload.comand}`, syncPayload);
+      ws.send(JSON.stringify(syncPayload));
     };
     ws.onclose = (ev) => {
       logger.info(CTX, `WebSocket desconectado service=${service} code=${ev.code} reason=${ev.reason || '—'}`);
@@ -141,7 +149,7 @@ export const useSocket = (userName, userId, idSession, service) => {
     updateTitleColumnSocket,
     updateLikeSocket,
     deleteCardSocket,
-    addCollumnSocket,
+    addColumnSocket,
     saveCardSocket,
     updatecolorCardsSocket,
     deleteAllCardSocket,

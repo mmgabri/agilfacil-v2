@@ -44,18 +44,22 @@ const Invite = ({ id, onClose, service }) => {
 };
 
 const CopyButtonStyled = styled.button`
-  background-color: #1E3A5F; 
-  margin-bottom:15px;
-  margin-top:8px;
-  color: white; 
+  background: linear-gradient(135deg, #9a8bfb 0%, #7c6cf0 100%);
+  margin-bottom: 4px;
+  margin-top: 4px;
+  color: #0a0a0d;
   border: none;
   padding: 10px 20px;
+  font-weight: 700;
   cursor: pointer;
-  font-size: 14px;
-  border-radius: 5px;
-  
+  font-size: 13px;
+  border-radius: 10px;
+  box-shadow: 0 4px 18px rgba(139, 124, 246, 0.18);
+  transition: filter 0.15s ease, transform 0.1s ease;
+
   &:hover {
-    transform: scale(1.1); 
+    filter: brightness(1.08);
+    transform: translateY(-1px);
   }
 `;
 
