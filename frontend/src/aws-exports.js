@@ -3,6 +3,8 @@
 //      terraform output cognito_user_pool_id
 //      terraform output cognito_user_pool_client_id
 
+import { FRONT_BASE_URL } from './constants/apiConstants';
+
 const awsmobile = {
     "aws_project_region": "sa-east-1",
     "aws_cognito_region": "sa-east-1",
@@ -16,8 +18,8 @@ const awsmobile = {
             "profile",
             "aws.cognito.signin.user.admin"
         ],
-        "redirectSignIn": "http://localhost:3000/boards",   // 👈 prod: "https://agilfacil.com.br/boards"
-        "redirectSignOut": "http://localhost:3000/",         // 👈 prod: "https://agilfacil.com.br/"
+        "redirectSignIn": `${FRONT_BASE_URL}/boards`,
+        "redirectSignOut": `${FRONT_BASE_URL}/`,
         "responseType": "code",
         "options": {
             "prompt": "select_account"
