@@ -1,6 +1,6 @@
 const { saveConnection, getConnection, deleteConnection } = require('../../services/connections/connectionsService');
-const { connectClientBoard, disconnectClientBoard, addCardBoard, reorderBoard, processCombine, deleteColumn, addColumn, updateTitleColumn, updateLike, deleteCard, deleteAllCard, saveCard, updatecolorCards, setIsObfuscatedBoardLevel, setIsObfuscatedColumnLevel } = require('../../services/board/socketBoardService');
-const { broadcastToSession } = require('../../utils/broadcast');
+const { getBoard, connectClientBoard, disconnectClientBoard, addCardBoard, reorderBoard, processCombine, deleteColumn, addColumn, updateTitleColumn, updateLike, deleteCard, deleteAllCard, saveCard, updatecolorCards, setIsObfuscatedBoardLevel, setIsObfuscatedColumnLevel } = require('../../services/board/socketBoardService');
+const { broadcastToSession, sendToConnection } = require('../../utils/broadcast');
 const log = require('../../utils/logger');
 
 const onConnect = async (event) => {
@@ -48,6 +48,16 @@ const onCommand = async (event) => {
   log.info('Board command received', { command: body.comand, boardId: body.boardId });
 
   try {
+    if (body.comand === 'sync_board') {
+      // Cliente recém-conectado: o broadcast do $connect exclui a própria
+      // conexão (limitação da AWS), então ele pede o estado atual aqui,
+      // já numa invocação separada onde PostToConnection para si mesmo funciona.
+      const board = await getBoard(body.boardId);
+      await sendToConnection(endpoint, event.requestContext.connectionId, 'data_board', board);
+      log.debug('Board synced', { boardId: body.boardId, connectionId: event.requestContext.connectionId, elapsedMs: (performance.now() - start).toFixed(3) });
+      return { statusCode: 200 };
+    }
+
     let board;
     switch (body.comand) {
       case 'add_card_board':

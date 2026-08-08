@@ -37,7 +37,10 @@ import {
   Dim,
   Sep,
   PulseDot,
+  CenterCluster,
   TimerBox,
+  TimerIconWrapper,
+  TimerLiveDot,
   TimerInputStyled,
   TimerBtn,
   BoardActionButton,
@@ -151,23 +154,28 @@ const Header = ({
       </LeftCluster>
 
       {boardControls && (
-        <TimerBox>
-          <FaClock size={12} style={{ color: 'rgba(245,245,247,0.42)', flexShrink: 0 }} />
-          <TimerInputStyled
-            mask="99:99"
-            maskChar="_"
-            value={boardControls.timeInput}
-            onChange={boardControls.handleInputTimerChange}
-            disabled={boardControls.isRunningTimer}
-            placeholder="MM:SS"
-            $isInvalid={boardControls.isInvalidFormat}
-          />
-          {!boardControls.isRunningTimer ? (
-            <TimerBtn onClick={boardControls.handleStartTimer}><FaPlay size={9} /></TimerBtn>
-          ) : (
-            <TimerBtn $running onClick={boardControls.handlePauseTimer}><FaStop size={9} /></TimerBtn>
-          )}
-        </TimerBox>
+        <CenterCluster>
+          <TimerBox $running={boardControls.isRunningTimer} $alarm={boardControls.hasTimeEnded}>
+            <TimerIconWrapper>
+              <FaClock size={13} style={{ color: boardControls.isRunningTimer ? '#a996ff' : 'rgba(245,245,247,0.42)' }} />
+              {boardControls.isRunningTimer && <TimerLiveDot />}
+            </TimerIconWrapper>
+            <TimerInputStyled
+              mask="99:99"
+              maskChar="_"
+              value={boardControls.timeInput}
+              onChange={boardControls.handleInputTimerChange}
+              disabled={boardControls.isRunningTimer}
+              placeholder="MM:SS"
+              $isInvalid={boardControls.isInvalidFormat}
+            />
+            {!boardControls.isRunningTimer ? (
+              <TimerBtn onClick={boardControls.handleStartTimer}><FaPlay size={10} /></TimerBtn>
+            ) : (
+              <TimerBtn $running onClick={boardControls.handlePauseTimer}><FaStop size={10} /></TimerBtn>
+            )}
+          </TimerBox>
+        </CenterCluster>
       )}
 
       <NavGroup>
@@ -233,7 +241,7 @@ const Header = ({
         )}
         {showInviteModal && (
           <InviteButton onClick={showInviteModal}>
-            <MdPersonAdd size={13} />
+            <MdPersonAdd size={15} />
             Convidar
           </InviteButton>
         )}

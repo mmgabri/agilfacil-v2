@@ -34,7 +34,7 @@ export const BoardPage = () => {
   );
   const { socketResponse, reorderBoardSocket, combineCardSocket, timerControlSocket } = socket;
 
-  const { timeInput, timer, isRunningTimer, isInvalidFormat, handleInputTimerChange, handleStartTimer, handlePauseTimer, syncFromSocket } =
+  const { timeInput, timer, isRunningTimer, isInvalidFormat, hasTimeEnded, handleInputTimerChange, handleStartTimer, handlePauseTimer, syncFromSocket } =
     useTimer({ timerControlSocket, userId: userLoggedData.userId });
 
   const actions = useBoardActions({ boardData, setBoardData, socket });
@@ -99,6 +99,7 @@ export const BoardPage = () => {
           timeInput,
           isRunningTimer,
           isInvalidFormat,
+          hasTimeEnded,
           handleInputTimerChange,
           handleStartTimer,
           handlePauseTimer,

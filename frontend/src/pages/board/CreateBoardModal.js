@@ -1,11 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import styled from 'styled-components';
-import { MdClose, MdOutlineRemoveCircleOutline } from 'react-icons/md';
+import { MdClose, MdOutlineRemoveCircleOutline, MdKeyboardArrowDown } from 'react-icons/md';
 import { IoIosAddCircleOutline } from 'react-icons/io';
 import { emitMessage, onGetToken } from '../../services/utils';
 import { createBoard } from '../../services/boardService';
 import logger from '../../services/logger';
+import { COLUMN_COLOR_PALETTE } from './columnColorPalette';
 
 const CTX = 'CreateBoardModal';
 
@@ -23,13 +24,58 @@ const ACCENT_GLOW   = 'rgba(139,124,246,0.18)';
 const ACCENT_GRAD   = 'linear-gradient(135deg, #9a8bfb 0%, #7c6cf0 100%)';
 const RED           = '#fb7185';
 
-const emptyColumn = () => ({ id: uuidv4(), title: '', colorCards: '#F0E68C', isObfuscated: false, cards: [] });
+const emptyColumn = () => ({ id: uuidv4(), title: '', colorCards: '#F0E68C', columnType: 'auto', isObfuscated: false, cards: [] });
 
+// ─── Cor automática por título da coluna ──────────────────────────────────────
+// Heurística por palavra-chave (sem IA): cobre os templates de retro mais comuns
+// (Start/Stop/Continue, Mad/Sad/Glad, 4Ls, PDCA). Enquanto a coluna estiver no
+// modo "auto" (padrão), a cor é recalculada a cada letra digitada no título.
+// O usuário pode escolher uma cor manualmente no menu de cores — a partir daí
+// ela fica travada, mesmo que o título mude.
+
+const normalize = (s) => (s || '')
+  .normalize('NFD').replace(/[̀-ͯ]/g, '')
+  .toLowerCase();
+
+const TITLE_COLOR_RULES = [
+  {
+    color: '#3B82F6', // azul-royal — elogios, aprendizados
+    keywords: ['elogio', 'aprendizado', 'licao aprendida', 'licoes aprendidas', 'reconhecimento', 'agradecimento', 'parabens', 'gostaria de elogiar'],
+  },
+  {
+    color: '#38BDF8', // céu — o que foi bem
+    keywords: ['o que foi bom', 'o que foi bem', 'pontos positivos', 'positivo', 'funcionou bem', 'glad', 'continuar fazendo', 'manter', 'keep'],
+  },
+  {
+    color: '#F3E5AB', // vanila — o que não foi bem
+    keywords: ['o que nao foi bom', 'o que nao foi bem', 'o que pode melhorar', 'pontos negativos', 'negativo', 'nao funcionou', 'sad', 'mad', 'parar de fazer', 'dificuldades', 'problemas', 'stop'],
+  },
+  {
+    color: '#8B7CF6', // roxo — plano de ação / PDCA / melhoria contínua
+    keywords: ['plano de acao', 'pdca', 'melhoria continua', 'acao', 'proximos passos', 'action items', 'tarefas', 'to-do', 'todo'],
+  },
+];
+
+const inferColumnColor = (title) => {
+  const norm = normalize(title);
+  if (!norm.trim()) return null;
+  const rule = TITLE_COLOR_RULES.find(r => r.keywords.some(kw => norm.includes(kw)));
+  return rule?.color || null;
+};
+
+// Ao clonar um board existente, tenta re-inferir a cor de cada coluna a partir
+// do título — só sobrescreve se o título bater com alguma palavra-chave;
+// caso contrário mantém a cor original do board clonado, em modo automático.
 const buildInitialFormData = (initialBoard) => initialBoard ? ({
   boardName: initialBoard.boardName,
   areaName: initialBoard.areaName,
   squadName: initialBoard.squadName,
-  columns: initialBoard.columns.map(column => ({ ...column, cards: [] })),
+  columns: initialBoard.columns.map(column => ({
+    ...column,
+    cards: [],
+    columnType: 'auto',
+    colorCards: inferColumnColor(column.title) || column.colorCards,
+  })),
 }) : ({
   boardName: '',
   areaName: '',
@@ -38,6 +84,52 @@ const buildInitialFormData = (initialBoard) => initialBoard ? ({
 });
 
 // ─── Formulário (reutilizável no modal e na página cheia) ─────────────────────
+
+// ─── Menu de cores da coluna (dot clicável + popover com a paleta) ────────────
+
+function ColumnColorPicker({ color, isAuto, onSelect, onAuto }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  return (
+    <ColorPickerWrapper ref={ref}>
+      <ColorPickerTrigger
+        type="button"
+        $open={open}
+        title={isAuto ? 'Cor automática — clique pra escolher manualmente' : 'Cor da coluna — clique pra trocar'}
+        onClick={() => setOpen(v => !v)}
+      >
+        <ColumnColorDot style={{ background: color }} />
+        <MdKeyboardArrowDown size={13} />
+      </ColorPickerTrigger>
+      {open && (
+        <ColorPickerPanel>
+          <ColorPickerAutoBtn $active={isAuto} onClick={() => { onAuto(); setOpen(false); }}>
+            Automático (pelo título)
+          </ColorPickerAutoBtn>
+          <ColorSwatchGrid>
+            {COLUMN_COLOR_PALETTE.map(swatch => (
+              <ColorSwatch
+                key={swatch.color}
+                type="button"
+                title={swatch.name}
+                $selected={!isAuto && swatch.color === color}
+                style={{ background: swatch.color }}
+                onClick={() => { onSelect(swatch.color); setOpen(false); }}
+              />
+            ))}
+          </ColorSwatchGrid>
+        </ColorPickerPanel>
+      )}
+    </ColorPickerWrapper>
+  );
+}
 
 export function CreateBoardForm({ initialBoard, userAuthenticated, onCreated, onCancel }) {
   const [formData, setFormData] = useState(() => buildInitialFormData(initialBoard));
@@ -56,7 +148,36 @@ export function CreateBoardForm({ initialBoard, userAuthenticated, onCreated, on
     const { value } = e.target;
     setFormData(prev => ({
       ...prev,
-      columns: prev.columns.map(column => column.id === columnId ? { ...column, title: value } : column),
+      columns: prev.columns.map(column => {
+        if (column.id !== columnId) return column;
+        // Só recalcula a cor automaticamente se a coluna ainda estiver no
+        // modo "auto" — se o usuário já escolheu uma cor manualmente, o
+        // título pode mudar à vontade sem mexer na cor.
+        if (column.columnType !== 'auto') return { ...column, title: value };
+        const inferredColor = inferColumnColor(value);
+        return { ...column, title: value, colorCards: inferredColor || column.colorCards };
+      }),
+    }));
+  };
+
+  // Escolha manual de cor no menu de cores — trava a cor até o usuário voltar
+  // pro modo "Automático".
+  const handleColumnColorSelect = (columnId, color) => {
+    setFormData(prev => ({
+      ...prev,
+      columns: prev.columns.map(column =>
+        column.id === columnId ? { ...column, columnType: 'manual', colorCards: color } : column),
+    }));
+  };
+
+  const handleColumnColorAuto = (columnId) => {
+    setFormData(prev => ({
+      ...prev,
+      columns: prev.columns.map(column => {
+        if (column.id !== columnId) return column;
+        const inferredColor = inferColumnColor(column.title);
+        return { ...column, columnType: 'auto', colorCards: inferredColor || column.colorCards };
+      }),
     }));
   };
 
@@ -89,7 +210,9 @@ export function CreateBoardForm({ initialBoard, userAuthenticated, onCreated, on
         boardName: formData.boardName,
         squadName: formData.squadName,
         areaName: formData.areaName,
-        columns: formData.columns,
+        // columnType é só um controle de UI (auto vs. tipo fixo) — não faz
+        // parte do modelo persistido do board.
+        columns: formData.columns.map(({ columnType, ...column }) => column),
       }, token);
       logger.info(CTX, `Board criado boardId=${boardData?.boardId ?? '?'}`);
       onCreated(boardData);
@@ -135,6 +258,12 @@ export function CreateBoardForm({ initialBoard, userAuthenticated, onCreated, on
         <ColumnList>
           {formData.columns.map((column, index) => (
             <ColumnRow key={column.id}>
+              <ColumnColorPicker
+                color={column.colorCards}
+                isAuto={column.columnType === 'auto'}
+                onSelect={(color) => handleColumnColorSelect(column.id, color)}
+                onAuto={() => handleColumnColorAuto(column.id)}
+              />
               <FieldInput
                 type="text"
                 placeholder={`Título da coluna ${index + 1}`}
@@ -314,6 +443,92 @@ const ColumnRow = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
+`;
+
+const ColorPickerTrigger = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
+  padding: 5px 6px;
+  border-radius: 20px;
+  cursor: pointer;
+  background: ${({ $open }) => ($open ? 'rgba(139,124,246,0.14)' : 'rgba(255,255,255,0.045)')};
+  border: 1px solid ${({ $open }) => ($open ? `${ACCENT}50` : BORDER)};
+  color: ${MUTED2};
+  transition: background 0.15s ease, border-color 0.15s ease;
+
+  &:hover {
+    background: rgba(139, 124, 246, 0.14);
+    border-color: ${ACCENT}50;
+  }
+`;
+
+const ColumnColorDot = styled.span`
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: 1.5px solid ${BORDER_STRONG};
+  transition: background 0.2s ease;
+`;
+
+const ColorPickerWrapper = styled.div`
+  position: relative;
+  flex-shrink: 0;
+`;
+
+const ColorPickerPanel = styled.div`
+  position: absolute;
+  left: 0;
+  top: 100%;
+  margin-top: 8px;
+  width: 240px;
+  padding: 8px;
+  border-radius: 12px;
+  background: #141418;
+  border: 1px solid ${BORDER_STRONG};
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.55);
+  z-index: 50;
+`;
+
+const ColorPickerAutoBtn = styled.button`
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 7px 8px;
+  margin-bottom: 6px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid ${({ $active }) => ($active ? `${ACCENT}50` : 'transparent')};
+  background: ${({ $active }) => ($active ? ACCENT_GLOW : 'rgba(255,255,255,0.05)')};
+  color: ${({ $active }) => ($active ? ACCENT_SOFT : MUTED2)};
+`;
+
+const ColorSwatchGrid = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  max-height: 160px;
+  overflow-y: auto;
+  padding: 2px;
+`;
+
+const ColorSwatch = styled.button`
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  cursor: pointer;
+  border: ${({ $selected }) => ($selected ? '2px solid #fff' : `1px solid ${BORDER_STRONG}`)};
+  box-shadow: ${({ $selected }) => ($selected ? `0 0 0 2px ${ACCENT_GLOW}` : 'none')};
+  transition: transform 0.15s ease;
+
+  &:hover {
+    transform: scale(1.15);
+  }
 `;
 
 const KeepCardsLabel = styled.label`

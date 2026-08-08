@@ -573,7 +573,7 @@ function Column({ col, onColorChange, onAddCard }) {
       <div className="px-2.5 pt-2.5 pb-1">
         <textarea
           rows={focused ? 3 : 1}
-          placeholder="Escreva algo..."
+          placeholder="Digite algo..."
           value={text}
           onChange={e => setText(e.target.value)}
           onFocus={() => setFocused(true)}

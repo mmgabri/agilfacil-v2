@@ -1,129 +1,98 @@
 import React from 'react';
 import styled from 'styled-components';
+import { FaCircle } from 'react-icons/fa';
+
+const STATUS_META = {
+    NOVA_VOTACAO:        { label: 'Aguardando liberação da votação', tone: 'idle' },
+    VOTACAO_EM_ANDAMENTO: { label: 'Votação em andamento',           tone: 'live' },
+    VOTACAO_FINALIZADA:  { label: 'Votação finalizada',              tone: 'done' },
+    VOTACAO_ENCERRADA:   { label: 'Aguardando nova votação',         tone: 'idle' },
+};
+
+const ACTION_LABEL = {
+    NOVA_VOTACAO: 'Liberar Votação',
+    VOTACAO_EM_ANDAMENTO: 'Finalizar Votação',
+    VOTACAO_FINALIZADA: 'Encerrar Votação',
+    VOTACAO_ENCERRADA: 'Nova Votação',
+};
+
+const NEXT_STATUS = {
+    NOVA_VOTACAO: 'VOTACAO_EM_ANDAMENTO',
+    VOTACAO_EM_ANDAMENTO: 'VOTACAO_FINALIZADA',
+    VOTACAO_FINALIZADA: 'VOTACAO_ENCERRADA',
+    VOTACAO_ENCERRADA: 'VOTACAO_EM_ANDAMENTO',
+};
 
 const StatusSection = ({ roomData, isRoomCreator, handlerupdateStatusRoom }) => {
-
-    const handleBuildStatus = () => {
-
-        switch (roomData.status) {
-            case "NOVA_VOTACAO":
-                return <Status>Aguardando liberação da votação</Status>
-            case "VOTACAO_EM_ANDAMENTO":
-                return <Status>Votação em andamento</Status>
-            case "VOTACAO_FINALIZADA":
-                return <Status>Votação finalizada</Status>
-            case "VOTACAO_ENCERRADA":
-                return <Status>Aguardando nova votação</Status>
-        }
-    };
-
-    const handleBuildButtonStatus = () => {
-
-        switch (roomData.status) {
-            case "NOVA_VOTACAO":
-                return <button type="button" className="btn btn-primary" onClick={() => handlerupdateStatusRoom("VOTACAO_EM_ANDAMENTO")}
-                    style={{
-                        backgroundColor: "#1E3A5F",
-                        borderColor: "#1E3A5F",
-                        transition: "transform 0.2s ease-in-out",
-                    }}
-                    onMouseEnter={(e) => (e.target.style.transform = "scale(1.1)")}
-                    onMouseLeave={(e) => (e.target.style.transform = "scale(1)")}
-                >Liberar Votação</button>
-            case "VOTACAO_EM_ANDAMENTO":
-                return <button type="button" className="btn btn-primary" onClick={() => handlerupdateStatusRoom("VOTACAO_FINALIZADA")}
-                    style={{
-                        backgroundColor: "#1E3A5F",
-                        borderColor: "#1E3A5F",
-                        transition: "transform 0.2s ease-in-out",
-                    }}
-                    onMouseEnter={(e) => (e.target.style.transform = "scale(1.1)")}
-                    onMouseLeave={(e) => (e.target.style.transform = "scale(1)")}
-                >Finalizar Votação</button>
-            case "VOTACAO_FINALIZADA":
-                return <button type="button" className="btn btn-primary" onClick={() => handlerupdateStatusRoom("VOTACAO_ENCERRADA")}
-                    style={{
-                        backgroundColor: "#1E3A5F",
-                        borderColor: "#1E3A5F",
-                        transition: "transform 0.2s ease-in-out",
-                    }}
-                    onMouseEnter={(e) => (e.target.style.transform = "scale(1.1)")}
-                    onMouseLeave={(e) => (e.target.style.transform = "scale(1)")}>
-                    Encerrar Votação</button>
-            case "VOTACAO_ENCERRADA":
-                return <button type="button" className="btn btn-primary" onClick={() => handlerupdateStatusRoom("VOTACAO_EM_ANDAMENTO")}
-                    style={{
-                        backgroundColor: "#1E3A5F",
-                        borderColor: "#1E3A5F",
-                        transition: "transform 0.2s ease-in-out",
-                    }}
-                    onMouseEnter={(e) => (e.target.style.transform = "scale(1.1)")}
-                    onMouseLeave={(e) => (e.target.style.transform = "scale(1)")}
-                >Nova Votação</button>
-        }
-    };
+    const meta = STATUS_META[roomData.status];
+    if (!meta) return null;
 
     return (
-        <div style={{ padding: '0.8rem', display: 'flex', justifyContent: 'center' }}>
-            <StatusContainer>
-                {handleBuildStatus()}
-                {isRoomCreator
-                    ? <>{handleBuildButtonStatus()}</>
-                    : <></>}
-            </StatusContainer>
-        </div>
+        <Wrapper>
+            <StatusPill $tone={meta.tone}>
+                <FaCircle size={7} />
+                {meta.label}
+            </StatusPill>
+            {isRoomCreator && (
+                <ActionBtn onClick={() => handlerupdateStatusRoom(NEXT_STATUS[roomData.status])}>
+                    {ACTION_LABEL[roomData.status]}
+                </ActionBtn>
+            )}
+        </Wrapper>
     );
 };
 
-// Status Container
-export const StatusContainer = styled.div`
+const TEXT        = '#f5f5f7';
+const MUTED2       = 'rgba(245,245,247,0.62)';
+const BORDER       = 'rgba(255,255,255,0.07)';
+const ACCENT       = '#8b7cf6';
+const ACCENT_GLOW  = 'rgba(139,124,246,0.18)';
+const ACCENT_GRAD  = 'linear-gradient(135deg, #9a8bfb 0%, #7c6cf0 100%)';
+const GREEN        = '#4ade80';
+
+const Wrapper = styled.div`
   display: flex;
-  flex-direction: column;
   align-items: center;
-  padding: 1rem;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  background-color: #1C1C1C;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  max-width: 300px;
-  width: 100%;
-  text-align: center;
-  margin-top: 0.2rem;
-  margin-bottom: 0.0rem;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 20px 0 24px;
 `;
 
-// Status
-export const Status = styled.div`
-  font-size: 1rem;
-  color: #66CDAA;
-  margin-bottom: 0.75rem;
-  font-weight: 500;
+const StatusPill = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid ${BORDER};
+  color: ${TEXT};
+  font-size: 13px;
+  font-weight: 600;
+
+  svg {
+    color: ${({ $tone }) => ($tone === 'live' ? GREEN : $tone === 'done' ? ACCENT : MUTED2)};
+    ${({ $tone }) => $tone === 'live' && 'filter: drop-shadow(0 0 4px rgba(74,222,128,0.7));'}
+  }
 `;
 
-// Botão de Comando
-export const CommandButton = styled.button`
-  background-color: #007bff; /* Azul claro */
-  color: #ffffff; /* Cor da fonte */
+const ActionBtn = styled.button`
+  padding: 9px 18px;
   border: none;
-  border-radius: 4px;
-  padding: 0.5rem 1rem;
-  font-size: 0.9rem;
+  border-radius: 10px;
+  background: ${ACCENT_GRAD};
+  color: #0a0a0d;
+  font-size: 13px;
+  font-weight: 700;
   cursor: pointer;
-  transition: background-color 0.3s, transform 0.2s;
+  box-shadow: 0 4px 18px ${ACCENT_GLOW};
+  transition: filter 0.15s ease, transform 0.1s ease;
 
   &:hover {
-    background-color: #0056b3; /* Azul escuro no hover */
-    transform: scale(1.05);
-  }
-
-  &:active {
-    background-color: #003d7a; /* Azul mais escuro ao clicar */
-    color: #e0e0e0; /* Cor da fonte ao clicar */
+    filter: brightness(1.08);
+    transform: translateY(-1px);
   }
 `;
 
-
-
 export default StatusSection;
-
-

@@ -9,6 +9,7 @@ import { IoMdDownload } from "react-icons/io";
 import styled from "styled-components";
 import LoaderPage from '../generic/LoaderPage';
 import Header from '../components/Header';
+import Sidebar from '../components/Sidebar';
 import favicon from '../../images/favicon.ico';
 import { emitMessage, formatdateTime, onSignOut } from '../../services/utils'
 import { FRONT_BASE_URL } from "../../constants/apiConstants";
@@ -190,235 +191,300 @@ const GeneratePDF = () => {
   };
 
   return (
-    <div className="bg-black-custom">
+    <PageBackground>
+      <AmbientGlow />
+
       <Header
-        subText={'Board Interativo'}
-        showSuggestionsModal={() => setModalOpen(true)}
+        boardName={boardData?.boardName}
         isUserLogged={userIsAuthenticated}
         signIn={() => navigate('/login')}
         signOut={onSignOut}
         goHome={() => navigate('/')} />
-        
-      {isLoading ?
-        <LoaderPage />
-        :
-        <>
 
-          {!boardData ?
-            <AlignedContainer>
-              <p>Não foi possível carregar o Board.</p>
-            </AlignedContainer>
+      <Layout>
+        <Sidebar onSuggestions={() => setModalOpen(true)} />
+
+        <Content>
+          {isLoading ?
+            <LoaderPage />
             :
-            <Container>
+            <>
+              {!boardData ?
+                <EmptyMessage>Não foi possível carregar o Board.</EmptyMessage>
+                :
+                <>
+                  <PageHeaderRow>
+                    <PageTitle>{boardData.boardName}</PageTitle>
+                    <DownloadButton onClick={generatePDF}>
+                      <IoMdDownload size={16} /> Baixar PDF
+                    </DownloadButton>
+                  </PageHeaderRow>
 
-              {/* Botão de download */}
-              <ButtonWrapper>
-                <Button onClick={generatePDF}>
-                  <IoMdDownload /> Baixar PDF
-                </Button>
-              </ButtonWrapper>
+                  <InfoCard>
+                    <MetaGrid>
+                      <MetaItem>
+                        <MetaLabel>Criado em</MetaLabel>
+                        <MetaValue>{formatdateTime(boardData.createdAt)}</MetaValue>
+                      </MetaItem>
+                      <MetaItem>
+                        <MetaLabel>Criado por</MetaLabel>
+                        <MetaValue>{boardData.userName}</MetaValue>
+                      </MetaItem>
+                      <MetaItem>
+                        <MetaLabel>Squad</MetaLabel>
+                        <MetaValue>{boardData.squadName}</MetaValue>
+                      </MetaItem>
+                      <MetaItem>
+                        <MetaLabel>Área</MetaLabel>
+                        <MetaValue>{boardData.areaName}</MetaValue>
+                      </MetaItem>
+                      <MetaItem>
+                        <MetaLabel>Total de Cards</MetaLabel>
+                        <MetaValue>{boardData.columns ? boardData.columns.reduce((acc, col) => acc + col.cards.length, 0) : 0}</MetaValue>
+                      </MetaItem>
+                      <MetaItem>
+                        <MetaLabel>Total de Participantes</MetaLabel>
+                        <MetaValue>{Array.isArray(boardData.usersOnBoardHistoric) ? boardData.usersOnBoardHistoric.length : 0}</MetaValue>
+                      </MetaItem>
+                    </MetaGrid>
+                    <LinkRow>
+                      <MetaLabel>Link</MetaLabel>
+                      <LinkValue>{linkUrlBoard}</LinkValue>
+                    </LinkRow>
+                  </InfoCard>
 
-              {/* Seção de informações */}
-              <InfoSection>
-                <Title>{boardData.boardName}</Title>
+                  <TableWrapper>
+                    <Table>
+                      <thead>
+                        <tr>
+                          {boardData.columns.map((column, index) => (
+                            <Th key={index}>{column.title}</Th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {Array.from({ length: Math.max(...boardData.columns.map(col => col.cards.length)) }).map((_, rowIndex) => (
+                          <Tr key={rowIndex}>
+                            {boardData.columns.map((column, colIndex) => (
+                              <Td key={colIndex}>
+                                {column.cards[rowIndex] ? column.cards[rowIndex].content : ""}
+                              </Td>
+                            ))}
+                          </Tr>
+                        ))}
+                      </tbody>
+                    </Table>
+                  </TableWrapper>
+                </>}
+            </>}
+        </Content>
+      </Layout>
 
-                <InfoRow>
-                  <InfoItem><strong>Criado em:</strong>{formatdateTime(boardData.createdAt)}</InfoItem>
-                  <InfoItem><strong>Criado por:</strong>{boardData.userName}</InfoItem>
-                  <InfoItem><strong>Squad:</strong> {boardData.squadName}</InfoItem>
-                  <InfoItem><strong>Área:</strong>{boardData.areaName}</InfoItem>
-                </InfoRow>
-
-                <InfoRow2>
-                  <InfoItem><strong>Total de Cards:</strong> {boardData.columns ? boardData.columns.reduce((acc, col) => acc + col.cards.length, 0) : 0}</InfoItem>
-                  <InfoItem><strong>Total de Participantes:</strong>{Array.isArray(boardData.usersOnBoardHistoric) ? boardData.usersOnBoardHistoric.length : 0}</InfoItem>
-                </InfoRow2>
-
-                <InfoRow2>
-                  <InfoItem><strong>Link: </strong>{linkUrlBoard}</InfoItem>
-                </InfoRow2>
-              </InfoSection>
-
-
-              <Table>
-                <thead>
-                  <tr>
-                    {boardData.columns.map((column, index) => (
-                      <Th key={index}>{column.title}</Th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {Array.from({ length: Math.max(...boardData.columns.map(col => col.cards.length)) }).map((_, rowIndex) => (
-                    <Tr key={rowIndex}>
-                      {boardData.columns.map((column, colIndex) => (
-                        <Td key={colIndex}>
-                          {column.cards[rowIndex] ? column.cards[rowIndex].content : ""}
-                        </Td>
-                      ))}
-                    </Tr>
-                  ))}
-                </tbody>
-              </Table>
-              {isModalOpen && <SuggestionForm onClose={() => setModalOpen(false)} />}
-            </Container>}
-
-        </>}
-
-
-
-    </div>
-
+      {isModalOpen && <SuggestionForm onClose={() => setModalOpen(false)} />}
+    </PageBackground>
   );
 };
 
+// ─── Design tokens — "Dark Premium" ───────────────────────────────────────────
+// Mesmo sistema visual do Header / BoardPage.js / BoardListPage.js.
 
-const Container = styled.div`
-  width: 90%;
+const TEXT          = '#f5f5f7';
+const MUTED         = 'rgba(245,245,247,0.42)';
+const MUTED2        = 'rgba(245,245,247,0.62)';
+const BORDER        = 'rgba(255,255,255,0.07)';
+const BORDER_STRONG = 'rgba(255,255,255,0.14)';
+const ACCENT_SOFT   = '#a996ff';
+const ACCENT_GLOW   = 'rgba(139,124,246,0.18)';
+const ACCENT_GRAD   = 'linear-gradient(135deg, #9a8bfb 0%, #7c6cf0 100%)';
+
+const PageBackground = styled.div`
+  position: relative;
+  min-height: 100vh;
+  background: #0a0a0d;
+`;
+
+const AmbientGlow = styled.div`
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(1100px 480px at 50% -8%, ${ACCENT_GLOW}, transparent 65%);
+`;
+
+const Layout = styled.div`
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+`;
+
+const Content = styled.div`
+  flex: 1;
+  min-width: 0;
   max-width: 1300px;
-  margin: 20px auto;
+  margin: 0 auto;
+  padding: 24px 24px 48px;
   display: flex;
   flex-direction: column;
   gap: 20px;
 `;
 
-const InfoSection = styled.div`
-  background: #2c2c2c ;
-  padding: 16px;
-  border-radius: 8px;
+const EmptyMessage = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 0;
+  color: ${MUTED};
+  font-size: 13px;
+`;
+
+const PageHeaderRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+`;
+
+const PageTitle = styled.h1`
+  font-size: 20px;
+  font-weight: 700;
+  color: ${TEXT};
+  margin: 0;
+`;
+
+const DownloadButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 10px;
+  background: ${ACCENT_GRAD};
+  color: #0a0a0d;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 18px ${ACCENT_GLOW};
+  transition: filter 0.15s ease, transform 0.1s ease;
+  white-space: nowrap;
+
+  &:hover {
+    filter: brightness(1.08);
+    transform: translateY(-1px);
+  }
+
+  @media (max-width: 640px) {
+    width: 100%;
+    justify-content: center;
+  }
+`;
+
+const InfoCard = styled.div`
+  background: #141418;
+  border: 1px solid ${BORDER_STRONG};
+  border-radius: 16px;
+  padding: 20px 24px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+`;
+
+const MetaGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px 24px;
+`;
+
+const MetaItem = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  gap: 4px;
 `;
 
-const Title = styled.h2`
-  font-size: 20px;
-  font-weight: bold;
-  color: #E1E1E1 ;
-  text-align: center;
-  margin-bottom: 8px;
+const MetaLabel = styled.span`
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: ${MUTED2};
 `;
 
-const InfoRow = styled.div`
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
+const MetaValue = styled.span`
   font-size: 14px;
-  color: #E1E1E1  ;
+  font-weight: 600;
+  color: ${TEXT};
 `;
 
-const InfoRow2 = styled.div`
+const LinkRow = styled.div`
   display: flex;
-  justify-content: flex-start;
-  flex-wrap: wrap;
-  font-size: 14px;
-  color: #E1E1E1 ;
-  gap: 50px;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid ${BORDER};
 `;
 
-const InfoItem = styled.div`
-  display: flex;
-  gap: 6px;
-  font-weight: 500;
-  color: #E1E1E1  ;
-
+const LinkValue = styled.span`
+  font-size: 13px;
+  color: ${ACCENT_SOFT};
+  word-break: break-all;
 `;
 
-const ButtonWrapper = styled.div`
-  display: flex;
-  justify-content: flex-end;
+const TableWrapper = styled.div`
+  border: 1px solid ${BORDER_STRONG};
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
 `;
-
 
 const Table = styled.table`
   width: 100%;
-  margin: 1px auto;
   border-collapse: collapse;
-  border-radius: 8px;
-  overflow: hidden;
-  font-size: 14px;
-  background-color: #1E272E;
-  border: 1px solid #7A7A7A ;
+  font-size: 13.5px;
+  background: #141418;
   table-layout: fixed;
 `;
 
 const Th = styled.th`
-  background-color: #1E3A5F      ;
-  color: white;
-  padding: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  color: ${MUTED2};
+  padding: 12px 14px;
   text-align: left;
-  font-weight: bold;
-  color: #BEBEBE;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.4px;
   text-transform: uppercase;
-  border-bottom: 2px solid #7A7A7A ;
-  border-right: 1px solid #7A7A7A ;
+  border-bottom: 1px solid ${BORDER_STRONG};
+  border-right: 1px solid ${BORDER};
 
   &:last-child {
-    border-right: none; /* Remove borda do último item */
+    border-right: none;
   }
 `;
 
 const Td = styled.td`
-  padding: 12px;
-  border-bottom: 1px solid #7A7A7A ;
-  border-right: 1px solid #7A7A7A ;
-  color: #E1E1E1 ;
+  padding: 12px 14px;
+  border-bottom: 1px solid ${BORDER};
+  border-right: 1px solid ${BORDER};
+  color: ${TEXT};
+  vertical-align: top;
 
   &:last-child {
-    border-right: none; /* Remove borda do último item */
+    border-right: none;
   }
 `;
 
 const Tr = styled.tr`
   &:nth-child(even) {
-    background-color: #2c2c2c;
+    background: rgba(255, 255, 255, 0.015);
   }
 
-  &:nth-child(odd) {
-    background-color: #2c2c2c;
+  &:hover td {
+    background: rgba(255, 255, 255, 0.03);
   }
 
-`;
-
-
-const Button = styled.button`
-  display: flex;
-  gap: 5px;
-  margin-top: 1px;
-  padding: 10px 7px;
-  background-color: #1E3A5F; 
-  color: #fff;
-  font-size: 15px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-
-  &:hover {
-    transform: scale(1.1); /* Efeito de hover */
-  }
-
-  span {
-    font-size: 16px;
-  }
-
-  @media (max-width: 768px) {
-    width: 100%;
-    justify-content: center;
-    margin-bottom: 10px;
+  &:last-child td {
+    border-bottom: none;
   }
 `;
-
-const AlignedContainer = styled.div`
-  display: flex;
-  flex-direction: column;  /* Alinha os itens em uma coluna */
-  margin-top: 30px;
-  justify-content: top; /* Centraliza verticalmente */
-  align-items: center;     /* Centraliza o conteúdo horizontalmente */
-  height: 100vh;           /* Faz o contêiner ocupar toda a altura da tela */
-`;
-
-
 
 export default GeneratePDF;

@@ -5,10 +5,12 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { getCurrentUser, fetchUserAttributes, fetchAuthSession } from '@aws-amplify/auth';
 import { getRoom as fetchRoom } from '../../services/pokerService';
 import styled from 'styled-components';
+import { GiPokerHand } from 'react-icons/gi';
+import { FaUserCircle, FaUsers, FaHashtag } from 'react-icons/fa';
 import Header from '../components/Header';
-import { emitMessage, formatdateTime, onSignOut } from '../../services/utils'
+import Sidebar from '../components/Sidebar';
+import { emitMessage, onSignOut } from '../../services/utils'
 import SuggestionForm from '../components/SuggestionForm'
-import { FormContainer, FormGroup, StyledForm, SubmitButton } from '../../styles/FormStyle'
 import localStorageService from "../../services/localStorageService";
 
 export const GuestUrlPage = ({ }) => {
@@ -106,94 +108,209 @@ export const GuestUrlPage = ({ }) => {
     }
 
     return (
-        <div className="bg-black-custom">
+        <PageBackground>
+            <AmbientGlow />
+
             <Header
-                subText={'Planning Poker'}
-                showSuggestionsModal={() => setModalOpen(true)}
                 isUserLogged={userIsAuthenticated}
                 signIn={() => navigate('/login')}
                 signOut={onSignOut}
                 goHome={() => navigate('/')} />
 
-            <FormContainer>
-                <Title>Informe seu nome para entrar na sala de Planning Poker</Title>
-                <StyledForm onSubmit={handleSubmit}>
-                    <FormGroup>
-                        <label htmlFor="nickName">Digite seu nome*</label>
-                        <input
-                            type="text"
-                            id="nickName"
-                            name="nickName"
-                            value={formData.nickName || ""}
-                            onChange={handleChange}
-                            placeholder="Digite o seu nome"
-                            required
-                            maxLength={55} />
-                    </FormGroup>
-                    <FormGroup2>
-                        <label htmlFor="roomId">ID da sala</label>
-                        <input
-                            type="text"
-                            id="roomId"
-                            name="roomId"
-                            value={roomData.roomId || ""}
-                            disabled />
-                    </FormGroup2>
-                    <FormGroup2>
-                        <label htmlFor="roomName">Nome da sala</label>
-                        <input
-                            type="text"
-                            id="roomName"
-                            name="roomName"
-                            value={roomData.roomName || ""}
-                            disabled />
-                    </FormGroup2>
-                    <SubmitButton $marginTop="22px" type="submit">Entrar</SubmitButton>
-                </StyledForm>
-            </FormContainer>
+            <Layout>
+                <Sidebar onSuggestions={() => setModalOpen(true)} />
+
+                <Content>
+                    <GlassCard>
+                        <AvatarCircle><GiPokerHand /></AvatarCircle>
+
+                        <ScreenSubtitle>Informe seu nome para entrar na sala de Planning Poker</ScreenSubtitle>
+
+                        <form onSubmit={handleSubmit}>
+                            <InputWrap>
+                                <FaUserCircle />
+                                <LineInput
+                                    type="text"
+                                    id="nickName"
+                                    name="nickName"
+                                    value={formData.nickName || ""}
+                                    onChange={handleChange}
+                                    placeholder="Digite o seu nome"
+                                    required
+                                    maxLength={55}
+                                    autoFocus
+                                />
+                            </InputWrap>
+                            <InputWrap>
+                                <FaUsers />
+                                <LineInput
+                                    type="text"
+                                    id="roomName"
+                                    name="roomName"
+                                    value={roomData.roomName || ""}
+                                    readOnly
+                                />
+                            </InputWrap>
+                            <InputWrap>
+                                <FaHashtag />
+                                <LineInput
+                                    type="text"
+                                    id="roomId"
+                                    name="roomId"
+                                    value={roomData.roomId || ""}
+                                    readOnly
+                                />
+                            </InputWrap>
+                            <ActionBtn type="submit">Entrar na Sala</ActionBtn>
+                        </form>
+                    </GlassCard>
+                </Content>
+            </Layout>
 
             {isModalOpen && <SuggestionForm onClose={() => setModalOpen(false)} />}
-        </div>
+        </PageBackground>
     );
 
 }
 
-export const Title = styled.h1`
-  font-size: 1.2rem;
-  margin-bottom: 30px;
-  color: #C0C0C0;
-  font-weight: 400;
-  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+// ─── Design tokens — "Dark Premium" ───────────────────────────────────────────
+// Mesmo sistema visual do Header / CreateAndEnterRoomPage.js / BoardListPage.js.
+
+const TEXT          = '#f5f5f7';
+const MUTED         = 'rgba(245,245,247,0.42)';
+const MUTED2        = 'rgba(245,245,247,0.62)';
+const BORDER        = 'rgba(255,255,255,0.07)';
+const BORDER_STRONG = 'rgba(255,255,255,0.14)';
+const ACCENT        = '#8b7cf6';
+const ACCENT_SOFT   = '#a996ff';
+const ACCENT_GLOW   = 'rgba(139,124,246,0.18)';
+const ACCENT_GRAD   = 'linear-gradient(135deg, #9a8bfb 0%, #7c6cf0 100%)';
+
+const PageBackground = styled.div`
+  position: relative;
+  min-height: 100vh;
+  background: #0a0a0d;
+`;
+
+const AmbientGlow = styled.div`
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(1100px 480px at 50% -8%, ${ACCENT_GLOW}, transparent 65%);
+`;
+
+const Layout = styled.div`
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+`;
+
+const Content = styled.div`
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  justify-content: center;
+  padding: 56px 24px;
+`;
+
+const GlassCard = styled.div`
+  position: relative;
+  z-index: 1;
+  background: #141418;
+  border-radius: 20px;
+  padding: 36px 40px 32px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.55);
+  border: 1px solid ${BORDER_STRONG};
+`;
+
+const AvatarCircle = styled.div`
+  width: 82px;
+  height: 82px;
+  border-radius: 50%;
+  background: ${ACCENT_GLOW};
+  border: 1.5px solid ${ACCENT}55;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24px;
+  svg { color: ${ACCENT_SOFT}; font-size: 2.4rem; }
+`;
+
+const ScreenSubtitle = styled.p`
   text-align: center;
+  font-size: 0.82rem;
+  color: ${MUTED2};
+  margin: 0 0 22px;
+  line-height: 1.5;
 `;
 
-export const FormGroup2 = styled.div`
-  margin-bottom: 15px;
-
-  label {
-    display: block;
-    font-weight: 600;
-    margin-bottom: 4px;
-    color: #C0C0C0;
-    font-size: 14px;
-  }
-
-  input {
-   background: #B0B0B0;
-    width: 100%;
-    padding: 7px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    font-size: 15px;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
-
-    &:focus {
-      border-color: #007bff;
-      box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
-      outline: none;
-    }
+const InputWrap = styled.div`
+  position: relative;
+  margin-bottom: 16px;
+  & > svg {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: ${MUTED};
+    font-size: 0.82rem;
+    pointer-events: none;
   }
 `;
 
+const LineInput = styled.input`
+  width: 100%;
+  box-sizing: border-box;
+  background: rgba(255, 255, 255, 0.045);
+  border: 1px solid ${BORDER};
+  border-radius: 10px;
+  color: ${TEXT};
+  font-size: 0.9rem;
+  padding: 11px 14px 11px 38px;
+  outline: none;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+  &::placeholder { color: ${MUTED}; }
+  &:focus { border-color: ${ACCENT}70; box-shadow: 0 0 0 3px ${ACCENT_GLOW}; }
+  &:read-only { opacity: 0.55; cursor: default; }
+
+  &:-webkit-autofill,
+  &:-webkit-autofill:hover,
+  &:-webkit-autofill:focus,
+  &:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0px 1000px #17171c inset !important;
+    box-shadow:         0 0 0px 1000px #17171c inset !important;
+    -webkit-text-fill-color: ${TEXT} !important;
+    caret-color: ${TEXT};
+    border: 1px solid ${BORDER} !important;
+    border-radius: 10px !important;
+    outline: none !important;
+    transition: background-color 9999s ease-in-out 0s;
+  }
+`;
+
+const ActionBtn = styled.button`
+  width: 100%;
+  padding: 12px;
+  margin-top: 8px;
+  background: ${ACCENT_GRAD};
+  border: none;
+  border-radius: 10px;
+  color: #0a0a0d;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  cursor: pointer;
+  box-shadow: 0 4px 18px ${ACCENT_GLOW};
+  transition: filter 0.15s ease, transform 0.1s ease;
+
+  &:hover {
+    filter: brightness(1.08);
+    transform: translateY(-1px);
+  }
+`;
 
 export default GuestUrlPage

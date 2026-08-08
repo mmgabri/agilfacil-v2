@@ -1,4 +1,4 @@
-import styled from 'styled-components';
+import styled, { css, keyframes } from 'styled-components';
 import InputMask from 'react-input-mask';
 
 // ─── Design tokens — "Dark Premium" ───────────────────────────────────────────
@@ -170,23 +170,24 @@ export const SignInButton = styled.button`
 export const InviteButton = styled.button`
   display: flex;
   align-items: center;
-  gap: 6px;
-  background: ${ACCENT_GRAD};
-  border: none;
+  gap: 7px;
+  height: 37px;
+  padding: 0 16px;
+  border-radius: 20px;
   cursor: pointer;
-  color: #0a0a0d;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.035);
+  color: rgba(245, 245, 247, 0.62);
   font-size: 13px;
   font-weight: 600;
-  padding: 6px 16px;
-  border-radius: 15px;
-  box-shadow: 0 4px 18px ${ACCENT_GLOW};
-  transition: filter 0.15s, transform 0.1s;
   white-space: nowrap;
   margin: 0 4px;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 
   &:hover {
-    filter: brightness(1.08);
-    transform: translateY(-1px);
+    background: ${ACCENT_GLOW};
+    border-color: ${ACCENT}50;
+    color: ${ACCENT_SOFT};
   }
 `;
 
@@ -327,7 +328,12 @@ export const PulseDot = styled.span`
   }
 `;
 
-export const TimerBox = styled.div`
+const timerAlarmPulse = keyframes`
+  0%, 100% { background: rgba(255, 255, 255, 0.035); box-shadow: none; }
+  50% { background: rgba(251, 113, 133, 0.25); box-shadow: 0 0 0 3px rgba(251, 113, 133, 0.25); }
+`;
+
+export const CenterCluster = styled.div`
   position: absolute;
   left: 50%;
   top: 50%;
@@ -335,28 +341,72 @@ export const TimerBox = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 12px;
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.035);
 
   @media (max-width: 900px) {
     display: none;
   }
 `;
 
+const timerLivePulse = keyframes`
+  0%, 100% { opacity: 0.75; transform: scale(1); }
+  50% { opacity: 0.25; transform: scale(1.6); }
+`;
+
+export const TimerBox = styled.div`
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px 6px 14px;
+  border-radius: 24px;
+  background: ${({ $running }) => ($running ? 'rgba(139,124,246,0.10)' : 'rgba(255,255,255,0.035)')};
+  border: 1px solid ${({ $running }) => ($running ? 'rgba(139,124,246,0.4)' : 'rgba(255,255,255,0.08)')};
+  box-shadow: ${({ $running }) => ($running ? `0 4px 20px ${ACCENT_GLOW}` : 'none')};
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  ${({ $alarm }) => $alarm && css`
+    animation: ${timerAlarmPulse} 0.9s ease-in-out 4;
+  `}
+`;
+
+export const TimerIconWrapper = styled.span`
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+`;
+
+export const TimerLiveDot = styled.span`
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: ${ACCENT_SOFT};
+  animation: ${timerLivePulse} 1.4s ease-in-out infinite;
+`;
+
 export const TimerInputStyled = styled(InputMask)`
-  width: 52px;
+  width: 60px;
   background: none;
   border: none;
   outline: none;
   text-align: center;
-  font-family: monospace;
-  font-size: 13px;
-  letter-spacing: 0.5px;
+  font-family: 'SF Mono', 'Roboto Mono', ui-monospace, monospace;
+  font-size: 16px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 1px;
   color: ${({ $isInvalid }) => ($isInvalid ? RED : '#f5f5f7')};
 
   &:disabled {
-    color: rgba(245, 245, 247, 0.62);
+    color: #f5f5f7;
+    opacity: 0.95;
+  }
+
+  &::placeholder {
+    color: rgba(245, 245, 247, 0.3);
   }
 `;
 
@@ -364,13 +414,24 @@ export const TimerBtn = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 20px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   border: none;
   cursor: pointer;
-  background: ${({ $running }) => ($running ? 'rgba(251,113,133,0.20)' : ACCENT_GLOW)};
-  color: ${({ $running }) => ($running ? RED : ACCENT_SOFT)};
+  flex-shrink: 0;
+  background: ${({ $running }) => ($running ? 'rgba(251,113,133,0.18)' : ACCENT_GRAD)};
+  color: ${({ $running }) => ($running ? RED : '#0a0a0d')};
+  box-shadow: ${({ $running }) => ($running ? 'none' : `0 3px 12px ${ACCENT_GLOW}`)};
+  transition: transform 0.12s ease, background 0.15s ease;
+
+  &:hover {
+    transform: scale(1.08);
+  }
+
+  &:active {
+    transform: scale(0.96);
+  }
 `;
 
 export const BoardActionButton = styled.button`

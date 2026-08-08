@@ -2,14 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { getCurrentUser, fetchUserAttributes, fetchAuthSession } from '@aws-amplify/auth';
 import { useAppUser } from '../../context/UserContext';
 import { useNavigate } from 'react-router-dom';
-import { emitMessage, onSignOut, onGetToken } from '../../services/utils'
+import { emitMessage, onSignOut } from '../../services/utils'
 import { getRoom, createRoom } from '../../services/pokerService'
 import { v4 as uuidv4 } from 'uuid';
+import { GiPokerHand } from 'react-icons/gi';
+import { FaUserCircle, FaUsers, FaHashtag } from 'react-icons/fa';
 import SuggestionForm from '../components/SuggestionForm'
 import Header from '../components/Header';
+import Sidebar from '../components/Sidebar';
 import LoaderPage from '../generic/LoaderPage';
 import styled from "styled-components";
-import { FormGroup, SubmitButton } from '../../styles/FormStyle'
 import localStorageService from "../../services/localStorageService";
 import logger from '../../services/logger';
 
@@ -75,7 +77,7 @@ function CreateAndEnterRoomPage() {
         nickName: "",
         roomName: "",
         roomId: ""
-    });    
+    });
 
     const handleFieldChange = (e) => {
         const { name, value } = e.target;
@@ -124,171 +126,275 @@ function CreateAndEnterRoomPage() {
     }
 
     return (
-        <div className="bg-black-custom">
+        <PageBackground>
+            <AmbientGlow />
+
             <Header
-                subText={'Planning Poker'}
-                showSuggestionsModal={() => setModalOpen(true)}
                 isUserLogged={userIsAuthenticated}
                 signIn={() => navigate('/login')}
                 signOut={onSignOut}
                 goHome={() => navigate('/')} />
 
-            {isLoading ?
-                <LoaderPage />
-                :
-                <Container>
-                    <TabsContainer>
-                        <Tab $isActive={activeTab === "create"} onClick={() => setActiveTab("create")}>
-                            Nova Sala
-                        </Tab>
-                        <Tab $isActive={activeTab === "join"} onClick={() => setActiveTab("join")}>
-                            Entrar na Sala
-                        </Tab>
-                    </TabsContainer>
+            <Layout>
+                <Sidebar onSuggestions={() => setModalOpen(true)} />
 
-                    <FormContainer>
-                        {activeTab === "create" ? (
-                            <StyledForm onSubmit={handleSubmitCreateRoom}>
-                                <Title>Inicie uma nova sessão de Planning Poker</Title>
-                                <FormGroup>
-                                    <label htmlFor="nickName">Seu nome*</label>
-                                    <input
-                                        type="text"
-                                        id="nickName"
-                                        name="nickName"
-                                        value={formData.nickName}
-                                        onChange={handleFieldChange}
-                                        placeholder="Digite seu nome"
-                                        required
-                                        maxLength={15}
-                                    />
-                                </FormGroup>
-                                <FormGroup>
-                                    <label htmlFor="roomName">Nome da sala*</label>
-                                    <input
-                                        type="text"
-                                        id="roomName"
-                                        name="roomName"
-                                        value={formData.roomName}
-                                        onChange={handleFieldChange}
-                                        placeholder="Digite o nome da sala"
-                                        required
-                                        maxLength={30}
-                                    />
-                                </FormGroup>
-                                <SubmitButton $marginTop="22px" type="submit">Criar Sala</SubmitButton>
-                            </StyledForm>
-                        ) : (
-                            <StyledForm onSubmit={handleSubmitJoinRoom}>
-                                <Title>Junte-se à sala de Planning Poker</Title>
-                                <FormGroup>
-                                    <label htmlFor="nickName">Seu nome*</label>
-                                    <input
-                                        type="text"
-                                        id="nickName"
-                                        name="nickName"
-                                        value={formData.nickName}
-                                        onChange={handleFieldChange}
-                                        placeholder="Digite seu nome"
-                                        required
-                                        maxLength={15}
-                                    />
-                                </FormGroup>
-                                <FormGroup>
-                                    <label htmlFor="roomId">ID da sala*</label>
-                                    <input
-                                        type="text"
-                                        id="roomId"
-                                        name="roomId"
-                                        value={formData.roomId}
-                                        onChange={handleFieldChange}
-                                        placeholder="Digite o o id da sala"
-                                        required
-                                        maxLength={36}
-                                    />
-                                </FormGroup>
-                                <SubmitButton $marginTop="22px" type="submit">Entrar na sala</SubmitButton>
-                            </StyledForm>
-                        )}
-                    </FormContainer>
-                </Container>}
+                {isLoading ?
+                    <LoaderPage />
+                    :
+                    <Content>
+                        <GlassCard>
+                            <AvatarCircle><GiPokerHand /></AvatarCircle>
+
+                            <TabBar>
+                                <TabBtn $active={activeTab === "create"} onClick={() => setActiveTab("create")}>
+                                    Nova Sala
+                                </TabBtn>
+                                <TabBtn $active={activeTab === "join"} onClick={() => setActiveTab("join")}>
+                                    Entrar na Sala
+                                </TabBtn>
+                            </TabBar>
+
+                            {activeTab === "create" ? (
+                                <form onSubmit={handleSubmitCreateRoom}>
+                                    <ScreenSubtitle>Inicie uma nova sessão de Planning Poker</ScreenSubtitle>
+                                    <InputWrap>
+                                        <FaUserCircle />
+                                        <LineInput
+                                            type="text"
+                                            id="nickName"
+                                            name="nickName"
+                                            value={formData.nickName}
+                                            onChange={handleFieldChange}
+                                            placeholder="Seu nome"
+                                            required
+                                            maxLength={15}
+                                            autoFocus
+                                        />
+                                    </InputWrap>
+                                    <InputWrap>
+                                        <FaUsers />
+                                        <LineInput
+                                            type="text"
+                                            id="roomName"
+                                            name="roomName"
+                                            value={formData.roomName}
+                                            onChange={handleFieldChange}
+                                            placeholder="Nome da sala"
+                                            required
+                                            maxLength={30}
+                                        />
+                                    </InputWrap>
+                                    <ActionBtn type="submit">Criar Sala</ActionBtn>
+                                </form>
+                            ) : (
+                                <form onSubmit={handleSubmitJoinRoom}>
+                                    <ScreenSubtitle>Junte-se à sala de Planning Poker</ScreenSubtitle>
+                                    <InputWrap>
+                                        <FaUserCircle />
+                                        <LineInput
+                                            type="text"
+                                            id="nickName"
+                                            name="nickName"
+                                            value={formData.nickName}
+                                            onChange={handleFieldChange}
+                                            placeholder="Seu nome"
+                                            required
+                                            maxLength={15}
+                                            autoFocus
+                                        />
+                                    </InputWrap>
+                                    <InputWrap>
+                                        <FaHashtag />
+                                        <LineInput
+                                            type="text"
+                                            id="roomId"
+                                            name="roomId"
+                                            value={formData.roomId}
+                                            onChange={handleFieldChange}
+                                            placeholder="ID da sala"
+                                            required
+                                            maxLength={36}
+                                        />
+                                    </InputWrap>
+                                    <ActionBtn type="submit">Entrar na Sala</ActionBtn>
+                                </form>
+                            )}
+                        </GlassCard>
+                    </Content>}
+            </Layout>
 
             {isModalOpen && <SuggestionForm onClose={() => setModalOpen(false)} />}
-        </div>
+        </PageBackground>
     );
 
 }
 
-const Container = styled.div`
-  width: 100%;
-  max-width: 500px; /* Largura máxima */
-  margin: 0 auto; /* Centraliza horizontalmente */
-  margin-top: 40px;
-  height: 100%; /* Preenche a altura disponível */
-  padding: 0; /* Remove qualquer espaçamento interno */
-  background: transparent;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  color: white;
+// ─── Design tokens — "Dark Premium" ───────────────────────────────────────────
+// Mesmo sistema visual do Header / App.js (AuthForm) / BoardListPage.js.
+
+const TEXT          = '#f5f5f7';
+const MUTED         = 'rgba(245,245,247,0.42)';
+const MUTED2        = 'rgba(245,245,247,0.62)';
+const BORDER        = 'rgba(255,255,255,0.07)';
+const BORDER_STRONG = 'rgba(255,255,255,0.14)';
+const ACCENT        = '#8b7cf6';
+const ACCENT_SOFT   = '#a996ff';
+const ACCENT_GLOW   = 'rgba(139,124,246,0.18)';
+const ACCENT_GRAD   = 'linear-gradient(135deg, #9a8bfb 0%, #7c6cf0 100%)';
+
+const PageBackground = styled.div`
+  position: relative;
+  min-height: 100vh;
+  background: #0a0a0d;
+  overflow-x: hidden;
 `;
 
-
-export const StyledForm = styled.form`
-  background: #2c2c2c;
-  border-radius: 0px;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-  padding: 27px;
-  width: 100%; 
-  max-width: 550px; /* Máximo permitido */
-  
+const AmbientGlow = styled.div`
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(1100px 480px at 50% -8%, ${ACCENT_GLOW}, transparent 65%);
 `;
 
-export const FormContainer = styled.div`
+const Layout = styled.div`
+  position: relative;
+  z-index: 1;
   display: flex;
-  background: blue;
-  flex-direction: column;
+  align-items: flex-start;
+`;
+
+const Content = styled.div`
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  justify-content: center;
+  padding: 56px 24px;
+`;
+
+const GlassCard = styled.div`
+  position: relative;
+  z-index: 1;
+  background: #141418;
+  border-radius: 20px;
+  padding: 36px 40px 32px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.55);
+  border: 1px solid ${BORDER_STRONG};
+`;
+
+const AvatarCircle = styled.div`
+  width: 82px;
+  height: 82px;
+  border-radius: 50%;
+  background: ${ACCENT_GLOW};
+  border: 1.5px solid ${ACCENT}55;
+  display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%; /* Ocupa toda a largura disponível */
-  height: 100%; /* Ocupa toda a altura do Container */
-  padding: 0; /* Remove qualquer espaçamento interno */
-  margin: 0; /* Remove qualquer margem */
+  margin: 0 auto 24px;
+  svg { color: ${ACCENT_SOFT}; font-size: 2.4rem; }
 `;
 
-
-const TabsContainer = styled.div`
+const TabBar = styled.div`
   display: flex;
-  border-bottom: 2px solid #bbb;
+  border-bottom: 1px solid ${BORDER_STRONG};
+  margin-bottom: 22px;
 `;
 
-const Tab = styled.div`
+const TabBtn = styled.button`
   flex: 1;
-  margin-top: 0px;
-  padding: 12px;
-  text-align: center;
+  background: none;
+  border: none;
+  border-bottom: 2px solid ${p => p.$active ? ACCENT : 'transparent'};
+  margin-bottom: -1px;
+  color: ${p => p.$active ? ACCENT_SOFT : MUTED};
+  font-size: 0.80rem;
+  font-weight: ${p => p.$active ? '700' : '400'};
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 7px 0 10px;
   cursor: pointer;
-  font-size: 16px;
-  font-weight: bold;
-  background: ${({ $isActive }) => ($isActive ? "#1E3A5F" : "#2c2c2c")};
-  color: ${({ $isActive }) => ($isActive ? "white" : "#bbb")};
-  border-top-left-radius: 8px;
-  border-top-right-radius: 8px;
-  transition: 0.3s;
+  transition: all 0.2s;
+  &:hover { color: ${p => p.$active ? ACCENT_SOFT : MUTED2}; }
+`;
 
-  &:hover {
-    background: ${({ $isActive }) => ($isActive ? "#1E3A5F" : "#444")};
+const ScreenSubtitle = styled.p`
+  text-align: center;
+  font-size: 0.82rem;
+  color: ${MUTED2};
+  margin: 0 0 22px;
+  line-height: 1.5;
+`;
+
+const InputWrap = styled.div`
+  position: relative;
+  margin-bottom: 16px;
+  & > svg {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: ${MUTED};
+    font-size: 0.82rem;
+    pointer-events: none;
   }
 `;
 
-export const Title = styled.h1`
-  font-size: 1.2rem;
-  margin-bottom: 30px;
-  color: #C0C0C0;
-  font-weight: 400;
-  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  text-align: center;
+const LineInput = styled.input`
+  width: 100%;
+  box-sizing: border-box;
+  background: rgba(255, 255, 255, 0.045);
+  border: 1px solid ${BORDER};
+  border-radius: 10px;
+  color: ${TEXT};
+  font-size: 0.9rem;
+  padding: 11px 14px 11px 38px;
+  outline: none;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+  &::placeholder { color: ${MUTED}; }
+  &:focus { border-color: ${ACCENT}70; box-shadow: 0 0 0 3px ${ACCENT_GLOW}; }
+
+  &:-webkit-autofill,
+  &:-webkit-autofill:hover,
+  &:-webkit-autofill:focus,
+  &:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0px 1000px #17171c inset !important;
+    box-shadow:         0 0 0px 1000px #17171c inset !important;
+    -webkit-text-fill-color: ${TEXT} !important;
+    caret-color: ${TEXT};
+    border: 1px solid ${BORDER} !important;
+    border-radius: 10px !important;
+    outline: none !important;
+    transition: background-color 9999s ease-in-out 0s;
+  }
 `;
 
+const ActionBtn = styled.button`
+  width: 100%;
+  padding: 12px;
+  margin-top: 8px;
+  background: ${ACCENT_GRAD};
+  border: none;
+  border-radius: 10px;
+  color: #0a0a0d;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  cursor: pointer;
+  box-shadow: 0 4px 18px ${ACCENT_GLOW};
+  transition: filter 0.15s ease, transform 0.1s ease;
 
+  &:hover {
+    filter: brightness(1.08);
+    transform: translateY(-1px);
+  }
+  &:disabled {
+    opacity: 0.6;
+    cursor: default;
+    transform: none;
+  }
+`;
 
 export default CreateAndEnterRoomPage

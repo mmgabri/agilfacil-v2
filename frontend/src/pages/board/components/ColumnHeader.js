@@ -5,15 +5,16 @@ import { MdMoreVert, MdEdit, MdCheck } from 'react-icons/md';
 import { FaRegTrashAlt, FaPalette } from "react-icons/fa";
 import { FaTrashAlt } from "react-icons/fa";
 import './../../../styles/board.css';
+import { COLUMN_COLOR_PALETTE } from '../columnColorPalette';
 
 // ─── Design tokens — "Dark Premium" ───────────────────────────────────────────
 
-const TEXT   = '#f5f5f7';
-const MUTED  = 'rgba(245,245,247,0.42)';
+const TEXT = '#f5f5f7';
+const MUTED = 'rgba(245,245,247,0.42)';
 const MUTED2 = 'rgba(245,245,247,0.62)';
 const BORDER = 'rgba(255,255,255,0.07)';
 const BORDER_STRONG = 'rgba(255,255,255,0.14)';
-const ACCENT      = '#8b7cf6';
+const ACCENT = '#8b7cf6';
 const ACCENT_SOFT = '#a996ff';
 const RED = '#fb7185';
 
@@ -27,12 +28,12 @@ const ColumnHeader = ({ columnTitle, countCards, index, onUpdateTitleColumn, onD
     setTitle(columnTitle);
   }, [columnTitle]);
 
-  const colorList = [
-    { name: 'Amarelo', color: '#F0E68C' },
-    { name: 'Rosa', color: '#D8968C' },
-    { name: 'Verde', color: '#98FB98' },
-    { name: 'Azul', color: '#BFEFFF' },
-    { name: 'Dourado', color: '#DDBB66' },
+  // Paleta combina os accents do "dark premium" (mesmo tom do board) com as
+  // cores pastel que já existiam, pra dar mais opções sem quebrar quem já
+  // está acostumado com as cores antigas. Compartilhada com o seletor de
+  // cor na criação do board (columnColorPalette.js).
+  const colorGroups = [
+    { label: 'Paleta do board', swatches: COLUMN_COLOR_PALETTE },
   ];
 
   const handleTitleChange = (e) => {
@@ -121,17 +122,24 @@ const ColumnHeader = ({ columnTitle, countCards, index, onUpdateTitleColumn, onD
               </Dropdown.Item>
 
               {showColorOptions && (
-                <ColorSwatchRow>
-                  {colorList.map((colorItem) => (
-                    <ColorSwatch
-                      key={colorItem.color}
-                      title={colorItem.name}
-                      $selected={colorItem.color === colorCards}
-                      style={{ background: colorItem.color }}
-                      onClick={() => handleColorSelect(colorItem.color)}
-                    />
+                <ColorGroupsWrapper>
+                  {colorGroups.map((group) => (
+                    <div key={group.label}>
+                      <ColorGroupLabel>{group.label}</ColorGroupLabel>
+                      <ColorSwatchRow>
+                        {group.swatches.map((colorItem) => (
+                          <ColorSwatch
+                            key={colorItem.color}
+                            title={colorItem.name}
+                            $selected={colorItem.color === colorCards}
+                            style={{ background: colorItem.color }}
+                            onClick={() => handleColorSelect(colorItem.color)}
+                          />
+                        ))}
+                      </ColorSwatchRow>
+                    </div>
                   ))}
-                </ColorSwatchRow>
+                </ColorGroupsWrapper>
               )}
             </Dropdown.Menu>
           </Dropdown>
@@ -227,12 +235,29 @@ const IconGhostBtn = styled.button`
   }
 `;
 
+const ColorGroupsWrapper = styled.div`
+  padding: 8px 4px 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+const ColorGroupLabel = styled.div`
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: ${MUTED};
+  margin-bottom: 6px;
+  text-align: center;
+`;
+
 const ColorSwatchRow = styled.div`
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   justify-content: center;
   align-items: center;
-  padding: 10px 4px 4px;
 `;
 
 const ColorSwatch = styled.button`

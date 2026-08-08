@@ -35,7 +35,7 @@ const QuickAddCard = ({ accent, indexColumn, onAddCard, userLoggedData }) => {
     <QuickAddWrapper>
       <QuickAddTextarea
         rows={focused ? 3 : 1}
-        placeholder="Escreva algo..."
+        placeholder="Digite algo..."
         value={text}
         onChange={(e) => setText(e.target.value)}
         onFocus={() => setFocused(true)}

@@ -2,6 +2,10 @@ const config = require('../../config');
 const { putTable, getBoardDb } = require('../database/dynamoService');
 
 
+const getBoard = async (boardId) => {
+  return getBoardDb(config.TABLE_BOARD, boardId);
+};
+
 const connectClientBoard = async (boardId, userId) => {
 
   const boardData = await getBoardDb(config.TABLE_BOARD, boardId);
@@ -432,4 +436,4 @@ const saveCard = async (boardId, content, indexCard, indexColumn) => {
   return updatedBoardData;
 };
 
-module.exports = { connectClientBoard, addCardBoard, reorderBoard, processCombine, deleteColumn, addColumn, updateTitleColumn, updateLike, deleteCard, deleteAllCard, saveCard, updatecolorCards, setIsObfuscatedBoardLevel, setIsObfuscatedColumnLevel, disconnectClientBoard };
+module.exports = { getBoard, connectClientBoard, addCardBoard, reorderBoard, processCombine, deleteColumn, addColumn, updateTitleColumn, updateLike, deleteCard, deleteAllCard, saveCard, updatecolorCards, setIsObfuscatedBoardLevel, setIsObfuscatedColumnLevel, disconnectClientBoard };

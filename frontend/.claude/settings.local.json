@@ -13,7 +13,8 @@
       "Bash(disown)",
       "Bash(grep -n \"Failed to compile\\\\|Module not found\\\\|SyntaxError\\\\|@hello-pangea\" /tmp/devserver.log 2>/dev/null | head -20)",
       "Read(//tmp/**)",
-      "Bash(taskkill //PID 3400 //T //F)"
+      "Bash(taskkill //PID 3400 //T //F)",
+      "Bash(npx eslint *)"
     ]
   }
 }
