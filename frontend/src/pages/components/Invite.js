@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import '../../styles/Invite.css';
 import { FRONT_BASE_URL } from "../../constants/apiConstants";
-import styled from "@emotion/styled";
+import styled from "styled-components";
 
 const Invite = ({ id, onClose, service }) => {
   const [copied, setCopied] = useState(false);

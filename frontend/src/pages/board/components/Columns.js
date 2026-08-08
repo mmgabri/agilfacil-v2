@@ -1,5 +1,5 @@
 import React, { memo, useState } from "react";
-import styled from "@emotion/styled";
+import styled from "styled-components";
 import { Droppable, Draggable } from "@hello-pangea/dnd";
 import { v4 as uuidv4 } from 'uuid';
 import CardsItem from "./CardsItem";
