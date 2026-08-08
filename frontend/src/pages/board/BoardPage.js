@@ -9,6 +9,7 @@ import Header from '../components/Header';
 import Sidebar from '../components/Sidebar';
 import Invite from '../components/Invite';
 import SuggestionForm from '../components/SuggestionForm';
+import { confirmDialog } from '../components/ConfirmDialog';
 import { FRONT_BASE_URL } from "../../constants/apiConstants";
 import { useSocket } from "../../customHooks/useSocket";
 import { useTimer } from "../../customHooks/useTimer";
@@ -65,12 +66,12 @@ export const BoardPage = () => {
     }
   }, [socketResponse]);
 
-  const onDragEnd = ({ source, destination, combine }) => {
+  const onDragEnd = async ({ source, destination, combine }) => {
     if (destination) {
       reorderBoardSocket({ source, destination });
       setBoardData(prev => ({ ...prev, columns: reorderboardData(boardData, source, destination) }));
     } else if (combine) {
-      if (!window.confirm("Confirma junção dos Cards?")) return;
+      if (!await confirmDialog("Confirma junção dos Cards?", { title: 'Juntar cards', confirmLabel: 'Juntar', tone: 'default' })) return;
       combineCardSocket({ source, combine });
       setBoardData(prev => ({ ...prev, columns: processCombine(boardData, source, combine) }));
     }

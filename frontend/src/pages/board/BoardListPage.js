@@ -17,6 +17,7 @@ import CreateBoardModal from './CreateBoardModal';
 import { FRONT_BASE_URL } from "../../constants/apiConstants";
 import LoaderPage from '../generic/LoaderPage';
 import SuggestionForm from '../components/SuggestionForm'
+import { confirmDialog } from '../components/ConfirmDialog';
 import localStorageService from "../../services/localStorageService";
 
 // ─── Design tokens — "Dark Premium" ───────────────────────────────────────────
@@ -137,7 +138,7 @@ const BoardListPage = () => {
   }, []);
 
   const handleDelete = async (id) => {
-    const isConfirmed = window.confirm("Confirma exclusão do Board?");
+    const isConfirmed = await confirmDialog("Confirma exclusão do Board?", { title: 'Excluir board' });
     if (!isConfirmed) {
       return
     }

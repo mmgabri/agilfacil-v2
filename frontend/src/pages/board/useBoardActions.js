@@ -4,6 +4,7 @@ import {
   deleteColumn, addCard, updatecolorCards, deleteAllCards,
   addColumn, setIsObfuscatedBoardLevel, setIsObfuscatedColumnLevel,
 } from './FunctionsBoard';
+import { confirmDialog } from '../components/ConfirmDialog';
 
 export function useBoardActions({ boardData, setBoardData, socket }) {
   const {
@@ -18,14 +19,14 @@ export function useBoardActions({ boardData, setBoardData, socket }) {
     saveCardSocket({ content, indexCard, indexColumn });
   };
 
-  const onDeleteCard = (indexCard, indexColumn) => {
-    if (!window.confirm("Confirma exclusão do Card?")) return;
+  const onDeleteCard = async (indexCard, indexColumn) => {
+    if (!await confirmDialog("Confirma exclusão do Card?")) return;
     setBoardData(prev => ({ ...prev, ...deleteCard(prev, indexCard, indexColumn) }));
     deleteCardSocket({ indexCard, indexColumn });
   };
 
-  const onDeleteAllCard = (indexColumn) => {
-    if (!window.confirm("Confirma exclusão de todos os Cards da Coluna?")) return;
+  const onDeleteAllCard = async (indexColumn) => {
+    if (!await confirmDialog("Confirma exclusão de todos os Cards da Coluna?")) return;
     setBoardData(prev => ({ ...prev, ...deleteAllCards(prev, indexColumn) }));
     deleteAllCardSocket({ indexColumn });
   };
@@ -45,8 +46,8 @@ export function useBoardActions({ boardData, setBoardData, socket }) {
     updatecolorCardsSocket({ colorCards, index });
   };
 
-  const onDeleteColumn = (index) => {
-    if (!window.confirm("Confirma exclusão da Coluna?")) return;
+  const onDeleteColumn = async (index) => {
+    if (!await confirmDialog("Confirma exclusão da Coluna?")) return;
     setBoardData(prev => ({ ...prev, ...deleteColumn(prev, index) }));
     deleteColumnSocket({ index });
   };

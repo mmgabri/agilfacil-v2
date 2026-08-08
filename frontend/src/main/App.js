@@ -14,6 +14,7 @@ import { getAuthStatus, setNewPassword } from '../services/authService';
 // Carregamento síncrono — usados no fluxo de auth (precisam estar prontos imediatamente)
 import LoaderPage       from '../pages/generic/LoaderPage';
 import SolicitaLoginPage from '../pages/generic/SolicitaLoginPage';
+import ConfirmDialogHost from '../pages/components/ConfirmDialog';
 
 // Carregamento lazy — só baixa o código quando a rota for acessada
 const HomePage           = lazy(() => import('../pages/generic/HomePage'));
@@ -722,6 +723,7 @@ function App() {
   return (
     <>
       <StyledToastContainer pauseOnFocusLoss={false} />
+      <ConfirmDialogHost />
       <Suspense fallback={<LoaderPage />}>
         <Routes>
           <Route path="/login"             element={<ProtectedRoute><SolicitaLoginPage /></ProtectedRoute>} />
