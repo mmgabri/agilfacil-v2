@@ -6,7 +6,7 @@ import { IoIosAddCircleOutline } from 'react-icons/io';
 import { emitMessage, onGetToken } from '../../services/utils';
 import { createBoard } from '../../services/boardService';
 import logger from '../../services/logger';
-import { COLUMN_COLOR_PALETTE } from './columnColorPalette';
+import { COLUMN_COLOR_PALETTE, LEGACY_COLUMN_COLORS, LEGACY_COLOR_CUTOFF } from './columnColorPalette';
 
 const CTX = 'CreateBoardModal';
 
@@ -67,8 +67,8 @@ const inferColumnColor = (title) => {
 // clonagem, enquanto a regra estiver "ativa" (hoje, 09/08/2026, ou antes).
 // A partir de 10/08/2026: board novo volta a usar a cor padrão/automática
 // por título; clonagem passa a manter a cor que já vem do banco.
-const LEGACY_COLUMN_COLORS = ['#3B82F6', '#60A5FA', '#81A1C1', '#8B7CF6', '#38BDF8', '#A1A1AA'];
-const LEGACY_COLOR_CUTOFF = new Date('2026-08-10T00:00:00');
+// (LEGACY_COLUMN_COLORS / LEGACY_COLOR_CUTOFF vêm de columnColorPalette.js —
+// mesma regra usada também na exibição normal do board, em FunctionsBoard.js)
 
 const isLegacyColorRuleActive = () => new Date() < LEGACY_COLOR_CUTOFF;
 
