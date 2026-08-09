@@ -49,3 +49,10 @@ export const COLUMN_COLOR_PALETTE = [
   { name: 'cinza-claro', color: '#A1A1AA' },
   { name: 'branco-suave', color: '#F4F4F5' },
 ];
+
+// Cor fixa por posição de coluna para boards "legados" (criados até
+// 09/08/2026) — usada tanto na criação/clonagem (CreateBoardModal.js) quanto
+// na exibição normal do board (BoardPage.js via FunctionsBoard.js), sempre
+// ignorando a cor que estiver salva no banco pra esses boards.
+export const LEGACY_COLUMN_COLORS = ['#3B82F6', '#60A5FA', '#81A1C1', '#8B7CF6', '#38BDF8', '#A1A1AA'];
+export const LEGACY_COLOR_CUTOFF = new Date('2026-08-10T00:00:00');

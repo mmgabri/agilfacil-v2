@@ -1,3 +1,20 @@
+import { LEGACY_COLUMN_COLORS, LEGACY_COLOR_CUTOFF } from './columnColorPalette';
+
+// Força a cor fixa por posição nas colunas de boards "legados" (criados até
+// 09/08/2026), ignorando o que estiver salvo no banco — mesma regra aplicada
+// na criação/clonagem (CreateBoardModal.js), agora também na exibição normal
+// do board. Boards criados a partir de 10/08/2026 mantêm a cor do banco.
+export const applyLegacyColumnColors = (columns, createdAt) => {
+  const isLegacyBoard = !!createdAt && new Date(createdAt) < LEGACY_COLOR_CUTOFF;
+  if (!isLegacyBoard) return columns;
+
+  return columns.map((column, index) => (
+    index < LEGACY_COLUMN_COLORS.length
+      ? { ...column, colorCards: LEGACY_COLUMN_COLORS[index] }
+      : column
+  ));
+};
+
 const reorder = (list, startIndex, endIndex) => {
   const result = Array.from(list);
   const [removed] = result.splice(startIndex, 1);

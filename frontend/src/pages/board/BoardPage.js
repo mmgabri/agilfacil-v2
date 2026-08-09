@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
 import { DragDropContext } from "@hello-pangea/dnd";
 import Columns from "./components/Columns";
-import { reorderboardData, processCombine } from "./FunctionsBoard";
+import { reorderboardData, processCombine, applyLegacyColumnColors } from "./FunctionsBoard";
 import Header from '../components/Header';
 import Sidebar from '../components/Sidebar';
 import Invite from '../components/Invite';
@@ -49,7 +49,11 @@ export const BoardPage = () => {
         setUserIsAuthenticated(false);
       }
     };
-    setBoardData(location.state.boardData);
+    const initialBoardData = location.state.boardData;
+    setBoardData({
+      ...initialBoardData,
+      columns: applyLegacyColumnColors(initialBoardData.columns, initialBoardData.createdAt),
+    });
     setuserLoggedData(location.state.userAuthenticated);
     checkAuth();
   }, [location.state.boardData, location.state.userAuthenticated]);
@@ -62,7 +66,13 @@ export const BoardPage = () => {
       return;
     }
     if (socketResponse?.boardId) {
-      setBoardData(prev => ({ ...prev, ...socketResponse }));
+      setBoardData(prev => ({
+        ...prev,
+        ...socketResponse,
+        columns: socketResponse.columns
+          ? applyLegacyColumnColors(socketResponse.columns, socketResponse.createdAt || prev.createdAt)
+          : prev.columns,
+      }));
     }
   }, [socketResponse]);
 
