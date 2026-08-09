@@ -70,3 +70,9 @@ frontend/coverage/
 .DS_Store
 Thumbs.db
 Desktop.ini
+
+# =====================
+# Rascunhos / dados locais (não versionar)
+# =====================
+Cloudflare_Old.docx
+scripts/cognito-old-users.json

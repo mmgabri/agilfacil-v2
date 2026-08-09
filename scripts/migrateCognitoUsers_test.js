@@ -60,26 +60,7 @@ const getTempPassword = (email) =>
 // userId = sub do Cognito antigo (valor usado como creatorId em boards/rooms)
 
 const USERS = [
-  { email: 'laura.mello@itau-unibanco.com.br',              userId: 'c1437d1a-0081-70f8-3dd2-8c130ee78e5b', userName: 'Laura Mello',              isGoogle: false },
-  { email: 'katia.a.albuquerque-lima@itau-unibanco.com.br', userId: '61639daa-7031-709e-2fb6-f7ba80613ff3', userName: 'katia albuquerque lima',   isGoogle: false },
-  { email: 'guilhermersimoes87@gmail.com',                  userId: '01235d0a-c0c1-70da-a470-f0b167da6bca', userName: 'Guilherme Romão',          isGoogle: true  },
-  { email: 'thiago.leite-frauches@itau-unibanco.com.br',    userId: 'c1e3adda-2021-7017-9cb9-05bc7d2d2f89', userName: 'Thiago',                   isGoogle: false },
-  { email: 'isa.gabri00@gmail.com',                         userId: '31b3cd1a-9051-70b7-3583-2db4ba0d7146', userName: 'Isabela Gabriel',          isGoogle: true  },
-  { email: 'builderam@email.com',                           userId: '71f3cd9a-a061-70a8-08d8-4cb218a97a16', userName: 'build ram',                isGoogle: false },
-  { email: 'mayra.moreira@itau-unibanco.com.br',            userId: '31336d8a-d061-706b-ed40-06452471443a', userName: 'Mayra Lopes Moreira',      isGoogle: false },
-  { email: 'mariana.chan@itau-unibanco.com.br',             userId: '9123cd8a-5091-70c0-43ca-496c5a2f13b6', userName: 'Mariana Chan',             isGoogle: false },
-  { email: 'marcel26.palma@gmail.com',                      userId: 'c1a38d0a-40b1-7041-e528-3a787e8f355c', userName: 'Marcello Palma',           isGoogle: false },
-  { email: 'plantaodebito2@gmail.com',                      userId: 'f1338d3a-20e1-709f-479b-509c9d27690e', userName: 'Plantao Debito 2',         isGoogle: true  },
-  { email: 'juliocezar84@gmail.com',                        userId: 'a1535d2a-c0a1-7028-842f-a5a23fd5cecc', userName: 'Julio Vicente',            isGoogle: false },
-  { email: 'nicolas.castellani-silva@itau-unibanco.com.br', userId: '61e37d7a-30c1-7098-eb35-5bcf8207d076', userName: 'Nicolas Castellani',       isGoogle: false },
-  { email: 'alessandra.spioni-estevao@itau-unibanco.com.br',userId: '5163dd9a-30a1-7079-3653-652c63acc629', userName: 'Alessandra',               isGoogle: false },
-  { email: 'marcelao.aws@gmail.com',                        userId: '21b37dfa-9011-708f-5397-a64c81af12bc', userName: 'Marcelão',                 isGoogle: true },
   { email: 'marcelomgabriel@gmail.com',                     userId: 'd1b32dda-50f1-7083-4aac-5c69a42ecce1', userName: 'Marcelo Gabriel',          isGoogle: false  },
-  { email: 'ma1@gmail.com',                                 userId: 'f1038d0a-f0c1-7014-cb37-1503e593d341', userName: 'Marcelo Teste1',           isGoogle: false },
-  { email: 'ma2@gmail.com',                                 userId: 'f1038d0a-f0c1-7014-cb37-1503e593d342', userName: 'Marcelo Teste3',           isGoogle: false },
-  { email: 'ma3@gmail.com',                                 userId: 'f1038d0a-f0c1-7014-cb37-1503e593d343', userName: 'Marcelo Teste3',           isGoogle: false },
-  { email: 'ma4@gmail.com',                                 userId: 'f1038d0a-f0c1-7014-cb37-1503e593d344', userName: 'Marcelo Teste4',           isGoogle: false },
-  { email: 'ma5@gmail.com',                                 userId: 'f1038d0a-f0c1-7014-cb37-1503e593d345', userName: 'Marcelo Teste5',           isGoogle: false },
 ];
 
 // ─── Cliente Cognito ──────────────────────────────────────────────────────────

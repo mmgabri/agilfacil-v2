@@ -1,0 +1,1 @@
+aws cognito-idp list-users --user-pool-id ap-south-1_nYcPqocLt --region ap-south-1 --limit 60 | Out-File -Encoding utf8 cognito-old-users.json

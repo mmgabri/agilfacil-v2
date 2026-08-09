@@ -16,7 +16,7 @@ resource "aws_cognito_user_pool" "main" {
     require_lowercase                = false
     require_numbers                  = false
     require_symbols                  = false
-    temporary_password_validity_days = 7
+    temporary_password_validity_days = 365
   }
 
   # Exige verificação de e-mail antes de alterar o atributo
