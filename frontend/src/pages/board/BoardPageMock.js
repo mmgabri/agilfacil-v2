@@ -245,7 +245,7 @@ function TopBar({ board }) {
           <img
             src={Logo}
             alt="AgilFácil"
-            style={{ width: 22, height: 22, flexShrink: 0, filter: "hue-rotate(30deg) saturate(1.2)" }}
+            style={{ width: 22, height: 22, flexShrink: 0 }}
           />
           <span className="hidden lg:inline" style={{ color: "#ffffff", fontWeight: 700, fontSize: 13, flexShrink: 0 }}>AgilFácil</span>
         </div>

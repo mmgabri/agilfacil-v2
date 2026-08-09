@@ -24,7 +24,7 @@ const ACCENT_GLOW   = 'rgba(139,124,246,0.18)';
 const ACCENT_GRAD   = 'linear-gradient(135deg, #9a8bfb 0%, #7c6cf0 100%)';
 const RED           = '#fb7185';
 
-const emptyColumn = () => ({ id: uuidv4(), title: '', colorCards: '#F0E68C', columnType: 'auto', isObfuscated: false, cards: [] });
+const DEFAULT_COLUMN_COLOR = '#F0E68C';
 
 // ─── Cor automática por título da coluna ──────────────────────────────────────
 // Heurística por palavra-chave (sem IA): cobre os templates de retro mais comuns
@@ -63,25 +63,57 @@ const inferColumnColor = (title) => {
   return rule?.color || null;
 };
 
-// Ao clonar um board existente, tenta re-inferir a cor de cada coluna a partir
-// do título — só sobrescreve se o título bater com alguma palavra-chave;
-// caso contrário mantém a cor original do board clonado, em modo automático.
-const buildInitialFormData = (initialBoard) => initialBoard ? ({
-  boardName: initialBoard.boardName,
-  areaName: initialBoard.areaName,
-  squadName: initialBoard.squadName,
-  columns: initialBoard.columns.map(column => ({
-    ...column,
-    cards: [],
-    columnType: 'auto',
-    colorCards: inferColumnColor(column.title) || column.colorCards,
-  })),
-}) : ({
-  boardName: '',
-  areaName: '',
-  squadName: '',
-  columns: [emptyColumn()],
+// Cor fixa por posição de coluna — vale tanto pra board novo quanto pra
+// clonagem, enquanto a regra estiver "ativa" (hoje, 09/08/2026, ou antes).
+// A partir de 10/08/2026: board novo volta a usar a cor padrão/automática
+// por título; clonagem passa a manter a cor que já vem do banco.
+const LEGACY_COLUMN_COLORS = ['#3B82F6', '#60A5FA', '#81A1C1', '#8B7CF6', '#38BDF8', '#A1A1AA'];
+const LEGACY_COLOR_CUTOFF = new Date('2026-08-10T00:00:00');
+
+const isLegacyColorRuleActive = () => new Date() < LEGACY_COLOR_CUTOFF;
+
+const colorForColumnIndex = (index) =>
+  (isLegacyColorRuleActive() && index < LEGACY_COLUMN_COLORS.length)
+    ? LEGACY_COLUMN_COLORS[index]
+    : DEFAULT_COLUMN_COLOR;
+
+const resolveClonedColumnColor = (column, index, isLegacyBoard) =>
+  (isLegacyBoard && index < LEGACY_COLUMN_COLORS.length)
+    ? LEGACY_COLUMN_COLORS[index]
+    : column.colorCards;
+
+const emptyColumn = (index = 0) => ({
+  id: uuidv4(), title: '', colorCards: colorForColumnIndex(index), columnType: 'auto', isObfuscated: false, cards: [],
 });
+
+// Ao clonar um board existente, define a cor inicial de cada coluna pela
+// regra acima. Fica em modo "auto": se o usuário editar o título depois,
+// a cor pode ser recalculada por palavra-chave normalmente, e o usuário
+// sempre pode trocar a cor manualmente no menu.
+const buildInitialFormData = (initialBoard) => {
+  if (!initialBoard) {
+    return {
+      boardName: '',
+      areaName: '',
+      squadName: '',
+      columns: [emptyColumn()],
+    };
+  }
+
+  const isLegacyBoard = !!initialBoard.createdAt && new Date(initialBoard.createdAt) < LEGACY_COLOR_CUTOFF;
+
+  return {
+    boardName: initialBoard.boardName,
+    areaName: initialBoard.areaName,
+    squadName: initialBoard.squadName,
+    columns: initialBoard.columns.map((column, index) => ({
+      ...column,
+      cards: [],
+      columnType: 'auto',
+      colorCards: resolveClonedColumnColor(column, index, isLegacyBoard),
+    })),
+  };
+};
 
 // ─── Formulário (reutilizável no modal e na página cheia) ─────────────────────
 
@@ -182,7 +214,7 @@ export function CreateBoardForm({ initialBoard, userAuthenticated, onCreated, on
   };
 
   const handleAddColumn = () => {
-    setFormData(prev => ({ ...prev, columns: [...prev.columns, emptyColumn()] }));
+    setFormData(prev => ({ ...prev, columns: [...prev.columns, emptyColumn(prev.columns.length)] }));
   };
 
   const handleRemoveColumn = (columnId) => {

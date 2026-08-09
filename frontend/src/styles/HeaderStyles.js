@@ -15,7 +15,7 @@ export const HeaderContainer = styled.header`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 24px;
+  padding: 0 24px 0 16px;
   height: 56px;
   background: rgba(13, 15, 22, 0.95);
   backdrop-filter: blur(20px);
@@ -61,7 +61,6 @@ export const LogoButton = styled.button`
 export const LogoImage = styled.img`
   width: 24px;
   height: 24px;
-  filter: hue-rotate(30deg) saturate(1.2);
 `;
 
 export const LogoText = styled.span`
@@ -334,13 +333,12 @@ const timerAlarmPulse = keyframes`
 `;
 
 export const CenterCluster = styled.div`
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
+  flex: 1;
+  min-width: 0;
 
   @media (max-width: 900px) {
     display: none;
@@ -356,9 +354,10 @@ export const TimerBox = styled.div`
   position: relative;
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 6px 8px 6px 14px;
-  border-radius: 24px;
+  gap: 7px;
+  padding: 4px 6px 4px 11px;
+  border-radius: 20px;
+  flex-shrink: 0;
   background: ${({ $running }) => ($running ? 'rgba(139,124,246,0.10)' : 'rgba(255,255,255,0.035)')};
   border: 1px solid ${({ $running }) => ($running ? 'rgba(139,124,246,0.4)' : 'rgba(255,255,255,0.08)')};
   box-shadow: ${({ $running }) => ($running ? `0 4px 20px ${ACCENT_GLOW}` : 'none')};
@@ -378,26 +377,26 @@ export const TimerIconWrapper = styled.span`
 
 export const TimerLiveDot = styled.span`
   position: absolute;
-  top: -3px;
-  right: -3px;
-  width: 6px;
-  height: 6px;
+  top: -2px;
+  right: -2px;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
   background: ${ACCENT_SOFT};
   animation: ${timerLivePulse} 1.4s ease-in-out infinite;
 `;
 
 export const TimerInputStyled = styled(InputMask)`
-  width: 60px;
+  width: 50px;
   background: none;
   border: none;
   outline: none;
   text-align: center;
   font-family: 'SF Mono', 'Roboto Mono', ui-monospace, monospace;
-  font-size: 16px;
+  font-size: 13.5px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
   color: ${({ $isInvalid }) => ($isInvalid ? RED : '#f5f5f7')};
 
   &:disabled {
@@ -414,8 +413,8 @@ export const TimerBtn = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   border: none;
   cursor: pointer;

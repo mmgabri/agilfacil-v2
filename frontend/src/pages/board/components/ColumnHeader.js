@@ -28,14 +28,6 @@ const ColumnHeader = ({ columnTitle, countCards, index, onUpdateTitleColumn, onD
     setTitle(columnTitle);
   }, [columnTitle]);
 
-  // Paleta combina os accents do "dark premium" (mesmo tom do board) com as
-  // cores pastel que já existiam, pra dar mais opções sem quebrar quem já
-  // está acostumado com as cores antigas. Compartilhada com o seletor de
-  // cor na criação do board (columnColorPalette.js).
-  const colorGroups = [
-    { label: 'Paleta do board', swatches: COLUMN_COLOR_PALETTE },
-  ];
-
   const handleTitleChange = (e) => {
     setTitle(e.target.value);
   };
@@ -123,22 +115,17 @@ const ColumnHeader = ({ columnTitle, countCards, index, onUpdateTitleColumn, onD
 
               {showColorOptions && (
                 <ColorGroupsWrapper>
-                  {colorGroups.map((group) => (
-                    <div key={group.label}>
-                      <ColorGroupLabel>{group.label}</ColorGroupLabel>
-                      <ColorSwatchRow>
-                        {group.swatches.map((colorItem) => (
-                          <ColorSwatch
-                            key={colorItem.color}
-                            title={colorItem.name}
-                            $selected={colorItem.color === colorCards}
-                            style={{ background: colorItem.color }}
-                            onClick={() => handleColorSelect(colorItem.color)}
-                          />
-                        ))}
-                      </ColorSwatchRow>
-                    </div>
-                  ))}
+                  <ColorSwatchRow>
+                    {COLUMN_COLOR_PALETTE.map((colorItem) => (
+                      <ColorSwatch
+                        key={colorItem.color}
+                        title={colorItem.name}
+                        $selected={colorItem.color === colorCards}
+                        style={{ background: colorItem.color }}
+                        onClick={() => handleColorSelect(colorItem.color)}
+                      />
+                    ))}
+                  </ColorSwatchRow>
                 </ColorGroupsWrapper>
               )}
             </Dropdown.Menu>
@@ -240,16 +227,6 @@ const ColorGroupsWrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 8px;
-`;
-
-const ColorGroupLabel = styled.div`
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.4px;
-  text-transform: uppercase;
-  color: ${MUTED};
-  margin-bottom: 6px;
-  text-align: center;
 `;
 
 const ColorSwatchRow = styled.div`

@@ -157,7 +157,7 @@ const Header = ({
         <CenterCluster>
           <TimerBox $running={boardControls.isRunningTimer} $alarm={boardControls.hasTimeEnded}>
             <TimerIconWrapper>
-              <FaClock size={13} style={{ color: boardControls.isRunningTimer ? '#a996ff' : 'rgba(245,245,247,0.42)' }} />
+              <FaClock size={11} style={{ color: boardControls.isRunningTimer ? '#a996ff' : 'rgba(245,245,247,0.42)' }} />
               {boardControls.isRunningTimer && <TimerLiveDot />}
             </TimerIconWrapper>
             <TimerInputStyled
@@ -170,9 +170,9 @@ const Header = ({
               $isInvalid={boardControls.isInvalidFormat}
             />
             {!boardControls.isRunningTimer ? (
-              <TimerBtn onClick={boardControls.handleStartTimer}><FaPlay size={10} /></TimerBtn>
+              <TimerBtn onClick={boardControls.handleStartTimer}><FaPlay size={8} /></TimerBtn>
             ) : (
-              <TimerBtn $running onClick={boardControls.handlePauseTimer}><FaStop size={10} /></TimerBtn>
+              <TimerBtn $running onClick={boardControls.handlePauseTimer}><FaStop size={8} /></TimerBtn>
             )}
           </TimerBox>
         </CenterCluster>

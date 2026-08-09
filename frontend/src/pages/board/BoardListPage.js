@@ -7,9 +7,10 @@ import { useNavigate } from 'react-router-dom'
 import { FaRegTrashAlt, FaRegFolderOpen, FaRegClone } from 'react-icons/fa';
 import { FaPlus, FaMagnifyingGlass } from 'react-icons/fa6';
 import { AiOutlineExport } from "react-icons/ai";
-import { HiOutlineUserGroup } from "react-icons/hi2";
 import { BsCalendar3 } from "react-icons/bs";
-import { MdKeyboardArrowDown, MdChevronLeft, MdChevronRight, MdClose } from "react-icons/md";
+import { MdKeyboardArrowDown, MdChevronLeft, MdChevronRight, MdClose, MdSpaceDashboard } from "react-icons/md";
+import { Tooltip } from 'react-tooltip';
+import 'react-tooltip/dist/react-tooltip.css';
 import styled from 'styled-components';
 import Header from '../components/Header';
 import Sidebar from '../components/Sidebar';
@@ -33,11 +34,12 @@ const ACCENT        = '#8b7cf6';
 const ACCENT_SOFT   = '#a996ff';
 const ACCENT_GLOW   = 'rgba(139,124,246,0.18)';
 const ACCENT_GRAD   = 'linear-gradient(135deg, #9a8bfb 0%, #7c6cf0 100%)';
-const RED          = '#fb7185';
 
 const CARD_ACCENTS = ['#34d399', '#fb7185', '#38bdf8', '#fbbf24', '#a78bfa'];
 const NO_SQUAD_ACCENT = 'rgba(245,245,247,0.35)';
 const normalizeSquad = (s) => (s || '').trim().toLowerCase();
+
+const tooltipStyle = { fontSize: '12px', fontWeight: 600, padding: '5px 10px', borderRadius: '8px', zIndex: 1001 };
 
 // ─── Helpers de data ──────────────────────────────────────────────────────────
 
@@ -300,6 +302,8 @@ const BoardListPage = () => {
                   {boards.length === 0 ? 'Você ainda não possui Boards.' : 'Nenhum board encontrado com esses filtros.'}
                 </EmptyMessage>
               )}
+
+              <Tooltip id="board-card-tooltip" style={tooltipStyle} />
             </>
           )}
         </Content>
@@ -476,39 +480,41 @@ function BoardCard({ board, accent, onOpen, onDelete, onClone, onExport }) {
       <AccentLine style={{ background: `linear-gradient(90deg, ${accent}, transparent 85%)` }} />
 
       <CardHeaderRow>
-        <CardTitle>{board.boardName}</CardTitle>
-        <CardDot style={{ background: accent, boxShadow: `0 0 8px ${accent}80` }} />
+        <CardIconBadge style={{ background: `${accent}1f`, borderColor: `${accent}55` }}>
+          <MdSpaceDashboard size={19} style={{ color: accent }} />
+        </CardIconBadge>
+        <CardTitleGroup>
+          <CardTitle>{board.boardName}</CardTitle>
+          {(board.squadName || board.areaName) && (
+            <CardSubtitle>
+              {board.squadName}{board.squadName && board.areaName && <span style={{ color: MUTED }}> · {board.areaName}</span>}
+            </CardSubtitle>
+          )}
+        </CardTitleGroup>
       </CardHeaderRow>
 
-      <CardMeta>
-        {(board.squadName || board.areaName) && (
+      {createdAtDate && !isNaN(createdAtDate.getTime()) && (
+        <CardMeta>
           <CardMetaRow>
-            <HiOutlineUserGroup size={17} style={{ color: MUTED, flexShrink: 0 }} />
-            {board.squadName}{board.squadName && board.areaName && <span style={{ color: MUTED }}> · {board.areaName}</span>}
+            <BsCalendar3 size={14} style={{ color: MUTED, flexShrink: 0 }} />
+            Criado em {formatDate(createdAtDate)}
           </CardMetaRow>
-        )}
-        {createdAtDate && !isNaN(createdAtDate.getTime()) && (
-          <CardMetaRow>
-            <BsCalendar3 size={15} style={{ color: MUTED, flexShrink: 0 }} />
-            {formatDate(createdAtDate)}
-          </CardMetaRow>
-        )}
-      </CardMeta>
+        </CardMeta>
+      )}
 
       <CardActions>
-        <ActionIconBtn title="Excluir" $danger onClick={(e) => { e.stopPropagation(); onDelete(); }}>
+        <ActionIconBtn data-tooltip-id="board-card-tooltip" data-tooltip-content="Excluir" onClick={(e) => { e.stopPropagation(); onDelete(); }}>
           <FaRegTrashAlt size={14} />
         </ActionIconBtn>
-        <ActionIconBtn title="Clonar" onClick={(e) => { e.stopPropagation(); onClone(); }}>
+        <ActionIconBtn data-tooltip-id="board-card-tooltip" data-tooltip-content="Clonar" onClick={(e) => { e.stopPropagation(); onClone(); }}>
           <FaRegClone size={14} />
         </ActionIconBtn>
-        <ActionIconBtn title="Exportar" onClick={(e) => { e.stopPropagation(); onExport(); }}>
+        <ActionIconBtn data-tooltip-id="board-card-tooltip" data-tooltip-content="Exportar" onClick={(e) => { e.stopPropagation(); onExport(); }}>
           <AiOutlineExport size={15} />
         </ActionIconBtn>
-        <OpenBtn title="Abrir" onClick={(e) => { e.stopPropagation(); onOpen(); }}>
-          <FaRegFolderOpen size={12} />
-          Abrir
-        </OpenBtn>
+        <ActionIconBtn data-tooltip-id="board-card-tooltip" data-tooltip-content="Abrir" onClick={(e) => { e.stopPropagation(); onOpen(); }}>
+          <FaRegFolderOpen size={14} />
+        </ActionIconBtn>
       </CardActions>
     </CardEl>
   );
@@ -660,8 +666,8 @@ const ResultCount = styled.span`
 
 const Grid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(292px, 1fr));
+  gap: 20px;
 `;
 
 const AddTile = styled.button`
@@ -669,9 +675,9 @@ const AddTile = styled.button`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  min-height: 148px;
-  border-radius: 16px;
+  gap: 14px;
+  min-height: 196px;
+  border-radius: 18px;
   border: 1.5px dashed ${BORDER_STRONG};
   background: transparent;
   cursor: pointer;
@@ -688,8 +694,8 @@ const AddTileIcon = styled.span`
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
   background: ${ACCENT_GLOW};
   color: ${ACCENT_SOFT};
@@ -702,7 +708,7 @@ const AddTileIcon = styled.span`
 `;
 
 const AddTileLabel = styled.span`
-  font-size: 13px;
+  font-size: 13.5px;
   font-weight: 600;
   color: ${MUTED2};
 
@@ -723,8 +729,9 @@ const CardEl = styled.div`
   position: relative;
   display: flex;
   flex-direction: column;
-  padding: 16px;
-  border-radius: 16px;
+  min-height: 196px;
+  padding: 22px;
+  border-radius: 18px;
   overflow: hidden;
   cursor: pointer;
   background: rgba(255, 255, 255, 0.028);
@@ -745,27 +752,47 @@ const CardEl = styled.div`
 const CardHeaderRow = styled.div`
   display: flex;
   align-items: flex-start;
-  justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 12px;
+  gap: 14px;
+  margin-bottom: 16px;
+`;
+
+const CardIconBadge = styled.span`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  border: 1px solid;
+  flex-shrink: 0;
+`;
+
+const CardTitleGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
 `;
 
 const CardTitle = styled.h3`
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 15.5px;
+  font-weight: 700;
+  line-height: 1.3;
   color: ${TEXT};
   margin: 0;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 `;
 
-const CardDot = styled.span`
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  margin-top: 4px;
+const CardSubtitle = styled.span`
+  font-size: 12.5px;
+  color: ${MUTED2};
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 `;
 
 const CardMeta = styled.div`
@@ -778,18 +805,18 @@ const CardMeta = styled.div`
 const CardMetaRow = styled.span`
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 7px;
   color: ${MUTED2};
-  font-size: 12px;
+  font-size: 12.5px;
 `;
 
 const CardActions = styled.div`
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 12px;
-  margin-top: 12px;
-  padding-top: 12px;
+  gap: 8px;
+  margin-top: 16px;
+  padding-top: 16px;
   border-top: 1px solid ${BORDER};
 `;
 
@@ -797,32 +824,19 @@ const ActionIconBtn = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
   border: none;
   cursor: pointer;
   background: rgba(255, 255, 255, 0.06);
-  color: ${({ $danger }) => ($danger ? RED : MUTED2)};
-  transition: background 0.15s ease;
+  color: ${MUTED2};
+  transition: background 0.15s ease, color 0.15s ease;
 
   &:hover {
-    background: ${({ $danger }) => ($danger ? 'rgba(251,113,133,0.16)' : 'rgba(255,255,255,0.11)')};
+    background: ${ACCENT_GLOW};
+    color: ${ACCENT_SOFT};
   }
-`;
-
-const OpenBtn = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  border-radius: 8px;
-  border: 1px solid ${ACCENT}40;
-  background: ${ACCENT_GLOW};
-  color: ${ACCENT_SOFT};
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
 `;
 
 // ─── Estilização do calendário (filtro de período) ─────────────────────────────
