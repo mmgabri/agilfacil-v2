@@ -4,7 +4,6 @@ import styled from 'styled-components';
 import { emitMessage, onSignOut } from '../../services/utils'
 import { fetchAuthSession, getCurrentUser, fetchUserAttributes } from '@aws-amplify/auth';
 import { useAppUser } from '../../context/UserContext';
-import 'react-toastify/dist/ReactToastify.css';
 import Header from '../components/Header';
 import SuggestionForm from '../components/SuggestionForm'
 import { CreateBoardForm } from './CreateBoardModal';

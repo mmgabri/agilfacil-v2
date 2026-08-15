@@ -14,7 +14,6 @@ import { FRONT_BASE_URL } from "../../constants/apiConstants";
 import { useSocket } from "../../customHooks/useSocket";
 import { useTimer } from "../../customHooks/useTimer";
 import { useBoardActions } from "./useBoardActions";
-import 'react-toastify/dist/ReactToastify.css';
 import { onSignOut } from '../../services/utils';
 
 export const BoardPage = () => {

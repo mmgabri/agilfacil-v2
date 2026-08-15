@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import styled from "styled-components";
 import { Dropdown } from 'react-bootstrap';
-import { MdMoreVert, MdEdit, MdCheck } from 'react-icons/md';
-import { FaRegTrashAlt, FaPalette } from "react-icons/fa";
+import { MdMoreVert, MdEdit, MdCheck, MdKeyboardArrowDown } from 'react-icons/md';
+import { FaRegTrashAlt } from "react-icons/fa";
 import { FaTrashAlt } from "react-icons/fa";
 import './../../../styles/board.css';
 import { COLUMN_COLOR_PALETTE, resolveColumnAccent } from '../columnColorPalette';
@@ -17,12 +17,57 @@ const BORDER_STRONG = 'var(--border-strong)';
 const ACCENT = 'var(--accent)';
 const ACCENT_SOFT = 'var(--accent-soft)';
 const ACCENT_GLOW = 'var(--accent-glow)';
+const ACCENT_BORDER = 'var(--accent-border)';
 const RED = 'var(--red)';
+
+// Botão de cor da coluna — dot clicável no header que abre um popover com a
+// paleta. Antes ficava escondido dentro do menu de 3 pontinhos; como a cor
+// agora carrega bastante significado visual, virou um controle de 1º nível.
+function ColumnColorTrigger({ accent, onSelect }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  return (
+    <ColorTriggerWrapper ref={ref}>
+      <ColorTriggerBtn
+        type="button"
+        $open={open}
+        title="Cor da coluna — clique pra trocar"
+        onClick={() => setOpen(v => !v)}
+      >
+        <ColorTriggerDot style={{ background: accent }} />
+        <MdKeyboardArrowDown size={13} />
+      </ColorTriggerBtn>
+
+      {open && (
+        <ColorPopover>
+          <ColorSwatchRow>
+            {COLUMN_COLOR_PALETTE.map((colorItem) => (
+              <ColorSwatch
+                key={colorItem.color}
+                type="button"
+                title={colorItem.name}
+                $selected={colorItem.color === accent}
+                style={{ background: colorItem.color }}
+                onClick={() => { onSelect(colorItem.color); setOpen(false); }}
+              />
+            ))}
+          </ColorSwatchRow>
+        </ColorPopover>
+      )}
+    </ColorTriggerWrapper>
+  );
+}
 
 const ColumnHeader = ({ columnTitle, countCards, index, onUpdateTitleColumn, onDeleteColumn, onDeleteAllCard, onUpdatecolorCards, colorCards }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [title, setTitle] = useState(columnTitle || 'Título da Coluna');
-  const [showColorOptions, setShowColorOptions] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   useEffect(() => {
@@ -46,19 +91,13 @@ const ColumnHeader = ({ columnTitle, countCards, index, onUpdateTitleColumn, onD
     onDeleteAllCard(index)
   };
 
-  const handleColorSelect = (color) => {
-    setShowColorOptions(false);
-    setIsDropdownOpen(false);
-    onUpdatecolorCards(color, index)
-  };
-
   const accent = resolveColumnAccent(colorCards);
 
   return (
     <ColumnHeaderContainer>
       <TitleRow>
         <TitleGroup>
-          <AccentDot style={{ background: accent, boxShadow: `0 0 8px ${accent}80` }} />
+          <ColumnColorTrigger accent={accent} onSelect={(color) => onUpdatecolorCards(color, index)} />
           {isEditing ? (
             <TitleInput
               type="text"
@@ -103,32 +142,6 @@ const ColumnHeader = ({ columnTitle, countCards, index, onUpdateTitleColumn, onD
                 <FaTrashAlt style={iconMarginStyle} color={RED} />
                 Excluir todos os Cards
               </Dropdown.Item>
-              <Dropdown.Item
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowColorOptions(!showColorOptions);
-                }}
-                style={dropdownItemStyle}
-              >
-                <FaPalette style={iconMarginStyle} />
-                Cor dos Cards
-              </Dropdown.Item>
-
-              {showColorOptions && (
-                <ColorGroupsWrapper>
-                  <ColorSwatchRow>
-                    {COLUMN_COLOR_PALETTE.map((colorItem) => (
-                      <ColorSwatch
-                        key={colorItem.color}
-                        title={colorItem.name}
-                        $selected={colorItem.color === accent}
-                        style={{ background: colorItem.color }}
-                        onClick={() => handleColorSelect(colorItem.color)}
-                      />
-                    ))}
-                  </ColorSwatchRow>
-                </ColorGroupsWrapper>
-              )}
             </Dropdown.Menu>
           </Dropdown>
         </HeaderActions>
@@ -159,13 +172,6 @@ const TitleGroup = styled.div`
   align-items: center;
   gap: 8px;
   min-width: 0;
-`;
-
-const AccentDot = styled.span`
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  flex-shrink: 0;
 `;
 
 const Title = styled.span`
@@ -223,30 +229,71 @@ const IconGhostBtn = styled.button`
   }
 `;
 
-const ColorGroupsWrapper = styled.div`
-  padding: 8px 4px 4px;
+const ColorTriggerWrapper = styled.div`
+  position: relative;
+  flex-shrink: 0;
+`;
+
+const ColorTriggerBtn = styled.button`
   display: flex;
-  flex-direction: column;
-  gap: 8px;
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
+  padding: 5px 6px;
+  border-radius: 20px;
+  cursor: pointer;
+  background: ${({ $open }) => ($open ? ACCENT_GLOW : 'var(--surface)')};
+  border: 1px solid ${({ $open }) => ($open ? ACCENT_BORDER : BORDER)};
+  color: ${MUTED2};
+  transition: background 0.15s ease, border-color 0.15s ease;
+
+  &:hover {
+    background: ${ACCENT_GLOW};
+    border-color: ${ACCENT_BORDER};
+  }
+`;
+
+const ColorTriggerDot = styled.span`
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: 1.5px solid ${BORDER_STRONG};
+  transition: background 0.2s ease;
+`;
+
+const ColorPopover = styled.div`
+  position: absolute;
+  left: 0;
+  top: 100%;
+  margin-top: 8px;
+  width: 240px;
+  padding: 8px;
+  border-radius: 12px;
+  background: var(--panel);
+  border: 1px solid ${BORDER_STRONG};
+  box-shadow: var(--shadow-strong);
+  z-index: 50;
 `;
 
 const ColorSwatchRow = styled.div`
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  justify-content: center;
-  align-items: center;
+  gap: 6px;
+  max-height: 160px;
+  overflow-y: auto;
+  padding: 2px;
 `;
 
 const ColorSwatch = styled.button`
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
-  border: ${({ $selected }) => ($selected ? `2px solid ${TEXT}` : `1px solid ${BORDER_STRONG}`)};
-  box-shadow: ${({ $selected }) => ($selected ? `0 0 0 2px color-mix(in srgb, ${ACCENT} 50%, transparent)` : 'none')};
-  cursor: pointer;
-  transition: transform 0.15s ease;
   flex-shrink: 0;
+  cursor: pointer;
+  border: ${({ $selected }) => ($selected ? `2px solid ${TEXT}` : `1px solid ${BORDER_STRONG}`)};
+  box-shadow: ${({ $selected }) => ($selected ? `0 0 0 2px ${ACCENT_GLOW}` : 'none')};
+  transition: transform 0.15s ease;
 
   &:hover {
     transform: scale(1.15);
