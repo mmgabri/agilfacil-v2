@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { getCurrentUser, fetchUserAttributes } from '@aws-amplify/auth';
 import { emitMessage } from '../../services/utils'
-import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate, useParams } from 'react-router-dom'
 import { getBoard } from '../../services/boardService';
 import LoaderPage from "../generic/LoaderPage"

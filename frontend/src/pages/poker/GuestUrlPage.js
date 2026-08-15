@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { v4 as uuidv4 } from 'uuid';
-import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate, useParams } from 'react-router-dom'
 import { getCurrentUser, fetchUserAttributes, fetchAuthSession } from '@aws-amplify/auth';
 import { getRoom as fetchRoom } from '../../services/pokerService';
