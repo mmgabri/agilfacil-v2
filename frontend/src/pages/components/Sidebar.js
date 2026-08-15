@@ -1,12 +1,16 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { MdHome, MdSpaceDashboard, MdStyle, MdSettings, MdOutlineFeedback } from 'react-icons/md';
+import { MdHome, MdSpaceDashboard, MdStyle, MdOutlineFeedback, MdDarkMode, MdLightMode } from 'react-icons/md';
+import { useAppTheme } from '../../context/ThemeContext';
 import {
   SidebarContainer,
   NavItemButton,
   NavItemLabel,
   ActiveIndicator,
   SidebarSpacer,
+  ThemeSwitchTrack,
+  ThemeSwitchIcons,
+  ThemeSwitchKnob,
 } from '../../styles/SidebarStyles';
 
 const NAV_ITEMS = [
@@ -18,6 +22,7 @@ const NAV_ITEMS = [
 const Sidebar = ({ onSuggestions }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { theme, toggleTheme } = useAppTheme();
 
   const isActive = (activeMatch) =>
     activeMatch === '/' ? location.pathname === '/' : location.pathname.startsWith(activeMatch);
@@ -44,10 +49,18 @@ const Sidebar = ({ onSuggestions }) => {
         </NavItemButton>
       )}
 
-      <NavItemButton title="Configurações" disabled>
-        <MdSettings size={17} />
-        <NavItemLabel>Config</NavItemLabel>
-      </NavItemButton>
+      <ThemeSwitchTrack
+        title={theme === 'dark' ? 'Mudar para tema claro' : 'Mudar para tema escuro'}
+        onClick={toggleTheme}
+      >
+        <ThemeSwitchIcons>
+          <MdDarkMode />
+          <MdLightMode />
+        </ThemeSwitchIcons>
+        <ThemeSwitchKnob $theme={theme}>
+          {theme === 'dark' ? <MdDarkMode /> : <MdLightMode />}
+        </ThemeSwitchKnob>
+      </ThemeSwitchTrack>
     </SidebarContainer>
   );
 };

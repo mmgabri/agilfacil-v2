@@ -102,13 +102,13 @@ const VotingResults = ({ roomData, cards }) => {
   );
 };
 
-const TEXT          = '#f5f5f7';
-const MUTED2        = 'rgba(245,245,247,0.62)';
-const BORDER        = 'rgba(255,255,255,0.07)';
-const BORDER_STRONG = 'rgba(255,255,255,0.14)';
-const ACCENT_SOFT   = '#a996ff';
-const ACCENT_GLOW   = 'rgba(139,124,246,0.18)';
-const ACCENT_GRAD   = 'linear-gradient(135deg, #9a8bfb 0%, #7c6cf0 100%)';
+const TEXT          = 'var(--text)';
+const MUTED2        = 'var(--muted2)';
+const BORDER        = 'var(--border)';
+const BORDER_STRONG = 'var(--border-strong)';
+const ACCENT_SOFT   = 'var(--accent-soft)';
+const ACCENT_GLOW   = 'var(--accent-glow)';
+const ACCENT_GRAD   = 'var(--accent-grad)';
 
 const FloatingPanel = styled.div`
   position: fixed;
@@ -116,10 +116,10 @@ const FloatingPanel = styled.div`
   right: 24px;
   z-index: 500;
   width: 260px;
-  background: #141418;
+  background: var(--panel);
   border: 1px solid ${BORDER_STRONG};
   border-radius: 16px;
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--shadow-strong);
   overflow: hidden;
 `;
 
@@ -129,7 +129,7 @@ const DragHandle = styled.div`
   justify-content: center;
   gap: 4px;
   padding: 10px 8px;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--surface-hover);
   border-bottom: 1px solid ${BORDER};
   color: ${MUTED2};
   font-size: 11px;
@@ -185,7 +185,7 @@ const ResultItem = styled.div`
   justify-content: space-between;
   gap: 10px;
   padding: 8px 12px;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--surface);
   border: 1px solid ${BORDER};
   border-radius: 10px;
 `;
@@ -216,7 +216,7 @@ const ResultValueAverage = styled.div`
   padding: 10px 14px;
   border-radius: 10px;
   background: ${ACCENT_GRAD};
-  color: #0a0a0d;
+  color: var(--on-accent);
   font-size: 15px;
   font-weight: 700;
   box-shadow: 0 4px 18px ${ACCENT_GLOW};

@@ -1,15 +1,18 @@
 import styled, { css, keyframes } from 'styled-components';
 import InputMask from 'react-input-mask';
 
-// ─── Design tokens — "Dark Premium" ───────────────────────────────────────────
-// Mesmo sistema visual do BoardPageMock.js / BoardListPageMock.js.
+// ─── Design tokens ──────────────────────────────────────────────────────────
+// As cores em si vêm das variáveis CSS de src/index.css (tema dark/light,
+// alternado via ThemeContext). Os nomes abaixo só apontam pra essas variáveis,
+// pra manter os componentes deste arquivo sem precisar mudar.
 
-const ACCENT       = '#8b7cf6';
-const ACCENT_SOFT  = '#a996ff';
-const ACCENT_GLOW  = 'rgba(139,124,246,0.18)';
-const ACCENT_GRAD  = 'linear-gradient(135deg, #9a8bfb 0%, #7c6cf0 100%)';
-const RED   = '#fb7185';
-const GREEN = '#34d399';
+const ACCENT        = 'var(--accent)';
+const ACCENT_SOFT    = 'var(--accent-soft)';
+const ACCENT_GLOW    = 'var(--accent-glow)';
+const ACCENT_BORDER  = 'var(--accent-border)';
+const ACCENT_GRAD    = 'var(--accent-grad)';
+const RED   = 'var(--red)';
+const GREEN = 'var(--green)';
 
 export const HeaderContainer = styled.header`
   display: flex;
@@ -17,10 +20,10 @@ export const HeaderContainer = styled.header`
   justify-content: space-between;
   padding: 0 24px 0 16px;
   height: 56px;
-  background: rgba(13, 15, 22, 0.95);
+  background: var(--header-bg);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid var(--border);
   position: sticky;
   top: 0;
   width: 100%;
@@ -66,7 +69,7 @@ export const LogoImage = styled.img`
 export const LogoText = styled.span`
   font-size: 15px;
   font-weight: 700;
-  color: #fff;
+  color: var(--text);
   letter-spacing: -0.3px;
   white-space: nowrap;
 `;
@@ -80,7 +83,7 @@ export const SubTextBadge = styled.span`
   white-space: nowrap;
   background: ${ACCENT_GLOW};
   color: ${ACCENT_SOFT};
-  border: 1px solid rgba(139, 124, 246, 0.3);
+  border: 1px solid ${ACCENT_BORDER};
 `;
 
 export const ContextChip = styled.div`
@@ -89,10 +92,10 @@ export const ContextChip = styled.div`
   gap: 6px;
   padding: 5px 12px;
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--surface);
+  border: 1px solid var(--border);
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--muted2);
   max-width: 280px;
 
   @media (max-width: 768px) {
@@ -107,7 +110,7 @@ export const ContextText = styled.span`
 `;
 
 export const ContextDot = styled.span`
-  color: rgba(255, 255, 255, 0.25);
+  color: var(--muted);
   flex-shrink: 0;
 `;
 
@@ -122,7 +125,7 @@ export const NavButton = styled.button`
   background: none;
   border: none;
   cursor: pointer;
-  color: rgba(255, 255, 255, 0.55);
+  color: var(--muted2);
   font-size: 13.5px;
   font-weight: 450;
   padding: 6px 10px;
@@ -139,7 +142,7 @@ export const NavButton = styled.button`
 export const NavDivider = styled.div`
   width: 1px;
   height: 16px;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--border-strong);
   margin: 0 4px;
   flex-shrink: 0;
 `;
@@ -148,8 +151,8 @@ export const SignInButton = styled.button`
   display: flex;
   align-items: center;
   gap: 6px;
-  background: rgba(139, 124, 246, 0.20);
-  border: 1.5px solid rgba(139, 124, 246, 0.35);
+  background: ${ACCENT_GLOW};
+  border: 1.5px solid ${ACCENT_BORDER};
   cursor: pointer;
   color: ${ACCENT_SOFT};
   font-size: 13px;
@@ -161,8 +164,8 @@ export const SignInButton = styled.button`
   margin-left: 4px;
 
   &:hover {
-    background: rgba(139, 124, 246, 0.28);
-    border-color: rgba(139, 124, 246, 0.5);
+    background: ${ACCENT_BORDER};
+    border-color: ${ACCENT};
   }
 `;
 
@@ -174,9 +177,9 @@ export const InviteButton = styled.button`
   padding: 0 16px;
   border-radius: 20px;
   cursor: pointer;
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  background: rgba(255, 255, 255, 0.035);
-  color: rgba(245, 245, 247, 0.62);
+  border: 1px solid var(--ghost-border);
+  background: var(--ghost-surface);
+  color: var(--muted2);
   font-size: 13px;
   font-weight: 600;
   white-space: nowrap;
@@ -185,7 +188,7 @@ export const InviteButton = styled.button`
 
   &:hover {
     background: ${ACCENT_GLOW};
-    border-color: ${ACCENT}50;
+    border-color: ${ACCENT_BORDER};
     color: ${ACCENT_SOFT};
   }
 `;
@@ -203,8 +206,8 @@ export const AvatarButton = styled.button`
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: rgba(139, 124, 246, 0.20);
-  border: 1.5px solid ${({ $open }) => ($open ? ACCENT_SOFT : `${ACCENT}55`)};
+  background: ${ACCENT_GLOW};
+  border: 1.5px solid ${({ $open }) => ($open ? ACCENT_SOFT : ACCENT_BORDER)};
   color: ${ACCENT_SOFT};
   font-weight: 700;
   font-size: 11px;
@@ -220,7 +223,7 @@ export const OnlineDot = styled.span`
   height: 8px;
   border-radius: 50%;
   background: ${GREEN};
-  border: 1.5px solid #0d0f16;
+  border: 1.5px solid var(--bg);
 `;
 
 export const AvatarMenu = styled.div`
@@ -230,26 +233,26 @@ export const AvatarMenu = styled.div`
   margin-top: 8px;
   border-radius: 12px;
   overflow: hidden;
-  background: #141418;
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: var(--panel);
+  border: 1px solid var(--border-strong);
   min-width: 180px;
   z-index: 50;
-  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.55);
+  box-shadow: var(--shadow-strong);
 `;
 
 export const AvatarMenuHeader = styled.div`
   padding: 12px 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  border-bottom: 1px solid var(--border);
 `;
 
 export const AvatarMenuName = styled.div`
-  color: #fff;
+  color: var(--text);
   font-size: 13px;
   font-weight: 600;
 `;
 
 export const AvatarMenuEmail = styled.div`
-  color: rgba(255, 255, 255, 0.42);
+  color: var(--muted);
   font-size: 11px;
   margin-top: 2px;
 `;
@@ -268,7 +271,7 @@ export const AvatarMenuSignOut = styled.button`
   transition: background 0.15s;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--surface);
   }
 `;
 
@@ -279,11 +282,11 @@ export const StatsMeta = styled.div`
   align-items: center;
   gap: 8px;
   font-size: 12.5px;
-  color: rgba(245, 245, 247, 0.62);
+  color: var(--muted2);
   flex-shrink: 0;
 
   b {
-    color: #fff;
+    color: var(--text);
     font-weight: 700;
   }
 `;
@@ -295,12 +298,12 @@ export const OnlineGroup = styled.span`
 `;
 
 export const Dim = styled.span`
-  color: rgba(245, 245, 247, 0.42);
+  color: var(--muted);
   font-weight: 400;
 `;
 
 export const Sep = styled.span`
-  color: rgba(245, 245, 247, 0.42);
+  color: var(--muted);
 `;
 
 export const PulseDot = styled.span`
@@ -328,8 +331,11 @@ export const PulseDot = styled.span`
 `;
 
 const timerAlarmPulse = keyframes`
-  0%, 100% { background: rgba(255, 255, 255, 0.035); box-shadow: none; }
-  50% { background: rgba(251, 113, 133, 0.25); box-shadow: 0 0 0 3px rgba(251, 113, 133, 0.25); }
+  0%, 100% { background: var(--surface); box-shadow: none; }
+  50% {
+    background: color-mix(in srgb, var(--red) 25%, transparent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--red) 25%, transparent);
+  }
 `;
 
 export const CenterCluster = styled.div`
@@ -358,8 +364,8 @@ export const TimerBox = styled.div`
   padding: 4px 6px 4px 11px;
   border-radius: 20px;
   flex-shrink: 0;
-  background: ${({ $running }) => ($running ? 'rgba(139,124,246,0.10)' : 'rgba(255,255,255,0.035)')};
-  border: 1px solid ${({ $running }) => ($running ? 'rgba(139,124,246,0.4)' : 'rgba(255,255,255,0.08)')};
+  background: ${({ $running }) => ($running ? 'color-mix(in srgb, var(--accent) 10%, transparent)' : 'var(--surface)')};
+  border: 1px solid ${({ $running }) => ($running ? 'color-mix(in srgb, var(--accent) 40%, transparent)' : 'var(--border)')};
   box-shadow: ${({ $running }) => ($running ? `0 4px 20px ${ACCENT_GLOW}` : 'none')};
   transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
   ${({ $alarm }) => $alarm && css`
@@ -397,15 +403,15 @@ export const TimerInputStyled = styled(InputMask)`
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.5px;
-  color: ${({ $isInvalid }) => ($isInvalid ? RED : '#f5f5f7')};
+  color: ${({ $isInvalid }) => ($isInvalid ? RED : 'var(--text)')};
 
   &:disabled {
-    color: #f5f5f7;
+    color: var(--text);
     opacity: 0.95;
   }
 
   &::placeholder {
-    color: rgba(245, 245, 247, 0.3);
+    color: var(--muted);
   }
 `;
 
@@ -416,11 +422,11 @@ export const TimerBtn = styled.button`
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  border: none;
+  border: 1px solid ${({ $running }) => ($running ? 'color-mix(in srgb, var(--red) 35%, transparent)' : 'transparent')};
   cursor: pointer;
   flex-shrink: 0;
-  background: ${({ $running }) => ($running ? 'rgba(251,113,133,0.18)' : ACCENT_GRAD)};
-  color: ${({ $running }) => ($running ? RED : '#0a0a0d')};
+  background: ${({ $running }) => ($running ? 'color-mix(in srgb, var(--red) 18%, transparent)' : ACCENT_GRAD)};
+  color: ${({ $running }) => ($running ? RED : 'var(--on-accent)')};
   box-shadow: ${({ $running }) => ($running ? 'none' : `0 3px 12px ${ACCENT_GLOW}`)};
   transition: transform 0.12s ease, background 0.15s ease;
 
@@ -441,15 +447,15 @@ export const BoardActionButton = styled.button`
   height: 37px;
   border-radius: 50%;
   cursor: pointer;
-  border: 1px solid ${({ $active }) => ($active ? `${ACCENT}50` : 'rgba(255,255,255,0.07)')};
-  background: ${({ $active }) => ($active ? ACCENT_GLOW : 'rgba(255,255,255,0.035)')};
-  color: ${({ $active }) => ($active ? ACCENT_SOFT : 'rgba(245,245,247,0.62)')};
+  border: 1px solid ${({ $active }) => ($active ? ACCENT_BORDER : 'var(--ghost-border)')};
+  background: ${({ $active }) => ($active ? ACCENT_GLOW : 'var(--ghost-surface)')};
+  color: ${({ $active }) => ($active ? ACCENT_SOFT : 'var(--muted2)')};
   transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
   flex-shrink: 0;
 
   &:hover {
     background: ${ACCENT_GLOW};
-    border-color: ${ACCENT}50;
+    border-color: ${ACCENT_BORDER};
     color: ${ACCENT_SOFT};
   }
 `;

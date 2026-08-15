@@ -5,14 +5,15 @@ import { MdMoreVert, MdEdit, MdCheck } from 'react-icons/md';
 import { CiTrash } from "react-icons/ci";
 import { FaHeart } from 'react-icons/fa6';
 import ModalAddCard from '../modals/ModalAddCard';
+import { resolveColumnAccent } from '../columnColorPalette';
 
 // ─── Design tokens — "Dark Premium" ───────────────────────────────────────────
 
-const TEXT   = '#f5f5f7';
-const MUTED  = 'rgba(245,245,247,0.42)';
-const MUTED2 = 'rgba(245,245,247,0.62)';
-const BORDER_STRONG = 'rgba(255,255,255,0.14)';
-const ACCENT_SOFT = '#a996ff';
+const TEXT   = 'var(--text)';
+const MUTED  = 'var(--muted)';
+const MUTED2 = 'var(--muted2)';
+const BORDER_STRONG = 'var(--border-strong)';
+const ACCENT_SOFT = 'var(--accent-soft)';
 
 function CardItem({ card, isDragging, provided, index, isGroupedOver, indexColumn, onSaveCard, onDeleteCard, onUpdateLike, colorCards, userLoggedData, isObfuscatedBoardLevel, isObfuscatedColumnLevel }) {
   const [isEditing, setIsEditing] = useState(false);
@@ -74,7 +75,7 @@ function CardItem({ card, isDragging, provided, index, isGroupedOver, indexColum
     setLikeCount(likeCount === 0 ? 1 : 0);
   };
 
-  const accent = colorCards || '#8b7cf6';
+  const accent = resolveColumnAccent(colorCards);
 
     return (
     <Container
@@ -134,7 +135,7 @@ function CardItem({ card, isDragging, provided, index, isGroupedOver, indexColum
                   Editar Card
                 </Dropdown.Item>
                 <Dropdown.Item style={dropdownItemStyle} onClick={handleDelete}>
-                  <CiTrash style={{ marginRight: 8, color: '#fb7185' }} />
+                  <CiTrash style={{ marginRight: 8, color: 'var(--red)' }} />
                   Excluir Card
                 </Dropdown.Item>
               </Dropdown.Menu>
@@ -155,8 +156,8 @@ function CardItem({ card, isDragging, provided, index, isGroupedOver, indexColum
 export default memo(CardItem);
 
 const getBackground = (isDragging, isGroupedOver, accent) => {
-  if (isGroupedOver) return 'rgba(52,211,153,0.18)';
-  return `${accent}${isDragging ? '26' : '0c'}`;
+  if (isGroupedOver) return 'color-mix(in srgb, var(--green) 18%, transparent)';
+  return `color-mix(in srgb, ${accent} var(${isDragging ? '--card-tint-dragging' : '--card-tint'}), transparent)`;
 };
 
 const getBorderColor = (isDragging, accent) => (isDragging ? `${accent}70` : 'transparent');
@@ -171,7 +172,7 @@ const Container = styled.div`
   background-color: ${(props) => getBackground(props.$isDragging, props.$isGroupedOver, props.$accent)};
   box-shadow: ${(props) =>
     props.$isDragging
-      ? `0 20px 44px rgba(0,0,0,0.55), 0 0 0 1px ${props.$accent}40`
+      ? `var(--shadow-strong), 0 0 0 1px ${props.$accent}40`
       : "none"};
   box-sizing: border-box;
   padding: 10px 12px;
@@ -281,7 +282,7 @@ const StyledTextarea = styled.textarea`
   font-family: inherit;
   font-size: 13.5px;
   color: ${TEXT};
-  background-color: rgba(255, 255, 255, 0.06);
+  background-color: var(--surface-hover);
   border: 1px solid ${BORDER_STRONG};
   border-radius: 8px;
   transition: border-color 0.2s ease;
@@ -293,11 +294,11 @@ const StyledTextarea = styled.textarea`
 `;
 
 const dropdownMenuStyle = {
-  backgroundColor: '#141418',
+  backgroundColor: 'var(--panel)',
   border: `1px solid ${BORDER_STRONG}`,
   borderRadius: '12px',
   padding: '6px',
-  boxShadow: '0 20px 48px rgba(0,0,0,0.55)',
+  boxShadow: 'var(--shadow-strong)',
 };
 
 const dropdownItemStyle = {
@@ -311,11 +312,11 @@ const dropdownItemStyle = {
 };
 
 const StyledMdCheck = styled(MdCheck)`
-  color: #0a0a0d;
+  color: var(--on-accent);
   cursor: pointer;
   transition: transform 0.15s ease;
   font-size: 26px;
-  background-color: #34d399;
+  background-color: var(--green);
   border-radius: 50%;
   padding: 6px;
   display: inline-flex;

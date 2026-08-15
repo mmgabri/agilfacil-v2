@@ -199,7 +199,8 @@ const GeneratePDF = () => {
         isUserLogged={userIsAuthenticated}
         signIn={() => navigate('/login')}
         signOut={onSignOut}
-        goHome={() => navigate('/')} />
+        goHome={() => navigate('/')}
+        hasSidebar />
 
       <Layout>
         <Sidebar onSuggestions={() => setModalOpen(true)} />
@@ -288,19 +289,19 @@ const GeneratePDF = () => {
 // ─── Design tokens — "Dark Premium" ───────────────────────────────────────────
 // Mesmo sistema visual do Header / BoardPage.js / BoardListPage.js.
 
-const TEXT          = '#f5f5f7';
-const MUTED         = 'rgba(245,245,247,0.42)';
-const MUTED2        = 'rgba(245,245,247,0.62)';
-const BORDER        = 'rgba(255,255,255,0.07)';
-const BORDER_STRONG = 'rgba(255,255,255,0.14)';
-const ACCENT_SOFT   = '#a996ff';
-const ACCENT_GLOW   = 'rgba(139,124,246,0.18)';
-const ACCENT_GRAD   = 'linear-gradient(135deg, #9a8bfb 0%, #7c6cf0 100%)';
+const TEXT          = 'var(--text)';
+const MUTED         = 'var(--muted)';
+const MUTED2        = 'var(--muted2)';
+const BORDER        = 'var(--border)';
+const BORDER_STRONG = 'var(--border-strong)';
+const ACCENT_SOFT   = 'var(--accent-soft)';
+const ACCENT_GLOW   = 'var(--accent-glow)';
+const ACCENT_GRAD   = 'var(--accent-grad)';
 
 const PageBackground = styled.div`
   position: relative;
   min-height: 100vh;
-  background: #0a0a0d;
+  background: var(--bg);
 `;
 
 const AmbientGlow = styled.div`
@@ -361,7 +362,7 @@ const DownloadButton = styled.button`
   border: none;
   border-radius: 10px;
   background: ${ACCENT_GRAD};
-  color: #0a0a0d;
+  color: var(--on-accent);
   font-size: 13.5px;
   font-weight: 700;
   cursor: pointer;
@@ -381,11 +382,11 @@ const DownloadButton = styled.button`
 `;
 
 const InfoCard = styled.div`
-  background: #141418;
+  background: var(--panel);
   border: 1px solid ${BORDER_STRONG};
   border-radius: 16px;
   padding: 20px 24px;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+  box-shadow: var(--shadow-soft);
 `;
 
 const MetaGrid = styled.div`
@@ -433,19 +434,19 @@ const TableWrapper = styled.div`
   border: 1px solid ${BORDER_STRONG};
   border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+  box-shadow: var(--shadow-soft);
 `;
 
 const Table = styled.table`
   width: 100%;
   border-collapse: collapse;
   font-size: 13.5px;
-  background: #141418;
+  background: var(--panel);
   table-layout: fixed;
 `;
 
 const Th = styled.th`
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--surface-hover);
   color: ${MUTED2};
   padding: 12px 14px;
   text-align: left;
@@ -475,11 +476,11 @@ const Td = styled.td`
 
 const Tr = styled.tr`
   &:nth-child(even) {
-    background: rgba(255, 255, 255, 0.015);
+    background: var(--surface);
   }
 
   &:hover td {
-    background: rgba(255, 255, 255, 0.03);
+    background: var(--surface-hover);
   }
 
   &:last-child td {

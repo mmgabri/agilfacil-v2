@@ -28,14 +28,14 @@ const Progress = ({ roomData }) => {
 
 export default Progress;
 
-const BORDER = 'rgba(255,255,255,0.07)';
-const GREEN  = '#4ade80';
+const BORDER = 'var(--border)';
+const GREEN  = 'var(--green)';
 
 export const ProgressContainer = styled.div`
   width: 100%;
   max-width: 600px;
   height: 26px;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--surface);
   border: 1px solid ${BORDER};
   border-radius: 8px;
   overflow: hidden;
@@ -51,7 +51,7 @@ export const ProgressFill = styled.div`
   justify-content: flex-end;
   padding-right: 8px;
   box-sizing: border-box;
-  color: #0a0a0d;
+  color: var(--on-accent);
   font-size: 12px;
   font-weight: 700;
   border-radius: 8px 0 0 8px;

@@ -77,21 +77,17 @@ const HomePage = () => {
   );
 };
 
-// ─── Design tokens — "Dark Premium" ───────────────────────────────────────────
-// Mesmo sistema visual do BoardPageMock.js / BoardListPageMock.js.
+// ─── Design tokens ──────────────────────────────────────────────────────────
+// As cores vêm das variáveis CSS de src/index.css (tema dark/light).
 
-const BG           = "#0a0a0d";
-const TEXT         = "#f5f5f7";
-const MUTED        = "rgba(245,245,247,0.55)";
-const BORDER       = "rgba(255,255,255,0.07)";
-const BORDER_STRONG = "rgba(255,255,255,0.14)";
-const ACCENT_SOFT  = "#a996ff";
-const ACCENT_GLOW  = "rgba(139,124,246,0.18)";
+const ACCENT        = 'var(--accent)';
+const ACCENT_SOFT   = 'var(--accent-soft)';
+const ACCENT_GLOW   = 'var(--accent-glow)';
 
 export const PageBackground = styled.div`
   position: relative;
   min-height: 100vh;
-  background: ${BG};
+  background: var(--bg);
   overflow-x: hidden;
 `;
 
@@ -118,13 +114,13 @@ export const Title = styled.h2`
   text-align: center;
   margin-bottom: 48px;
   margin-top: 56px;
-  color: ${TEXT};
+  color: var(--text);
 `;
 
 export const Paragraph = styled.p`
   font-size: 18px;
   line-height: 1.8;
-  color: ${MUTED};
+  color: var(--muted2);
   margin-bottom: 20px;
 `;
 
@@ -135,7 +131,7 @@ export const HighlightedText = styled.span`
   text-decoration: underline;
 
   &:hover {
-    color: #8b7cf6;
+    color: ${ACCENT};
   }
 `;
 
@@ -156,9 +152,9 @@ export const IconBadge = styled.div`
   width: 104px;
   height: 104px;
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, rgba(169,150,255,0.38), rgba(139,124,246,0.12) 70%);
-  border: 1px solid rgba(139,124,246,0.35);
-  box-shadow: 0 0 0 1px rgba(139,124,246,0.12), 0 8px 32px rgba(139,124,246,0.25);
+  background: radial-gradient(circle at 35% 30%, color-mix(in srgb, ${ACCENT_SOFT} 38%, transparent), color-mix(in srgb, ${ACCENT} 12%, transparent) 70%);
+  border: 1px solid color-mix(in srgb, ${ACCENT} 35%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, ${ACCENT} 12%, transparent), 0 8px 32px color-mix(in srgb, ${ACCENT} 25%, transparent);
   margin-bottom: 22px;
   transition: transform 0.25s ease, box-shadow 0.25s ease;
 `;
@@ -168,33 +164,33 @@ export const ServiceItem = styled.li`
   flex-direction: column;
   align-items: center;
   cursor: pointer;
-  background: rgba(255,255,255,0.03);
+  background: var(--surface);
   backdrop-filter: blur(22px);
   -webkit-backdrop-filter: blur(22px);
-  border: 1px solid ${BORDER};
+  border: 1px solid var(--border);
   border-radius: 20px;
   padding: 32px 28px;
   width: 300px;
   text-align: center;
-  box-shadow: 0 4px 32px rgba(0, 0, 0, 0.35);
+  box-shadow: var(--shadow-soft);
   transition: background 0.18s ease, border-color 0.18s ease, transform 0.2s ease, box-shadow 0.2s ease;
 
   &:hover {
-    background: rgba(255,255,255,0.05);
-    border-color: ${BORDER_STRONG};
+    background: var(--surface-hover);
+    border-color: var(--border-strong);
     transform: translateY(-4px);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45), 0 0 0 1px ${ACCENT_GLOW};
+    box-shadow: var(--shadow-strong), 0 0 0 1px ${ACCENT_GLOW};
 
     ${IconBadge} {
       transform: scale(1.08);
-      box-shadow: 0 0 0 1px rgba(139,124,246,0.25), 0 12px 40px rgba(139,124,246,0.4);
+      box-shadow: 0 0 0 1px color-mix(in srgb, ${ACCENT} 25%, transparent), 0 12px 40px color-mix(in srgb, ${ACCENT} 40%, transparent);
     }
   }
 `;
 
 export const ServiceTitle = styled.h3`
   font-size: 19px;
-  color: ${TEXT};
+  color: var(--text);
   margin: 0 0 8px;
   font-weight: 700;
 `;
@@ -202,7 +198,7 @@ export const ServiceTitle = styled.h3`
 export const ServiceLink = styled.p`
   font-size: 14px;
   line-height: 1.5;
-  color: ${MUTED};
+  color: var(--muted2);
   margin-top: 0;
 `;
 

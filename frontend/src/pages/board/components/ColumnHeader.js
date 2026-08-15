@@ -5,18 +5,19 @@ import { MdMoreVert, MdEdit, MdCheck } from 'react-icons/md';
 import { FaRegTrashAlt, FaPalette } from "react-icons/fa";
 import { FaTrashAlt } from "react-icons/fa";
 import './../../../styles/board.css';
-import { COLUMN_COLOR_PALETTE } from '../columnColorPalette';
+import { COLUMN_COLOR_PALETTE, resolveColumnAccent } from '../columnColorPalette';
 
 // ─── Design tokens — "Dark Premium" ───────────────────────────────────────────
 
-const TEXT = '#f5f5f7';
-const MUTED = 'rgba(245,245,247,0.42)';
-const MUTED2 = 'rgba(245,245,247,0.62)';
-const BORDER = 'rgba(255,255,255,0.07)';
-const BORDER_STRONG = 'rgba(255,255,255,0.14)';
-const ACCENT = '#8b7cf6';
-const ACCENT_SOFT = '#a996ff';
-const RED = '#fb7185';
+const TEXT = 'var(--text)';
+const MUTED = 'var(--muted)';
+const MUTED2 = 'var(--muted2)';
+const BORDER = 'var(--border)';
+const BORDER_STRONG = 'var(--border-strong)';
+const ACCENT = 'var(--accent)';
+const ACCENT_SOFT = 'var(--accent-soft)';
+const ACCENT_GLOW = 'var(--accent-glow)';
+const RED = 'var(--red)';
 
 const ColumnHeader = ({ columnTitle, countCards, index, onUpdateTitleColumn, onDeleteColumn, onDeleteAllCard, onUpdatecolorCards, colorCards }) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -51,7 +52,7 @@ const ColumnHeader = ({ columnTitle, countCards, index, onUpdateTitleColumn, onD
     onUpdatecolorCards(color, index)
   };
 
-  const accent = colorCards || '#8b7cf6';
+  const accent = resolveColumnAccent(colorCards);
 
   return (
     <ColumnHeaderContainer>
@@ -120,7 +121,7 @@ const ColumnHeader = ({ columnTitle, countCards, index, onUpdateTitleColumn, onD
                       <ColorSwatch
                         key={colorItem.color}
                         title={colorItem.name}
-                        $selected={colorItem.color === colorCards}
+                        $selected={colorItem.color === accent}
                         style={{ background: colorItem.color }}
                         onClick={() => handleColorSelect(colorItem.color)}
                       />
@@ -180,8 +181,8 @@ const TitleInput = styled.input`
   font-size: 14px;
   font-weight: 600;
   color: ${TEXT};
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid ${ACCENT}60;
+  background: var(--surface-hover);
+  border: 1px solid color-mix(in srgb, ${ACCENT} 38%, transparent);
   border-radius: 6px;
   padding: 2px 6px;
   outline: none;
@@ -212,12 +213,12 @@ const IconGhostBtn = styled.button`
   border-radius: 8px;
   border: none;
   cursor: pointer;
-  background: ${({ $active }) => ($active ? 'rgba(139,124,246,0.18)' : 'transparent')};
+  background: ${({ $active }) => ($active ? ACCENT_GLOW : 'transparent')};
   color: ${({ $active }) => ($active ? ACCENT_SOFT : MUTED)};
   transition: background 0.15s ease, color 0.15s ease;
 
   &:hover {
-    background: ${({ $active }) => ($active ? 'rgba(139,124,246,0.18)' : 'rgba(255,255,255,0.06)')};
+    background: ${({ $active }) => ($active ? ACCENT_GLOW : 'var(--surface-hover)')};
     color: ${({ $active }) => ($active ? ACCENT_SOFT : TEXT)};
   }
 `;
@@ -241,8 +242,8 @@ const ColorSwatch = styled.button`
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  border: ${({ $selected }) => ($selected ? '2px solid #fff' : `1px solid ${BORDER_STRONG}`)};
-  box-shadow: ${({ $selected }) => ($selected ? '0 0 0 2px rgba(139,124,246,0.5)' : 'none')};
+  border: ${({ $selected }) => ($selected ? `2px solid ${TEXT}` : `1px solid ${BORDER_STRONG}`)};
+  box-shadow: ${({ $selected }) => ($selected ? `0 0 0 2px color-mix(in srgb, ${ACCENT} 50%, transparent)` : 'none')};
   cursor: pointer;
   transition: transform 0.15s ease;
   flex-shrink: 0;
@@ -261,11 +262,11 @@ const dropdownToggleStyle = {
 };
 
 const dropdownMenuStyle = {
-  backgroundColor: '#141418',
+  backgroundColor: 'var(--panel)',
   border: `1px solid ${BORDER_STRONG}`,
   borderRadius: '12px',
   padding: '6px',
-  boxShadow: '0 20px 48px rgba(0,0,0,0.55)',
+  boxShadow: 'var(--shadow-strong)',
 };
 
 const dropdownItemStyle = {

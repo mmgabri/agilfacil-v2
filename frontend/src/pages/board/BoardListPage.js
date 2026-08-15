@@ -24,19 +24,22 @@ import localStorageService from "../../services/localStorageService";
 // ─── Design tokens — "Dark Premium" ───────────────────────────────────────────
 // Mesmo sistema visual do Header / BoardPageMock.js / BoardListPageMock.js.
 
-const BG           = '#0a0a0d';
-const TEXT         = '#f5f5f7';
-const MUTED        = 'rgba(245,245,247,0.42)';
-const MUTED2       = 'rgba(245,245,247,0.62)';
-const BORDER       = 'rgba(255,255,255,0.07)';
-const BORDER_STRONG = 'rgba(255,255,255,0.14)';
-const ACCENT        = '#8b7cf6';
-const ACCENT_SOFT   = '#a996ff';
-const ACCENT_GLOW   = 'rgba(139,124,246,0.18)';
-const ACCENT_GRAD   = 'linear-gradient(135deg, #9a8bfb 0%, #7c6cf0 100%)';
+const TEXT         = 'var(--text)';
+const MUTED        = 'var(--muted)';
+const MUTED2       = 'var(--muted2)';
+const BORDER       = 'var(--border)';
+const BORDER_STRONG = 'var(--border-strong)';
+const ACCENT_SOFT   = 'var(--accent-soft)';
+const ACCENT_GLOW   = 'var(--accent-glow)';
+const ACCENT_BORDER = 'var(--accent-border)';
+const ACCENT_GRAD   = 'var(--accent-grad)';
 
 const CARD_ACCENTS = ['#34d399', '#fb7185', '#38bdf8', '#fbbf24', '#a78bfa'];
-const NO_SQUAD_ACCENT = 'rgba(245,245,247,0.35)';
+// Hex fixo (não variável de tema) — é concatenado com sufixo de opacidade
+// (ex: `${accent}1f`) no card, então precisa ser um hex "puro". Cinza médio
+// funciona razoável nos dois temas (clareia em cima de fundo escuro, escurece
+// em cima de fundo claro, já que é usado sempre com opacidade baixa).
+const NO_SQUAD_ACCENT = '#8a8a93';
 const normalizeSquad = (s) => (s || '').trim().toLowerCase();
 
 const tooltipStyle = { fontSize: '12px', fontWeight: 600, padding: '5px 10px', borderRadius: '8px', zIndex: 1001 };
@@ -239,7 +242,8 @@ const BoardListPage = () => {
         isUserLogged={userIsAuthenticated}
         signIn={() => navigate('/login')}
         signOut={onSignOut}
-        goHome={() => navigate('/')} />
+        goHome={() => navigate('/')}
+        hasSidebar />
 
       <Layout>
         <Sidebar onSuggestions={() => setModalOpen(true)} />
@@ -527,7 +531,7 @@ export default BoardListPage;
 const PageBackground = styled.div`
   position: relative;
   min-height: 100vh;
-  background: ${BG};
+  background: var(--bg);
 `;
 
 const AmbientGlow = styled.div`
@@ -574,8 +578,8 @@ const SearchBox = styled.div`
   gap: 8px;
   padding: 6px 12px;
   border-radius: 20px;
-  background: ${({ $active }) => ($active ? ACCENT_GLOW : 'rgba(255,255,255,0.035)')};
-  border: 1px solid ${({ $active }) => ($active ? `${ACCENT}50` : BORDER)};
+  background: ${({ $active }) => ($active ? ACCENT_GLOW : 'var(--surface)')};
+  border: 1px solid ${({ $active }) => ($active ? ACCENT_BORDER : BORDER)};
 `;
 
 const SearchInput = styled.input`
@@ -608,8 +612,8 @@ const DropdownButton = styled.button`
   border-radius: 20px;
   cursor: pointer;
   color: ${({ $active }) => ($active ? ACCENT_SOFT : MUTED2)};
-  background: ${({ $active }) => ($active ? ACCENT_GLOW : 'rgba(255,255,255,0.035)')};
-  border: 1px solid ${({ $active }) => ($active ? `${ACCENT}50` : BORDER)};
+  background: ${({ $active }) => ($active ? ACCENT_GLOW : 'var(--surface)')};
+  border: 1px solid ${({ $active }) => ($active ? ACCENT_BORDER : BORDER)};
   transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 `;
 
@@ -625,10 +629,10 @@ const DropdownPanel = styled.div`
   margin-top: 8px;
   border-radius: 12px;
   overflow: hidden;
-  background: #141418;
+  background: var(--panel);
   border: 1px solid ${BORDER_STRONG};
   z-index: 50;
-  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.55);
+  box-shadow: var(--shadow-strong);
   padding: 4px;
 `;
 
@@ -646,7 +650,7 @@ const DropdownItem = styled.button`
   font-weight: ${({ $active }) => ($active ? 600 : 400)};
 
   &:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--surface-hover);
   }
 `;
 
@@ -684,7 +688,7 @@ const AddTile = styled.button`
   transition: border-color 0.18s ease, background 0.18s ease, transform 0.2s ease;
 
   &:hover {
-    border-color: ${ACCENT}70;
+    border-color: ${ACCENT_BORDER};
     background: ${ACCENT_GLOW};
     transform: translateY(-2px);
   }
@@ -703,7 +707,7 @@ const AddTileIcon = styled.span`
 
   ${AddTile}:hover & {
     background: ${ACCENT_GRAD};
-    color: #0a0a0d;
+    color: var(--on-accent);
   }
 `;
 
@@ -734,17 +738,17 @@ const CardEl = styled.div`
   border-radius: 18px;
   overflow: hidden;
   cursor: pointer;
-  background: rgba(255, 255, 255, 0.028);
+  background: var(--surface);
   backdrop-filter: blur(22px);
   -webkit-backdrop-filter: blur(22px);
   border: 1px solid ${BORDER};
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.28);
+  box-shadow: var(--shadow-soft);
   transition: background 0.18s ease, border-color 0.18s ease, box-shadow 0.2s ease, transform 0.2s ease;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.045);
+    background: var(--surface-hover);
     border-color: ${BORDER_STRONG};
-    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.4);
+    box-shadow: var(--shadow-strong);
     transform: translateY(-2px);
   }
 `;
@@ -829,7 +833,7 @@ const ActionIconBtn = styled.button`
   border-radius: 9px;
   border: none;
   cursor: pointer;
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--surface-hover);
   color: ${MUTED2};
   transition: background 0.15s ease, color 0.15s ease;
 
@@ -853,7 +857,7 @@ const CalendarPresetBtn = styled.button`
   font-size: 11px;
   padding: 4px 10px;
   border-radius: 20px;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--surface-hover);
   border: none;
   cursor: pointer;
   color: ${MUTED2};
@@ -912,9 +916,9 @@ const DayBtn = styled.button`
   border-radius: 8px;
   font-size: 12px;
   cursor: pointer;
-  border: 1px solid ${({ $today, $edge }) => ($today && !$edge ? `${ACCENT}60` : 'transparent')};
+  border: 1px solid ${({ $today, $edge }) => ($today && !$edge ? ACCENT_BORDER : 'transparent')};
   background: ${({ $edge, $inRange }) => ($edge ? ACCENT_GRAD : $inRange ? ACCENT_GLOW : 'transparent')};
-  color: ${({ $edge, $inRange }) => ($edge ? '#0a0a0d' : $inRange ? ACCENT_SOFT : TEXT)};
+  color: ${({ $edge, $inRange }) => ($edge ? 'var(--on-accent)' : $inRange ? ACCENT_SOFT : TEXT)};
   font-weight: ${({ $edge }) => ($edge ? 700 : 400)};
 `;
 
@@ -936,7 +940,7 @@ const CalendarClearBtn = styled.button`
 
 const CalendarApplyBtn = styled.button`
   background: ${ACCENT_GRAD};
-  color: #0a0a0d;
+  color: var(--on-accent);
   border: none;
   border-radius: 8px;
   padding: 6px 12px;

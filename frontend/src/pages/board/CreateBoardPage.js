@@ -12,10 +12,9 @@ import logger from '../../services/logger';
 
 const CTX = 'CreateBoardPage';
 
-const BG          = '#0a0a0d';
-const TEXT        = '#f5f5f7';
-const BORDER_STRONG = 'rgba(255,255,255,0.14)';
-const ACCENT_GLOW = 'rgba(139,124,246,0.18)';
+const TEXT        = 'var(--text)';
+const BORDER_STRONG = 'var(--border-strong)';
+const ACCENT_GLOW = 'var(--accent-glow)';
 
 export const CreateBoardPage = ({ }) => {
   let navigate = useNavigate();
@@ -96,7 +95,7 @@ export const CreateBoardPage = ({ }) => {
 const PageBackground = styled.div`
   position: relative;
   min-height: 100vh;
-  background: ${BG};
+  background: var(--bg);
 `;
 
 const AmbientGlow = styled.div`
@@ -118,13 +117,13 @@ const Centered = styled.div`
 const Panel = styled.div`
   width: 100%;
   max-width: 480px;
-  background: rgba(255, 255, 255, 0.028);
+  background: var(--surface);
   backdrop-filter: blur(22px);
   -webkit-backdrop-filter: blur(22px);
   border: 1px solid ${BORDER_STRONG};
   border-radius: 20px;
   padding: 24px;
-  box-shadow: 0 4px 32px rgba(0, 0, 0, 0.35);
+  box-shadow: var(--shadow-soft);
 `;
 
 const PanelTitle = styled.h1`

@@ -1,15 +1,15 @@
 import styled from 'styled-components';
 
-// ─── Design tokens — "Dark Premium" ───────────────────────────────────────────
-// Mesmo sistema visual do Header / BoardListPage.js / BoardPageMock.js.
+// ─── Design tokens ──────────────────────────────────────────────────────────
+// As cores vêm das variáveis CSS de src/index.css (tema dark/light).
 
-const TEXT   = '#f5f5f7';
-const MUTED  = 'rgba(245,245,247,0.42)';
-const MUTED2 = 'rgba(245,245,247,0.62)';
-const BORDER = 'rgba(255,255,255,0.07)';
-const ACCENT       = '#8b7cf6';
-const ACCENT_GLOW  = 'rgba(139,124,246,0.18)';
-const ACCENT_GRAD  = 'linear-gradient(135deg, #9a8bfb 0%, #7c6cf0 100%)';
+const TEXT   = 'var(--text)';
+const MUTED  = 'var(--muted)';
+const MUTED2 = 'var(--muted2)';
+const BORDER = 'var(--border)';
+const ACCENT       = 'var(--accent)';
+const ACCENT_GLOW  = 'var(--accent-glow)';
+const ACCENT_GRAD  = 'var(--accent-grad)';
 
 export const Title = styled.h2`
   font-size: 16px;
@@ -53,7 +53,7 @@ export const Input = styled.input`
   border: 1px solid ${BORDER};
   border-radius: 10px;
   font-size: 13.5px;
-  background: rgba(255, 255, 255, 0.045);
+  background: var(--surface);
   color: ${TEXT};
   outline: none;
   transition: border-color 0.18s ease, box-shadow 0.18s ease;
@@ -63,7 +63,7 @@ export const Input = styled.input`
   }
 
   &:focus {
-    border-color: ${ACCENT}70;
+    border-color: color-mix(in srgb, ${ACCENT} 70%, transparent);
     box-shadow: 0 0 0 3px ${ACCENT_GLOW};
   }
 `;
@@ -75,7 +75,7 @@ export const TextArea = styled.textarea`
   border: 1px solid ${BORDER};
   border-radius: 10px;
   font-size: 13.5px;
-  background: rgba(255, 255, 255, 0.045);
+  background: var(--surface);
   color: ${TEXT};
   outline: none;
   resize: none;
@@ -86,7 +86,7 @@ export const TextArea = styled.textarea`
   }
 
   &:focus {
-    border-color: ${ACCENT}70;
+    border-color: color-mix(in srgb, ${ACCENT} 70%, transparent);
     box-shadow: 0 0 0 3px ${ACCENT_GLOW};
   }
 `;
@@ -97,7 +97,7 @@ export const SubmitButton = styled.button`
   padding: 11px;
   font-size: 13.5px;
   font-weight: 700;
-  color: #0a0a0d;
+  color: var(--on-accent);
   background: ${ACCENT_GRAD};
   border: none;
   border-radius: 10px;

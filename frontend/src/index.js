@@ -9,15 +9,18 @@ import { Amplify } from 'aws-amplify';
 import aws_exports from './aws-exports'
 import { setupAxiosLogger } from './services/logger';
 import { UserProvider } from './context/UserContext';
+import { ThemeProvider } from './context/ThemeContext';
 
 Amplify.configure(aws_exports);
 setupAxiosLogger();
 
 const root = createRoot(document.getElementById('root'));
 root.render(
-  <UserProvider>
-    <App />
-  </UserProvider>
+  <ThemeProvider>
+    <UserProvider>
+      <App />
+    </UserProvider>
+  </ThemeProvider>
 ); // Renderizando o componente App
 
 // If you want to start measuring performance in your app, pass a function
