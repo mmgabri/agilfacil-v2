@@ -4,13 +4,14 @@ import { Droppable, Draggable } from "@hello-pangea/dnd";
 import { v4 as uuidv4 } from 'uuid';
 import CardsItem from "./CardsItem";
 import ColumnHeader from "./ColumnHeader";
+import { resolveColumnAccent } from "../columnColorPalette";
 
 const grid = 8;
 const scrollContainerHeight = 250;
 
-const TEXT   = '#f5f5f7';
-const MUTED2 = 'rgba(245,245,247,0.62)';
-const BORDER = 'rgba(255,255,255,0.07)';
+const TEXT   = 'var(--text)';
+const MUTED2 = 'var(--muted2)';
+const BORDER = 'var(--border)';
 
 // Campo de adição rápida de card — sempre visível no topo da coluna
 const QuickAddCard = ({ accent, indexColumn, onAddCard, userLoggedData }) => {
@@ -54,7 +55,7 @@ const QuickAddCard = ({ accent, indexColumn, onAddCard, userLoggedData }) => {
 
 // Componente para montar as Colunas
 const ColumnContent = ({ cards, title, countCards, colorCards, dropProvided, indexColumn, onSaveCard, onDeleteCard, onDeleteAllCard, onUpdateLike, onUpdateTitleColumn, onDeleteColumn, onAddCard, onUpdatecolorCards, userLoggedData, isObfuscatedBoardLevel, isObfuscatedColumnLevel }) => {
-  const accent = colorCards || '#8b7cf6';
+  const accent = resolveColumnAccent(colorCards);
   return (
     <InnerContainer>
       <ColumnHeader columnTitle={title} countCards={countCards} colorCards={colorCards} index={indexColumn} onUpdateTitleColumn={onUpdateTitleColumn} onDeleteColumn={onDeleteColumn} onDeleteAllCard={onDeleteAllCard} onUpdatecolorCards={onUpdatecolorCards}></ColumnHeader>
@@ -99,7 +100,7 @@ const DraggableCardList = memo(({ cards, indexColumn, onSaveCard, onDeleteCard, 
 export default function Column(props) {
   const {isCombineEnabled, listId = "LIST", listType, cards, title, colorCards, onSaveCard, onDeleteCard, onDeleteAllCard,  onUpdateLike, onUpdateTitleColumn, onDeleteColumn, onAddCard, onUpdatecolorCards, indexColumn, userLoggedData, isObfuscatedBoardLevel, isObfuscatedColumnLevel } = props;
 
-  const accent = colorCards || '#8b7cf6';
+  const accent = resolveColumnAccent(colorCards);
 
   return (
     <Droppable
@@ -150,14 +151,12 @@ export default function Column(props) {
 
 // Estilizações — "Dark Premium"
 
-const BORDER_STRONG = 'rgba(255,255,255,0.14)';
-
 // Função utilitária para definir o background dinamicamente — usa a cor de
 // acento da própria coluna como indicador de "solte aqui" durante o arrasto.
 const getBackgroundColor = (isDraggingOver, isDraggingFrom, accent) => {
   if (isDraggingOver) return `${accent}1a`;
-  if (isDraggingFrom) return "rgba(255,255,255,0.045)";
-  return "rgba(255,255,255,0.028)";
+  if (isDraggingFrom) return "var(--surface-hover)";
+  return "var(--surface)";
 };
 
 // IMPORTANTE: este wrapper NÃO pode ter backdrop-filter/overflow:hidden —
@@ -203,7 +202,7 @@ const GlassLayer = styled.div`
   backdrop-filter: blur(22px);
   -webkit-backdrop-filter: blur(22px);
   border: 1px solid ${(props) => (props.isDraggingOver ? `${props.$accent}80` : BORDER)};
-  box-shadow: 0 4px 32px rgba(0, 0, 0, 0.35);
+  box-shadow: var(--shadow-soft);
   transition: background-color 0.2s ease, border-color 0.2s ease;
 `;
 
@@ -251,10 +250,15 @@ const QuickAddTextarea = styled.textarea`
   font-family: inherit;
   font-size: 13px;
   color: ${TEXT};
-  background: rgba(255, 255, 255, 0.045);
+  background: var(--surface);
   border: 1px solid ${(props) => (props.value || props.autoFocus ? `${props.$accent}70` : BORDER)};
   outline: none;
   transition: border-color 0.18s ease, box-shadow 0.18s ease;
+
+  /* No claro a borda "apagada" fica quase invisível — mantém sempre o tom do accent, só aqui */
+  :root[data-theme="light"] & {
+    border-color: ${(props) => `${props.$accent}70`};
+  }
 
   &:focus {
     border-color: ${(props) => `${props.$accent}70`};
@@ -278,7 +282,7 @@ const QuickAddSaveBtn = styled.button`
   padding: 6px 12px;
   border-radius: 8px;
   border: none;
-  color: #0a0a0d;
+  color: var(--on-accent);
   cursor: pointer;
 `;
 
@@ -287,7 +291,7 @@ const QuickAddCancelBtn = styled.button`
   padding: 6px 12px;
   border-radius: 8px;
   border: none;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--surface);
   color: ${MUTED2};
   cursor: pointer;
 `;

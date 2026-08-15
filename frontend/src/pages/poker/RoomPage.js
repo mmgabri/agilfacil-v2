@@ -82,7 +82,8 @@ export const RoomPage = ({ }) => {
         isUserLogged={userIsAuthenticated}
         signIn={() => navigate('/login')}
         signOut={onSignOut}
-        goHome={() => navigate('/')} />
+        goHome={() => navigate('/')}
+        hasSidebar />
 
       <Layout>
         <Sidebar onSuggestions={() => setModalOpen(true)} />
@@ -113,13 +114,10 @@ export default RoomPage
 // ─── Design tokens — "Dark Premium" ───────────────────────────────────────────
 // Mesmo sistema visual do Header / BoardPage.js / BoardListPage.js.
 
-const BG          = '#0a0a0d';
-const ACCENT_GLOW = 'rgba(139,124,246,0.18)';
-
 const PageBackground = styled.div`
   position: relative;
   min-height: 100vh;
-  background: ${BG};
+  background: var(--bg);
 `;
 
 const AmbientGlow = styled.div`
@@ -127,7 +125,7 @@ const AmbientGlow = styled.div`
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  background: radial-gradient(1100px 480px at 50% -8%, ${ACCENT_GLOW}, transparent 65%);
+  background: radial-gradient(1100px 480px at 50% -8%, var(--accent-glow), transparent 65%);
 `;
 
 const Layout = styled.div`

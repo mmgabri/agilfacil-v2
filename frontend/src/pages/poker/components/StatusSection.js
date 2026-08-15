@@ -42,13 +42,13 @@ const StatusSection = ({ roomData, isRoomCreator, handlerupdateStatusRoom }) => 
     );
 };
 
-const TEXT        = '#f5f5f7';
-const MUTED2       = 'rgba(245,245,247,0.62)';
-const BORDER       = 'rgba(255,255,255,0.07)';
-const ACCENT       = '#8b7cf6';
-const ACCENT_GLOW  = 'rgba(139,124,246,0.18)';
-const ACCENT_GRAD  = 'linear-gradient(135deg, #9a8bfb 0%, #7c6cf0 100%)';
-const GREEN        = '#4ade80';
+const TEXT        = 'var(--text)';
+const MUTED2       = 'var(--muted2)';
+const BORDER       = 'var(--border)';
+const ACCENT       = 'var(--accent)';
+const ACCENT_GLOW  = 'var(--accent-glow)';
+const ACCENT_GRAD  = 'var(--accent-grad)';
+const GREEN        = 'var(--green)';
 
 const Wrapper = styled.div`
   display: flex;
@@ -65,7 +65,7 @@ const StatusPill = styled.div`
   gap: 8px;
   padding: 8px 16px;
   border-radius: 20px;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--surface);
   border: 1px solid ${BORDER};
   color: ${TEXT};
   font-size: 13px;
@@ -73,7 +73,7 @@ const StatusPill = styled.div`
 
   svg {
     color: ${({ $tone }) => ($tone === 'live' ? GREEN : $tone === 'done' ? ACCENT : MUTED2)};
-    ${({ $tone }) => $tone === 'live' && 'filter: drop-shadow(0 0 4px rgba(74,222,128,0.7));'}
+    ${({ $tone }) => $tone === 'live' && `filter: drop-shadow(0 0 4px color-mix(in srgb, ${GREEN} 70%, transparent));`}
   }
 `;
 
@@ -82,7 +82,7 @@ const ActionBtn = styled.button`
   border: none;
   border-radius: 10px;
   background: ${ACCENT_GRAD};
-  color: #0a0a0d;
+  color: var(--on-accent);
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;

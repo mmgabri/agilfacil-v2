@@ -69,9 +69,7 @@ export const BoardPage = () => {
       setBoardData(prev => ({
         ...prev,
         ...socketResponse,
-        columns: socketResponse.columns
-          ? applyLegacyColumnColors(socketResponse.columns, socketResponse.createdAt || prev.createdAt)
-          : prev.columns,
+        columns: socketResponse.columns || prev.columns,
       }));
     }
   }, [socketResponse]);
@@ -121,6 +119,7 @@ export const BoardPage = () => {
           handleExportBoard: handleExportBoardToPDF,
           isObfuscatedCardLevel: boardData.columns.some(col => col.isObfuscated),
         }}
+        hasSidebar
       />
 
       <Layout>
@@ -167,13 +166,10 @@ export const BoardPage = () => {
 
 export default BoardPage;
 
-const BG         = '#0a0a0d';
-const ACCENT_GLOW = 'rgba(139,124,246,0.18)';
-
 const PageBackground = styled.div`
   position: relative;
   min-height: 100vh;
-  background: ${BG};
+  background: var(--bg);
 `;
 
 const AmbientGlow = styled.div`
@@ -181,7 +177,12 @@ const AmbientGlow = styled.div`
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  background: radial-gradient(1100px 480px at 50% -8%, ${ACCENT_GLOW}, transparent 65%);
+  background: radial-gradient(1100px 480px at 50% -8%, var(--accent-glow), transparent 65%);
+
+  /* No claro o brilho cria um degradê visível (cinza em cima, branco embaixo) — só no dark */
+  :root[data-theme="light"] & {
+    display: none;
+  }
 `;
 
 const Layout = styled.div`
