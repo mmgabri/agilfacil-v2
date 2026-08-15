@@ -133,7 +133,8 @@ function CreateAndEnterRoomPage() {
                 isUserLogged={userIsAuthenticated}
                 signIn={() => navigate('/login')}
                 signOut={onSignOut}
-                goHome={() => navigate('/')} />
+                goHome={() => navigate('/')}
+                hasSidebar />
 
             <Layout>
                 <Sidebar onSuggestions={() => setModalOpen(true)} />
@@ -232,20 +233,21 @@ function CreateAndEnterRoomPage() {
 // ─── Design tokens — "Dark Premium" ───────────────────────────────────────────
 // Mesmo sistema visual do Header / App.js (AuthForm) / BoardListPage.js.
 
-const TEXT          = '#f5f5f7';
-const MUTED         = 'rgba(245,245,247,0.42)';
-const MUTED2        = 'rgba(245,245,247,0.62)';
-const BORDER        = 'rgba(255,255,255,0.07)';
-const BORDER_STRONG = 'rgba(255,255,255,0.14)';
-const ACCENT        = '#8b7cf6';
-const ACCENT_SOFT   = '#a996ff';
-const ACCENT_GLOW   = 'rgba(139,124,246,0.18)';
-const ACCENT_GRAD   = 'linear-gradient(135deg, #9a8bfb 0%, #7c6cf0 100%)';
+const TEXT          = 'var(--text)';
+const MUTED         = 'var(--muted)';
+const MUTED2        = 'var(--muted2)';
+const BORDER        = 'var(--border)';
+const BORDER_STRONG = 'var(--border-strong)';
+const ACCENT        = 'var(--accent)';
+const ACCENT_SOFT   = 'var(--accent-soft)';
+const ACCENT_GLOW   = 'var(--accent-glow)';
+const ACCENT_BORDER = 'var(--accent-border)';
+const ACCENT_GRAD   = 'var(--accent-grad)';
 
 const PageBackground = styled.div`
   position: relative;
   min-height: 100vh;
-  background: #0a0a0d;
+  background: var(--bg);
   overflow-x: hidden;
 `;
 
@@ -275,12 +277,12 @@ const Content = styled.div`
 const GlassCard = styled.div`
   position: relative;
   z-index: 1;
-  background: #141418;
+  background: var(--panel);
   border-radius: 20px;
   padding: 36px 40px 32px;
   width: 100%;
   max-width: 420px;
-  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.55);
+  box-shadow: var(--shadow-strong);
   border: 1px solid ${BORDER_STRONG};
 `;
 
@@ -289,7 +291,7 @@ const AvatarCircle = styled.div`
   height: 82px;
   border-radius: 50%;
   background: ${ACCENT_GLOW};
-  border: 1.5px solid ${ACCENT}55;
+  border: 1.5px solid ${ACCENT_BORDER};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -345,7 +347,7 @@ const InputWrap = styled.div`
 const LineInput = styled.input`
   width: 100%;
   box-sizing: border-box;
-  background: rgba(255, 255, 255, 0.045);
+  background: var(--surface);
   border: 1px solid ${BORDER};
   border-radius: 10px;
   color: ${TEXT};
@@ -354,14 +356,14 @@ const LineInput = styled.input`
   outline: none;
   transition: border-color 0.18s ease, box-shadow 0.18s ease;
   &::placeholder { color: ${MUTED}; }
-  &:focus { border-color: ${ACCENT}70; box-shadow: 0 0 0 3px ${ACCENT_GLOW}; }
+  &:focus { border-color: ${ACCENT_BORDER}; box-shadow: 0 0 0 3px ${ACCENT_GLOW}; }
 
   &:-webkit-autofill,
   &:-webkit-autofill:hover,
   &:-webkit-autofill:focus,
   &:-webkit-autofill:active {
-    -webkit-box-shadow: 0 0 0px 1000px #17171c inset !important;
-    box-shadow:         0 0 0px 1000px #17171c inset !important;
+    -webkit-box-shadow: 0 0 0px 1000px var(--panel) inset !important;
+    box-shadow:         0 0 0px 1000px var(--panel) inset !important;
     -webkit-text-fill-color: ${TEXT} !important;
     caret-color: ${TEXT};
     border: 1px solid ${BORDER} !important;
@@ -378,7 +380,7 @@ const ActionBtn = styled.button`
   background: ${ACCENT_GRAD};
   border: none;
   border-radius: 10px;
-  color: #0a0a0d;
+  color: var(--on-accent);
   font-size: 0.85rem;
   font-weight: 700;
   letter-spacing: 0.3px;

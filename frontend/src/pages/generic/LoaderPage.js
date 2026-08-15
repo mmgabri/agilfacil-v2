@@ -12,7 +12,7 @@ const spin = keyframes`
 `;
 
 const Loader = styled.div`
-  color: #fff;
+  color: var(--text);
   text-align: center;
   margin-top: 20px;
   font-size: 2rem;
@@ -20,7 +20,7 @@ const Loader = styled.div`
 `;
 
 const Container = styled.div`
-  background-color: #1C1C1C;
+  background-color: var(--bg);
   display: flex; /* Altera para flexbox para centralizar */
   justify-content: center; /* Centraliza horizontalmente */
   align-items: center; /* Centraliza verticalmente */
@@ -29,17 +29,14 @@ const Container = styled.div`
 `;
 
 
-export const LoaderPage = ({ }) => {
+export const LoaderPage = () => {
 
   return (
-    <div className="bg-black-custom">
-      <Container>
-        <Loader>
-          <FaSpinner />
-        </Loader>
-      </Container>
-    </div>
-
+    <Container>
+      <Loader>
+        <FaSpinner />
+      </Loader>
+    </Container>
   );
 }
 export default LoaderPage

@@ -23,12 +23,12 @@ const Users = ({ roomData }) => {
   );
 };
 
-const TEXT   = '#f5f5f7';
-const MUTED  = 'rgba(245,245,247,0.42)';
-const BORDER = 'rgba(255,255,255,0.07)';
-const ACCENT_SOFT = '#a996ff';
-const ACCENT_GLOW = 'rgba(139,124,246,0.18)';
-const GREEN  = '#4ade80';
+const TEXT   = 'var(--text)';
+const MUTED  = 'var(--muted)';
+const BORDER = 'var(--border)';
+const ACCENT_SOFT = 'var(--accent-soft)';
+const ACCENT_GLOW = 'var(--accent-glow)';
+const GREEN  = 'var(--green)';
 
 const UserList = styled.div`
   display: flex;
@@ -45,10 +45,10 @@ const UserItem = styled.div`
   gap: 8px;
   padding: 16px 14px;
   width: 130px;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--surface);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
-  border: 1px solid ${({ $voted }) => ($voted ? `${ACCENT_SOFT}40` : BORDER)};
+  border: 1px solid ${({ $voted }) => ($voted ? `color-mix(in srgb, ${ACCENT_SOFT} 40%, transparent)` : BORDER)};
   border-radius: 16px;
   text-align: center;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
@@ -80,8 +80,8 @@ const VoteBadge = styled.div`
   border-radius: 8px;
   font-size: 14px;
   font-weight: 700;
-  color: ${({ $filled }) => ($filled ? '#0a0a0d' : 'transparent')};
-  background: ${({ $filled }) => ($filled ? ACCENT_SOFT : 'rgba(255,255,255,0.04)')};
+  color: ${({ $filled }) => ($filled ? 'var(--on-accent)' : 'transparent')};
+  background: ${({ $filled }) => ($filled ? ACCENT_SOFT : 'var(--surface-hover)')};
   border: 1px solid ${({ $filled }) => ($filled ? 'transparent' : BORDER)};
 `;
 

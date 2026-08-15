@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { MdPersonAdd, MdLogin, MdLogout } from 'react-icons/md';
+import { MdPersonAdd, MdLogin, MdLogout, MdDarkMode, MdLightMode } from 'react-icons/md';
 import { FaClock, FaPlay, FaStop, FaPlus } from 'react-icons/fa';
 import { AiOutlineExport } from 'react-icons/ai';
 import { LiaEyeSlashSolid, LiaEyeSolid } from 'react-icons/lia';
@@ -8,6 +8,8 @@ import 'react-tooltip/dist/react-tooltip.css';
 import { getCurrentUser, fetchUserAttributes } from '@aws-amplify/auth';
 import favicon from '../../images/favicon.ico';
 import ModalAddColumn from '../board/modals/ModalAddColumn';
+import { useAppTheme } from '../../context/ThemeContext';
+import { ThemeSwitchTrack, ThemeSwitchIcons, ThemeSwitchKnob } from '../../styles/SidebarStyles';
 import {
   HeaderContainer,
   LeftCluster,
@@ -69,12 +71,14 @@ const Header = ({
   signOut,
   signIn,
   boardControls,
+  hasSidebar,
 }) => {
   const isPoker = subText === 'Planning Poker';
   const hasBoardContext = boardName !== undefined;
   const hasRoomContext = roomName !== undefined && userName !== undefined;
   const hasNavItems = showSuggestionsModal || showInviteModal || goAbout || !!boardControls;
 
+  const { theme, toggleTheme } = useAppTheme();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [account, setAccount] = useState({ name: '', email: '' });
   const [isAddColumnOpen, setIsAddColumnOpen] = useState(false);
@@ -157,7 +161,7 @@ const Header = ({
         <CenterCluster>
           <TimerBox $running={boardControls.isRunningTimer} $alarm={boardControls.hasTimeEnded}>
             <TimerIconWrapper>
-              <FaClock size={11} style={{ color: boardControls.isRunningTimer ? '#a996ff' : 'rgba(245,245,247,0.42)' }} />
+              <FaClock size={11} style={{ color: boardControls.isRunningTimer ? 'var(--accent-soft)' : 'var(--muted)' }} />
               {boardControls.isRunningTimer && <TimerLiveDot />}
             </TimerIconWrapper>
             <TimerInputStyled
@@ -247,6 +251,21 @@ const Header = ({
         )}
         {goAbout && (
           <NavButton onClick={goAbout}>Sobre</NavButton>
+        )}
+
+        {!hasSidebar && (
+          <ThemeSwitchTrack
+            title={theme === 'dark' ? 'Mudar para tema claro' : 'Mudar para tema escuro'}
+            onClick={toggleTheme}
+          >
+            <ThemeSwitchIcons>
+              <MdDarkMode />
+              <MdLightMode />
+            </ThemeSwitchIcons>
+            <ThemeSwitchKnob $theme={theme}>
+              {theme === 'dark' ? <MdDarkMode /> : <MdLightMode />}
+            </ThemeSwitchKnob>
+          </ThemeSwitchTrack>
         )}
 
         {isUserLogged !== undefined && (

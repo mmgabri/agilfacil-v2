@@ -13,18 +13,22 @@ const CTX = 'CreateBoardModal';
 // ─── Design tokens — "Dark Premium" ───────────────────────────────────────────
 // Mesmo sistema visual do Header / BoardListPage.js / BoardPageMock.js.
 
-const TEXT          = '#f5f5f7';
-const MUTED         = 'rgba(245,245,247,0.42)';
-const MUTED2        = 'rgba(245,245,247,0.62)';
-const BORDER        = 'rgba(255,255,255,0.07)';
-const BORDER_STRONG = 'rgba(255,255,255,0.14)';
-const ACCENT        = '#8b7cf6';
-const ACCENT_SOFT   = '#a996ff';
-const ACCENT_GLOW   = 'rgba(139,124,246,0.18)';
-const ACCENT_GRAD   = 'linear-gradient(135deg, #9a8bfb 0%, #7c6cf0 100%)';
-const RED           = '#fb7185';
+const TEXT          = 'var(--text)';
+const MUTED         = 'var(--muted)';
+const MUTED2        = 'var(--muted2)';
+const BORDER        = 'var(--border)';
+const BORDER_STRONG = 'var(--border-strong)';
+const ACCENT_SOFT   = 'var(--accent-soft)';
+const ACCENT_GLOW   = 'var(--accent-glow)';
+const ACCENT_BORDER = 'var(--accent-border)';
+const ACCENT_GRAD   = 'var(--accent-grad)';
+const RED           = 'var(--red)';
 
-const DEFAULT_COLUMN_COLOR = '#F0E68C';
+// Busca uma cor da paleta pelo nome — garante que os defaults abaixo nunca
+// fiquem fora de sincronia com COLUMN_COLOR_PALETTE (única fonte de verdade).
+const paletteColor = (name) => COLUMN_COLOR_PALETTE.find(c => c.name === name).color;
+
+const DEFAULT_COLUMN_COLOR = paletteColor('cinza-claro');
 
 // ─── Cor automática por título da coluna ──────────────────────────────────────
 // Heurística por palavra-chave (sem IA): cobre os templates de retro mais comuns
@@ -39,19 +43,19 @@ const normalize = (s) => (s || '')
 
 const TITLE_COLOR_RULES = [
   {
-    color: '#3B82F6', // azul-royal — elogios, aprendizados
+    color: paletteColor('azul-royal'), // elogios, aprendizados
     keywords: ['elogio', 'aprendizado', 'licao aprendida', 'licoes aprendidas', 'reconhecimento', 'agradecimento', 'parabens', 'gostaria de elogiar'],
   },
   {
-    color: '#38BDF8', // céu — o que foi bem
+    color: paletteColor('ceu'), // o que foi bem
     keywords: ['o que foi bom', 'o que foi bem', 'pontos positivos', 'positivo', 'funcionou bem', 'glad', 'continuar fazendo', 'manter', 'keep'],
   },
   {
-    color: '#F3E5AB', // vanila — o que não foi bem
+    color: paletteColor('ambar-forte'), // o que não foi bem
     keywords: ['o que nao foi bom', 'o que nao foi bem', 'o que pode melhorar', 'pontos negativos', 'negativo', 'nao funcionou', 'sad', 'mad', 'parar de fazer', 'dificuldades', 'problemas', 'stop'],
   },
   {
-    color: '#8B7CF6', // roxo — plano de ação / PDCA / melhoria contínua
+    color: paletteColor('roxo'), // plano de ação / PDCA / melhoria contínua
     keywords: ['plano de acao', 'pdca', 'melhoria continua', 'acao', 'proximos passos', 'action items', 'tarefas', 'to-do', 'todo'],
   },
 ];
@@ -63,17 +67,11 @@ const inferColumnColor = (title) => {
   return rule?.color || null;
 };
 
-// Cor fixa por posição de coluna — vale tanto pra board novo quanto pra
-// clonagem, enquanto a regra estiver "ativa" (hoje, 09/08/2026, ou antes).
-// A partir de 10/08/2026: board novo volta a usar a cor padrão/automática
-// por título; clonagem passa a manter a cor que já vem do banco.
-// (LEGACY_COLUMN_COLORS / LEGACY_COLOR_CUTOFF vêm de columnColorPalette.js —
-// mesma regra usada também na exibição normal do board, em FunctionsBoard.js)
-
-const isLegacyColorRuleActive = () => new Date() < LEGACY_COLOR_CUTOFF;
-
+// Cor padrão por posição de coluna em board novo — sempre usa
+// LEGACY_COLUMN_COLORS (na ordem das colunas), sem prazo de validade. O
+// usuário continua livre pra trocar manualmente no menu de cores.
 const colorForColumnIndex = (index) =>
-  (isLegacyColorRuleActive() && index < LEGACY_COLUMN_COLORS.length)
+  index < LEGACY_COLUMN_COLORS.length
     ? LEGACY_COLUMN_COLORS[index]
     : DEFAULT_COLUMN_COLOR;
 
@@ -377,10 +375,10 @@ const Panel = styled.div`
   max-height: 85vh;
   display: flex;
   flex-direction: column;
-  background: #141418;
+  background: var(--panel);
   border: 1px solid ${BORDER_STRONG};
   border-radius: 20px;
-  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.55);
+  box-shadow: var(--shadow-strong);
 `;
 
 const PanelHeader = styled.div`
@@ -407,12 +405,12 @@ const CloseBtn = styled.button`
   height: 28px;
   border-radius: 8px;
   border: none;
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--surface-hover);
   color: ${MUTED2};
   cursor: pointer;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.11);
+    background: var(--border-strong);
   }
 `;
 
@@ -445,7 +443,7 @@ export const FieldLabel = styled.label`
 `;
 
 export const FieldInput = styled.input`
-  background: rgba(255, 255, 255, 0.045);
+  background: var(--surface);
   border: 1px solid ${BORDER};
   border-radius: 10px;
   padding: 9px 12px;
@@ -459,7 +457,7 @@ export const FieldInput = styled.input`
   }
 
   &:focus {
-    border-color: ${ACCENT}70;
+    border-color: ${ACCENT_BORDER};
     box-shadow: 0 0 0 3px ${ACCENT_GLOW};
   }
 `;
@@ -485,14 +483,14 @@ const ColorPickerTrigger = styled.button`
   padding: 5px 6px;
   border-radius: 20px;
   cursor: pointer;
-  background: ${({ $open }) => ($open ? 'rgba(139,124,246,0.14)' : 'rgba(255,255,255,0.045)')};
-  border: 1px solid ${({ $open }) => ($open ? `${ACCENT}50` : BORDER)};
+  background: ${({ $open }) => ($open ? ACCENT_GLOW : 'var(--surface)')};
+  border: 1px solid ${({ $open }) => ($open ? ACCENT_BORDER : BORDER)};
   color: ${MUTED2};
   transition: background 0.15s ease, border-color 0.15s ease;
 
   &:hover {
-    background: rgba(139, 124, 246, 0.14);
-    border-color: ${ACCENT}50;
+    background: ${ACCENT_GLOW};
+    border-color: ${ACCENT_BORDER};
   }
 `;
 
@@ -518,9 +516,9 @@ const ColorPickerPanel = styled.div`
   width: 240px;
   padding: 8px;
   border-radius: 12px;
-  background: #141418;
+  background: var(--panel);
   border: 1px solid ${BORDER_STRONG};
-  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.55);
+  box-shadow: var(--shadow-strong);
   z-index: 50;
 `;
 
@@ -534,8 +532,8 @@ const ColorPickerAutoBtn = styled.button`
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
-  border: 1px solid ${({ $active }) => ($active ? `${ACCENT}50` : 'transparent')};
-  background: ${({ $active }) => ($active ? ACCENT_GLOW : 'rgba(255,255,255,0.05)')};
+  border: 1px solid ${({ $active }) => ($active ? ACCENT_BORDER : 'transparent')};
+  background: ${({ $active }) => ($active ? ACCENT_GLOW : 'var(--surface-hover)')};
   color: ${({ $active }) => ($active ? ACCENT_SOFT : MUTED2)};
 `;
 
@@ -554,7 +552,7 @@ const ColorSwatch = styled.button`
   border-radius: 50%;
   flex-shrink: 0;
   cursor: pointer;
-  border: ${({ $selected }) => ($selected ? '2px solid #fff' : `1px solid ${BORDER_STRONG}`)};
+  border: ${({ $selected }) => ($selected ? `2px solid ${TEXT}` : `1px solid ${BORDER_STRONG}`)};
   box-shadow: ${({ $selected }) => ($selected ? `0 0 0 2px ${ACCENT_GLOW}` : 'none')};
   transition: transform 0.15s ease;
 
@@ -580,13 +578,13 @@ const RemoveColumnBtn = styled.button`
   height: 30px;
   border-radius: 8px;
   border: none;
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--surface-hover);
   color: ${MUTED2};
   cursor: pointer;
   flex-shrink: 0;
 
   &:hover {
-    background: rgba(251, 113, 133, 0.16);
+    background: color-mix(in srgb, ${RED} 16%, transparent);
     color: ${RED};
   }
 `;
@@ -624,7 +622,7 @@ const CancelBtn = styled.button`
 
 const SubmitBtn = styled.button`
   background: ${ACCENT_GRAD};
-  color: #0a0a0d;
+  color: var(--on-accent);
   border: none;
   border-radius: 10px;
   padding: 10px 20px;

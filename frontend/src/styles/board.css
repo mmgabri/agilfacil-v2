@@ -4,9 +4,9 @@ html, body, #root {
   }
   
   .bg-black-custom {
-    background-color: #1C1C1C;
-    color: white; /* Para garantir que o texto seja visível sobre o fundo preto */
-    min-height: 100vh; /* Garante que o fundo preto ocupe a altura total da viewport */
+    background-color: var(--bg);
+    color: var(--text); /* Para garantir que o texto seja visível sobre o fundo */
+    min-height: 100vh; /* Garante que o fundo ocupe a altura total da viewport */
   }
 
   .dropdown-toggle::after {
@@ -16,8 +16,8 @@ html, body, #root {
   /* Sobrescreve o hover branco padrão do react-bootstrap nos menus (⋮) do board */
   .dropdown-menu .dropdown-item:hover,
   .dropdown-menu .dropdown-item:focus {
-    background-color: rgba(139, 124, 246, 0.18) !important;
-    color: #a996ff !important;
+    background-color: var(--accent-glow) !important;
+    color: var(--accent-soft) !important;
   }
 
   /* Importando a fonte Poppins do Google Fonts */

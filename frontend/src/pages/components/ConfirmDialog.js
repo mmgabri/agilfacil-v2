@@ -72,14 +72,14 @@ const ConfirmDialogHost = () => {
 
 // ─── Design tokens — "Dark Premium" ───────────────────────────────────────────
 
-const TEXT          = '#f5f5f7';
-const MUTED2        = 'rgba(245,245,247,0.62)';
-const BORDER_STRONG = 'rgba(255,255,255,0.14)';
-const ACCENT        = '#8b7cf6';
-const ACCENT_GLOW   = 'rgba(139,124,246,0.18)';
-const ACCENT_GRAD   = 'linear-gradient(135deg, #9a8bfb 0%, #7c6cf0 100%)';
-const RED           = '#fb7185';
-const RED_GLOW      = 'rgba(251,113,133,0.18)';
+const TEXT          = 'var(--text)';
+const MUTED2        = 'var(--muted2)';
+const BORDER_STRONG = 'var(--border-strong)';
+const ACCENT        = 'var(--accent)';
+const ACCENT_GLOW   = 'var(--accent-glow)';
+const ACCENT_GRAD   = 'var(--accent-grad)';
+const RED           = 'var(--red)';
+const RED_GLOW      = 'color-mix(in srgb, var(--red) 18%, transparent)';
 const RED_GRAD      = 'linear-gradient(135deg, #fb7185 0%, #e35d72 100%)';
 
 const Overlay = styled.div`
@@ -94,9 +94,9 @@ const Overlay = styled.div`
 `;
 
 const Dialog = styled.div`
-  background: #141418;
+  background: var(--panel);
   border: 1px solid ${BORDER_STRONG};
-  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.55);
+  box-shadow: var(--shadow-strong);
   padding: 28px 28px 24px;
   border-radius: 20px;
   width: 360px;
@@ -113,7 +113,7 @@ const IconBadge = styled.div`
   align-items: center;
   justify-content: center;
   background: ${({ $tone }) => ($tone === 'danger' ? RED_GLOW : ACCENT_GLOW)};
-  border: 1.5px solid ${({ $tone }) => ($tone === 'danger' ? RED : ACCENT)}55;
+  border: 1.5px solid color-mix(in srgb, ${({ $tone }) => ($tone === 'danger' ? RED : ACCENT)} 55%, transparent);
   svg { color: ${({ $tone }) => ($tone === 'danger' ? RED : ACCENT)}; }
 `;
 
@@ -140,8 +140,8 @@ const CancelBtn = styled.button`
   flex: 1;
   padding: 11px;
   border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid var(--border);
+  background: var(--surface);
   color: ${MUTED2};
   font-size: 13.5px;
   font-weight: 600;
@@ -149,7 +149,7 @@ const CancelBtn = styled.button`
   transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.07);
+    background: var(--surface-hover);
     color: ${TEXT};
   }
 `;
@@ -160,7 +160,7 @@ const ConfirmBtn = styled.button`
   border: none;
   border-radius: 10px;
   background: ${({ $tone }) => ($tone === 'danger' ? RED_GRAD : ACCENT_GRAD)};
-  color: #0a0a0d;
+  color: var(--on-accent);
   font-size: 13.5px;
   font-weight: 700;
   cursor: pointer;

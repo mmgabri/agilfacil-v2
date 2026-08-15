@@ -44,17 +44,17 @@ const Invite = ({ id, onClose, service }) => {
 };
 
 const CopyButtonStyled = styled.button`
-  background: linear-gradient(135deg, #9a8bfb 0%, #7c6cf0 100%);
+  background: var(--accent-grad);
   margin-bottom: 4px;
   margin-top: 4px;
-  color: #0a0a0d;
+  color: var(--on-accent);
   border: none;
   padding: 10px 20px;
   font-weight: 700;
   cursor: pointer;
   font-size: 13px;
   border-radius: 10px;
-  box-shadow: 0 4px 18px rgba(139, 124, 246, 0.18);
+  box-shadow: 0 4px 18px var(--accent-glow);
   transition: filter 0.15s ease, transform 0.1s ease;
 
   &:hover {
