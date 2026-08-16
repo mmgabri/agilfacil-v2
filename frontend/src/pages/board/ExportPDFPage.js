@@ -10,7 +10,7 @@ import styled from "styled-components";
 import LoaderPage from '../generic/LoaderPage';
 import Header from '../components/Header';
 import Sidebar from '../components/Sidebar';
-import favicon from '../../images/favicon.ico';
+import logo from '../../images/logo.png';
 import { emitMessage, formatdateTime, onSignOut } from '../../services/utils'
 import { FRONT_BASE_URL } from "../../constants/apiConstants";
 import SuggestionForm from '../components/SuggestionForm'
@@ -71,8 +71,8 @@ const GeneratePDF = () => {
     const logoWidth = 6;  // Largura do logo
     const logoHeight = 6; // Altura do logo
 
-    // Adiciona o logo (supondo que favicon seja a URL ou base64 da imagem)
-    doc.addImage(favicon, 'PNG', 14, 10, logoWidth, logoHeight);  // 14 e 18 são as posições X e Y
+    // Adiciona o logo
+    doc.addImage(logo, 'PNG', 14, 10, logoWidth, logoHeight);  // 14 e 18 são as posições X e Y
 
     // Nome da Marca (AgilFacil) na mesma linha do logo
     const logoTextX = 14 + logoWidth + 3; // X da logo + largura do logo + margem de 5
