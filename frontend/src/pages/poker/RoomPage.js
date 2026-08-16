@@ -12,6 +12,7 @@ import VotingResults from '../poker/components/VotingResults';
 import Progress from '../poker/components/ProgressBar';
 import Invite from '../components/Invite';
 import SuggestionForm from '../components/SuggestionForm'
+import SupportForm from '../components/SupportForm'
 import { onSignOut } from '../../services/utils'
 
 export const RoomPage = ({ }) => {
@@ -19,6 +20,7 @@ export const RoomPage = ({ }) => {
   const location = useLocation();
   const [userIsAuthenticated, setUserIsAuthenticated] = useState(false);
   const [isModalOpen, setModalOpen] = useState(false);
+  const [isSupportModalOpen, setSupportModalOpen] = useState(false);
   const [nota, setNota] = useState("");
   const [showInvite, setShowInvite] = useState(false);
   const [roomData, setRoomData] = useState({ users: [] });
@@ -86,7 +88,7 @@ export const RoomPage = ({ }) => {
         hasSidebar />
 
       <Layout>
-        <Sidebar onSuggestions={() => setModalOpen(true)} />
+        <Sidebar onSuggestions={() => setModalOpen(true)} onSupport={() => setSupportModalOpen(true)} />
 
         <Content>
           <StatusSection roomData={roomData} isRoomCreator={userLogged.isRoomCreator} handlerupdateStatusRoom={handlerUpdateStatusRoom} />
@@ -106,6 +108,7 @@ export const RoomPage = ({ }) => {
 
       {showInvite && <Invite id={roomData.roomId} onClose={() => setShowInvite(false)} service={'poker'} />}
       {isModalOpen && <SuggestionForm onClose={() => setModalOpen(false)} />}
+      {isSupportModalOpen && <SupportForm onClose={() => setSupportModalOpen(false)} />}
     </PageBackground>
   );
 }

@@ -14,6 +14,7 @@ import favicon from '../../images/favicon.ico';
 import { emitMessage, formatdateTime, onSignOut } from '../../services/utils'
 import { FRONT_BASE_URL } from "../../constants/apiConstants";
 import SuggestionForm from '../components/SuggestionForm'
+import SupportForm from '../components/SupportForm'
 
 const GeneratePDF = () => {
   const { id } = useParams();
@@ -22,6 +23,7 @@ const GeneratePDF = () => {
   const [boardData, setBoardData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setModalOpen] = useState(false);
+  const [isSupportModalOpen, setSupportModalOpen] = useState(false);
   const [userIsAuthenticated, setUserIsAuthenticated] = useState(false);
 
   const linkUrlBoard = `${FRONT_BASE_URL}/board/guest/${id}`;
@@ -203,7 +205,7 @@ const GeneratePDF = () => {
         hasSidebar />
 
       <Layout>
-        <Sidebar onSuggestions={() => setModalOpen(true)} />
+        <Sidebar onSuggestions={() => setModalOpen(true)} onSupport={() => setSupportModalOpen(true)} />
 
         <Content>
           {isLoading ?
@@ -282,6 +284,7 @@ const GeneratePDF = () => {
       </Layout>
 
       {isModalOpen && <SuggestionForm onClose={() => setModalOpen(false)} />}
+      {isSupportModalOpen && <SupportForm onClose={() => setSupportModalOpen(false)} />}
     </PageBackground>
   );
 };

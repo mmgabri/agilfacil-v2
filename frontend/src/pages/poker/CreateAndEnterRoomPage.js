@@ -8,6 +8,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { GiPokerHand } from 'react-icons/gi';
 import { FaUserCircle, FaUsers, FaHashtag } from 'react-icons/fa';
 import SuggestionForm from '../components/SuggestionForm'
+import SupportForm from '../components/SupportForm'
 import Header from '../components/Header';
 import Sidebar from '../components/Sidebar';
 import LoaderPage from '../generic/LoaderPage';
@@ -23,6 +24,7 @@ function CreateAndEnterRoomPage() {
     const { userId: contextUserId, userName: contextUserName } = useAppUser();
     const [isLoading, setIsLoading] = useState(false);
     const [isModalOpen, setModalOpen] = useState(false);
+    const [isSupportModalOpen, setSupportModalOpen] = useState(false);
     const [activeTab, setActiveTab] = useState("create");
     const [userAuthenticated, setUserAuthenticated] = useState({});
     const [userIsAuthenticated, setUserIsAuthenticated] = useState(false);
@@ -137,7 +139,7 @@ function CreateAndEnterRoomPage() {
                 hasSidebar />
 
             <Layout>
-                <Sidebar onSuggestions={() => setModalOpen(true)} />
+                <Sidebar onSuggestions={() => setModalOpen(true)} onSupport={() => setSupportModalOpen(true)} />
 
                 {isLoading ?
                     <LoaderPage />
@@ -225,6 +227,7 @@ function CreateAndEnterRoomPage() {
             </Layout>
 
             {isModalOpen && <SuggestionForm onClose={() => setModalOpen(false)} />}
+            {isSupportModalOpen && <SupportForm onClose={() => setSupportModalOpen(false)} />}
         </PageBackground>
     );
 

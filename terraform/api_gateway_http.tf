@@ -98,6 +98,12 @@ resource "aws_apigatewayv2_route" "suggestion" {
   target    = "integrations/${aws_apigatewayv2_integration.rest.id}"
 }
 
+resource "aws_apigatewayv2_route" "support" {
+  api_id    = aws_apigatewayv2_api.http.id
+  route_key = "POST /support"
+  target    = "integrations/${aws_apigatewayv2_integration.rest.id}"
+}
+
 # ── Auth routes ───────────────────────────────────────────────────────────────
 resource "aws_apigatewayv2_integration" "auth" {
   api_id                 = aws_apigatewayv2_api.http.id

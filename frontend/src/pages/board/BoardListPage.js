@@ -18,6 +18,7 @@ import CreateBoardModal from './CreateBoardModal';
 import { FRONT_BASE_URL } from "../../constants/apiConstants";
 import LoaderPage from '../generic/LoaderPage';
 import SuggestionForm from '../components/SuggestionForm'
+import SupportForm from '../components/SupportForm'
 import { confirmDialog } from '../components/ConfirmDialog';
 import localStorageService from "../../services/localStorageService";
 import { getPaletteColor } from './columnColorPalette';
@@ -87,6 +88,7 @@ const BoardListPage = () => {
   const [boards, setBoards] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setModalOpen] = useState(false);
+  const [isSupportModalOpen, setSupportModalOpen] = useState(false);
   const [userAuthenticated, setUserAuthenticated] = useState({});
   const [userIsAuthenticated, setUserIsAuthenticated] = useState(false);
   const [createModal, setCreateModal] = useState({ open: false, board: null });
@@ -249,7 +251,7 @@ const BoardListPage = () => {
         hasSidebar />
 
       <Layout>
-        <Sidebar onSuggestions={() => setModalOpen(true)} />
+        <Sidebar onSuggestions={() => setModalOpen(true)} onSupport={() => setSupportModalOpen(true)} />
 
         <Content>
           {isLoading ? (
@@ -317,6 +319,7 @@ const BoardListPage = () => {
       </Layout>
 
       {isModalOpen && <SuggestionForm onClose={() => setModalOpen(false)} />}
+      {isSupportModalOpen && <SupportForm onClose={() => setSupportModalOpen(false)} />}
 
       <CreateBoardModal
         isOpen={createModal.open}

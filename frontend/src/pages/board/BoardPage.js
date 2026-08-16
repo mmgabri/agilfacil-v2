@@ -9,6 +9,7 @@ import Header from '../components/Header';
 import Sidebar from '../components/Sidebar';
 import Invite from '../components/Invite';
 import SuggestionForm from '../components/SuggestionForm';
+import SupportForm from '../components/SupportForm';
 import { confirmDialog } from '../components/ConfirmDialog';
 import { FRONT_BASE_URL } from "../../constants/apiConstants";
 import { useSocket } from "../../customHooks/useSocket";
@@ -22,6 +23,7 @@ export const BoardPage = () => {
 
   const [userIsAuthenticated, setUserIsAuthenticated] = useState(false);
   const [isModalOpen, setModalOpen] = useState(false);
+  const [isSupportModalOpen, setSupportModalOpen] = useState(false);
   const [showInvite, setShowInvite] = useState(false);
   const [boardData, setBoardData] = useState({ columns: [] });
   const [userLoggedData, setuserLoggedData] = useState({});
@@ -122,7 +124,7 @@ export const BoardPage = () => {
       />
 
       <Layout>
-        <Sidebar onSuggestions={() => setModalOpen(true)} />
+        <Sidebar onSuggestions={() => setModalOpen(true)} onSupport={() => setSupportModalOpen(true)} />
 
         <Content>
           <DragDropContext onDragEnd={onDragEnd}>
@@ -158,6 +160,7 @@ export const BoardPage = () => {
       </Layout>
 
       {isModalOpen && <SuggestionForm onClose={() => setModalOpen(false)} />}
+      {isSupportModalOpen && <SupportForm onClose={() => setSupportModalOpen(false)} />}
       {showInvite && <Invite id={boardData.boardId} onClose={() => setShowInvite(false)} service="board" />}
     </PageBackground>
   );
