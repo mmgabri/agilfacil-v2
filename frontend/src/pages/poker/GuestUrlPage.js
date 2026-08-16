@@ -10,12 +10,14 @@ import Header from '../components/Header';
 import Sidebar from '../components/Sidebar';
 import { emitMessage, onSignOut } from '../../services/utils'
 import SuggestionForm from '../components/SuggestionForm'
+import SupportForm from '../components/SupportForm'
 import localStorageService from "../../services/localStorageService";
 
 export const GuestUrlPage = ({ }) => {
     const { id } = useParams(); // Obtém o ID da URL
     let navigate = useNavigate();
     const [isModalOpen, setModalOpen] = useState(false);
+    const [isSupportModalOpen, setSupportModalOpen] = useState(false);
     const [userIsAuthenticated, setUserIsAuthenticated] = useState(false);
     const [userLogged, setUserLogged] = useState({});
     const [roomData, setRoomData] = useState({ users: [] });
@@ -118,7 +120,7 @@ export const GuestUrlPage = ({ }) => {
                 hasSidebar />
 
             <Layout>
-                <Sidebar onSuggestions={() => setModalOpen(true)} />
+                <Sidebar onSuggestions={() => setModalOpen(true)} onSupport={() => setSupportModalOpen(true)} />
 
                 <Content>
                     <GlassCard>
@@ -168,6 +170,7 @@ export const GuestUrlPage = ({ }) => {
             </Layout>
 
             {isModalOpen && <SuggestionForm onClose={() => setModalOpen(false)} />}
+            {isSupportModalOpen && <SupportForm onClose={() => setSupportModalOpen(false)} />}
         </PageBackground>
     );
 

@@ -18,6 +18,7 @@ const routes = {
   'POST /poker/createRoom':                 require('./createRoom'),
   'GET /rooms/{id}':                        require('./getRoom'),
   'POST /suggestion':                       require('./suggestion'),
+  'POST /support':                          require('./support'),
 };
 
 exports.handler = async (event) => {

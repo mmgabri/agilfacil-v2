@@ -25,6 +25,23 @@ resource "aws_apigatewayv2_integration" "rest" {
   payload_format_version = "2.0"
 }
 
+# ── Authorizer JWT (Cognito) ────────────────────────────────────────────────────
+# Valida o id_token do Cognito enviado no header Authorization (Bearer) antes
+# de invocar a Lambda. Usado nas rotas de board que exigem usuário logado —
+# rotas de convite/guest (GET /board/{boardId}, GET /rooms/{id}) continuam
+# públicas de propósito.
+resource "aws_apigatewayv2_authorizer" "cognito_jwt" {
+  api_id           = aws_apigatewayv2_api.http.id
+  authorizer_type  = "JWT"
+  identity_sources = ["$request.header.Authorization"]
+  name             = "cognito-jwt-authorizer"
+
+  jwt_configuration {
+    audience = [aws_cognito_user_pool_client.web.id]
+    issuer   = "https://cognito-idp.${var.aws_region}.amazonaws.com/${aws_cognito_user_pool.main.id}"
+  }
+}
+
 # ── Board routes ──────────────────────────────────────────────────────────────
 resource "aws_apigatewayv2_route" "healthcheck" {
   api_id    = aws_apigatewayv2_api.http.id
@@ -39,21 +56,27 @@ resource "aws_apigatewayv2_route" "get_board" {
 }
 
 resource "aws_apigatewayv2_route" "get_board_by_user" {
-  api_id    = aws_apigatewayv2_api.http.id
-  route_key = "GET /board/getBoardByUser/{creatorId}"
-  target    = "integrations/${aws_apigatewayv2_integration.rest.id}"
+  api_id             = aws_apigatewayv2_api.http.id
+  route_key          = "GET /board/getBoardByUser/{creatorId}"
+  target             = "integrations/${aws_apigatewayv2_integration.rest.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito_jwt.id
 }
 
 resource "aws_apigatewayv2_route" "create_board" {
-  api_id    = aws_apigatewayv2_api.http.id
-  route_key = "POST /board/createBoard"
-  target    = "integrations/${aws_apigatewayv2_integration.rest.id}"
+  api_id             = aws_apigatewayv2_api.http.id
+  route_key          = "POST /board/createBoard"
+  target             = "integrations/${aws_apigatewayv2_integration.rest.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito_jwt.id
 }
 
 resource "aws_apigatewayv2_route" "delete_board" {
-  api_id    = aws_apigatewayv2_api.http.id
-  route_key = "DELETE /board/{boardId}"
-  target    = "integrations/${aws_apigatewayv2_integration.rest.id}"
+  api_id             = aws_apigatewayv2_api.http.id
+  route_key          = "DELETE /board/{boardId}"
+  target             = "integrations/${aws_apigatewayv2_integration.rest.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito_jwt.id
 }
 
 # ── Poker routes ──────────────────────────────────────────────────────────────
@@ -72,6 +95,12 @@ resource "aws_apigatewayv2_route" "get_room" {
 resource "aws_apigatewayv2_route" "suggestion" {
   api_id    = aws_apigatewayv2_api.http.id
   route_key = "POST /suggestion"
+  target    = "integrations/${aws_apigatewayv2_integration.rest.id}"
+}
+
+resource "aws_apigatewayv2_route" "support" {
+  api_id    = aws_apigatewayv2_api.http.id
+  route_key = "POST /support"
   target    = "integrations/${aws_apigatewayv2_integration.rest.id}"
 }
 

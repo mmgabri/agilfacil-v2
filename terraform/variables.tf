@@ -44,9 +44,9 @@ variable "google_client_secret" {
 }
 
 variable "board_table_name" {
-  description = "Nome da tabela DynamoDB de boards. Deixe vazio para usar a tabela criada pelo Terraform (agilfacil_board). Defina 'teste2_board' enquanto a tabela migrada tiver esse nome."
+  description = "Nome da tabela DynamoDB de boards. A tabela agilfacil_board foi recriada manualmente (import de dados de outra conta AWS) e não é mais gerenciada pelo Terraform — ver dynamodb.tf. Deixe vazio só se voltar a deixar o Terraform criar/gerenciar a tabela do zero."
   type        = string
-  default     = ""
+  default     = "agilfacil_board"
 }
 
 variable "migration_secret" {

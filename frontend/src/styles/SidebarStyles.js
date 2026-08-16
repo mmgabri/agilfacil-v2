@@ -4,7 +4,7 @@ export const SidebarContainer = styled.aside`
   position: sticky;
   top: 56px;
   height: calc(100vh - 56px);
-  width: 64px;
+  width: 56px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
@@ -23,14 +23,18 @@ export const NavItemButton = styled.button`
   align-items: center;
   justify-content: center;
   gap: 2px;
-  width: 44px;
-  height: 44px;
-  border-radius: 16px;
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
   border: none;
   cursor: pointer;
-  background: ${({ $active }) => ($active ? 'var(--accent-glow)' : 'transparent')};
-  color: ${({ $active }) => ($active ? 'var(--accent-soft)' : 'var(--muted)')};
-  transition: background 0.18s ease, color 0.18s ease;
+  background: transparent;
+  color: ${({ $active }) => ($active ? 'var(--accent-soft)' : 'var(--muted2)')};
+  transition: color 0.18s ease, background 0.18s ease;
+
+  &:hover {
+    background: var(--surface-hover);
+  }
 
   &:disabled {
     cursor: default;
@@ -45,7 +49,7 @@ export const NavItemLabel = styled.span`
 
 export const ActiveIndicator = styled.span`
   position: absolute;
-  left: -13px;
+  left: -11px;
   top: 50%;
   transform: translateY(-50%);
   width: 3px;
@@ -60,8 +64,8 @@ export const SidebarSpacer = styled.div`
 
 export const ThemeSwitchTrack = styled.button`
   position: relative;
-  width: 58px;
-  height: 32px;
+  width: 50px;
+  height: 28px;
   margin: 8px 0 4px;
   border-radius: 999px;
   border: 1px solid var(--border-strong);
@@ -83,20 +87,20 @@ export const ThemeSwitchIcons = styled.div`
   align-items: center;
   justify-content: space-between;
   padding: 0 6px;
-  color: var(--muted);
+  color: var(--muted2);
   pointer-events: none;
 
   svg {
-    font-size: 15px;
+    font-size: 13px;
   }
 `;
 
 export const ThemeSwitchKnob = styled.span`
   position: absolute;
   top: 3px;
-  left: ${({ $theme }) => ($theme === 'light' ? '29px' : '3px')};
-  width: 26px;
-  height: 26px;
+  left: ${({ $theme }) => ($theme === 'light' ? '25px' : '3px')};
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -107,6 +111,6 @@ export const ThemeSwitchKnob = styled.span`
   transition: left 0.2s ease;
 
   svg {
-    font-size: 15px;
+    font-size: 13px;
   }
 `;

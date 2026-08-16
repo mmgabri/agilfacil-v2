@@ -1,6 +1,8 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { MdHome, MdSpaceDashboard, MdStyle, MdOutlineFeedback, MdDarkMode, MdLightMode } from 'react-icons/md';
+import { MdSpaceDashboard, MdDarkMode, MdLightMode } from 'react-icons/md';
+import { VscHome, VscFeedback, VscTools } from 'react-icons/vsc';
+import { GiPokerHand } from 'react-icons/gi';
 import { useAppTheme } from '../../context/ThemeContext';
 import {
   SidebarContainer,
@@ -14,12 +16,12 @@ import {
 } from '../../styles/SidebarStyles';
 
 const NAV_ITEMS = [
-  { icon: MdHome, label: 'Início', path: '/', activeMatch: '/' },
+  { icon: VscHome, label: 'Início', path: '/', activeMatch: '/' },
   { icon: MdSpaceDashboard, label: 'Boards', path: '/boards', activeMatch: '/board' },
-  { icon: MdStyle, label: 'Poker', path: '/room/create', activeMatch: '/room' },
+  { icon: GiPokerHand, label: 'Poker', path: '/room/create', activeMatch: '/room' },
 ];
 
-const Sidebar = ({ onSuggestions }) => {
+const Sidebar = ({ onSuggestions, onSupport }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { theme, toggleTheme } = useAppTheme();
@@ -34,7 +36,7 @@ const Sidebar = ({ onSuggestions }) => {
         return (
           <NavItemButton key={label} $active={active} title={label} onClick={() => navigate(path)}>
             {active && <ActiveIndicator />}
-            <Icon size={17} />
+            <Icon size={20} />
             <NavItemLabel $active={active}>{label}</NavItemLabel>
           </NavItemButton>
         );
@@ -44,8 +46,15 @@ const Sidebar = ({ onSuggestions }) => {
 
       {onSuggestions && (
         <NavItemButton title="Sugestões" onClick={onSuggestions}>
-          <MdOutlineFeedback size={17} />
+          <VscFeedback size={20} />
           <NavItemLabel>Sugestões</NavItemLabel>
+        </NavItemButton>
+      )}
+
+      {onSupport && (
+        <NavItemButton title="Suporte" onClick={onSupport}>
+          <VscTools size={20} />
+          <NavItemLabel>Suporte</NavItemLabel>
         </NavItemButton>
       )}
 

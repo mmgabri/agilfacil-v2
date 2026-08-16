@@ -18,8 +18,10 @@ import CreateBoardModal from './CreateBoardModal';
 import { FRONT_BASE_URL } from "../../constants/apiConstants";
 import LoaderPage from '../generic/LoaderPage';
 import SuggestionForm from '../components/SuggestionForm'
+import SupportForm from '../components/SupportForm'
 import { confirmDialog } from '../components/ConfirmDialog';
 import localStorageService from "../../services/localStorageService";
+import { getPaletteColor } from './columnColorPalette';
 
 // ─── Design tokens — "Dark Premium" ───────────────────────────────────────────
 // Mesmo sistema visual do Header / BoardPageMock.js / BoardListPageMock.js.
@@ -34,7 +36,9 @@ const ACCENT_GLOW   = 'var(--accent-glow)';
 const ACCENT_BORDER = 'var(--accent-border)';
 const ACCENT_GRAD   = 'var(--accent-grad)';
 
-const CARD_ACCENTS = ['#34d399', '#fb7185', '#38bdf8', '#fbbf24', '#a78bfa'];
+// Vem da mesma paleta das colunas (columnColorPalette.js) — evita manter uma
+// segunda lista de cores hardcoded que fica desatualizada quando a paleta muda.
+const CARD_ACCENTS = ['esmeralda', 'rosa', 'ceu', 'ambar-forte', 'violeta'].map(getPaletteColor);
 // Hex fixo (não variável de tema) — é concatenado com sufixo de opacidade
 // (ex: `${accent}1f`) no card, então precisa ser um hex "puro". Cinza médio
 // funciona razoável nos dois temas (clareia em cima de fundo escuro, escurece
@@ -84,6 +88,7 @@ const BoardListPage = () => {
   const [boards, setBoards] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setModalOpen] = useState(false);
+  const [isSupportModalOpen, setSupportModalOpen] = useState(false);
   const [userAuthenticated, setUserAuthenticated] = useState({});
   const [userIsAuthenticated, setUserIsAuthenticated] = useState(false);
   const [createModal, setCreateModal] = useState({ open: false, board: null });
@@ -246,7 +251,7 @@ const BoardListPage = () => {
         hasSidebar />
 
       <Layout>
-        <Sidebar onSuggestions={() => setModalOpen(true)} />
+        <Sidebar onSuggestions={() => setModalOpen(true)} onSupport={() => setSupportModalOpen(true)} />
 
         <Content>
           {isLoading ? (
@@ -314,6 +319,7 @@ const BoardListPage = () => {
       </Layout>
 
       {isModalOpen && <SuggestionForm onClose={() => setModalOpen(false)} />}
+      {isSupportModalOpen && <SupportForm onClose={() => setSupportModalOpen(false)} />}
 
       <CreateBoardModal
         isOpen={createModal.open}

@@ -38,9 +38,12 @@ resource "aws_iam_role_policy" "lambda_rest_policy" {
         ]
       },
       {
-        Effect   = "Allow"
-        Action   = "sns:Publish"
-        Resource = aws_sns_topic.alerts.arn
+        Effect = "Allow"
+        Action = "sns:Publish"
+        Resource = [
+          aws_sns_topic.alerts.arn,
+          aws_sns_topic.support.arn,
+        ]
       },
     ]
   })

@@ -23,10 +23,11 @@ resource "aws_lambda_function" "rest" {
 
   environment {
     variables = {
-      REGION      = var.aws_region
-      TABLE_BOARD = local.board_table_name
-      TABLE_ROOM  = aws_dynamodb_table.room.name
-      TOPIC_ARN   = aws_sns_topic.alerts.arn
+      REGION            = var.aws_region
+      TABLE_BOARD       = local.board_table_name
+      TABLE_ROOM        = aws_dynamodb_table.room.name
+      TOPIC_ARN         = aws_sns_topic.alerts.arn
+      TOPIC_ARN_SUPPORT = aws_sns_topic.support.arn
     }
   }
 }

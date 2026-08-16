@@ -34,6 +34,12 @@ export const COLUMN_COLOR_PALETTE = [
   { name: 'cinza-claro', color: '#94949E' },
 ];
 
+// Busca uma cor da paleta pelo nome — fonte única pra qualquer tela que
+// precise de uma cor "oficial" por identidade (ex.: CreateBoardModal.js,
+// CARD_ACCENTS em BoardListPage.js), em vez de duplicar hex soltos que
+// ficam desatualizados quando a paleta muda.
+export const getPaletteColor = (name) => COLUMN_COLOR_PALETTE.find(c => c.name === name).color;
+
 const hexToRgb = (hex) => {
   const n = parseInt(hex.replace('#', ''), 16);
   return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
