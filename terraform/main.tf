@@ -21,8 +21,11 @@ provider "aws" {
 data "aws_caller_identity" "current" {}
 
 locals {
-  # Se board_table_name for definido, usa esse nome; senão usa a tabela criada pelo Terraform.
-  # Permite apontar para uma tabela migrada (ex: "teste2_board") sem recriar recursos.
-  board_table_name = var.board_table_name != "" ? var.board_table_name : aws_dynamodb_table.board.name
-  board_table_arn  = var.board_table_name != "" ? "arn:aws:dynamodb:${var.aws_region}:${data.aws_caller_identity.current.account_id}:table/${var.board_table_name}" : aws_dynamodb_table.board.arn
+  # A tabela agilfacil_board não é mais gerenciada pelo Terraform (ver o
+  # resource comentado em dynamodb.tf) — o nome/ARN vêm só da variável.
+  # Pra voltar a deixar o Terraform criar/gerenciar a tabela do zero:
+  # descomente o resource em dynamodb.tf, zere board_table_name em
+  # variables.tf, e restaure aqui o fallback pra aws_dynamodb_table.board.
+  board_table_name = var.board_table_name
+  board_table_arn  = "arn:aws:dynamodb:${var.aws_region}:${data.aws_caller_identity.current.account_id}:table/${var.board_table_name}"
 }

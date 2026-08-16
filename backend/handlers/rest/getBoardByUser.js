@@ -1,10 +1,17 @@
 const { getBoardByUserDb } = require('../../services/database/dynamoService');
 const config = require('../../config');
 const log = require('../../utils/logger');
+const { getAuthenticatedUserId } = require('../../utils/auth');
 
 exports.handler = async (event) => {
   log.setCorrelationId(event.requestContext.requestId);
   const { creatorId } = event.pathParameters;
+  const userId = getAuthenticatedUserId(event);
+
+  if (creatorId !== userId) {
+    log.warn('Tentativa de listar boards de outro usuário', { creatorId, userId });
+    return { statusCode: 403, body: JSON.stringify({ error: 'Você não tem permissão para acessar estes boards' }) };
+  }
 
   log.debug('Get boards by user request', { creatorId });
 

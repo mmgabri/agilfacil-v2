@@ -6,7 +6,7 @@ import { IoIosAddCircleOutline } from 'react-icons/io';
 import { emitMessage, onGetToken } from '../../services/utils';
 import { createBoard } from '../../services/boardService';
 import logger from '../../services/logger';
-import { COLUMN_COLOR_PALETTE, LEGACY_COLUMN_COLORS, LEGACY_COLOR_CUTOFF } from './columnColorPalette';
+import { COLUMN_COLOR_PALETTE, LEGACY_COLUMN_COLORS, LEGACY_COLOR_CUTOFF, getPaletteColor } from './columnColorPalette';
 
 const CTX = 'CreateBoardModal';
 
@@ -24,11 +24,7 @@ const ACCENT_BORDER = 'var(--accent-border)';
 const ACCENT_GRAD   = 'var(--accent-grad)';
 const RED           = 'var(--red)';
 
-// Busca uma cor da paleta pelo nome — garante que os defaults abaixo nunca
-// fiquem fora de sincronia com COLUMN_COLOR_PALETTE (única fonte de verdade).
-const paletteColor = (name) => COLUMN_COLOR_PALETTE.find(c => c.name === name).color;
-
-const DEFAULT_COLUMN_COLOR = paletteColor('cinza-claro');
+const DEFAULT_COLUMN_COLOR = getPaletteColor('cinza-claro');
 
 // ─── Cor automática por título da coluna ──────────────────────────────────────
 // Heurística por palavra-chave (sem IA): cobre os templates de retro mais comuns
@@ -43,19 +39,19 @@ const normalize = (s) => (s || '')
 
 const TITLE_COLOR_RULES = [
   {
-    color: paletteColor('azul-royal'), // elogios, aprendizados
+    color: getPaletteColor('azul-royal'), // elogios, aprendizados
     keywords: ['elogio', 'aprendizado', 'licao aprendida', 'licoes aprendidas', 'reconhecimento', 'agradecimento', 'parabens', 'gostaria de elogiar'],
   },
   {
-    color: paletteColor('ceu'), // o que foi bem
+    color: getPaletteColor('ceu'), // o que foi bem
     keywords: ['o que foi bom', 'o que foi bem', 'pontos positivos', 'positivo', 'funcionou bem', 'glad', 'continuar fazendo', 'manter', 'keep'],
   },
   {
-    color: paletteColor('ambar-forte'), // o que não foi bem
+    color: getPaletteColor('ambar-forte'), // o que não foi bem
     keywords: ['o que nao foi bom', 'o que nao foi bem', 'o que pode melhorar', 'pontos negativos', 'negativo', 'nao funcionou', 'sad', 'mad', 'parar de fazer', 'dificuldades', 'problemas', 'stop'],
   },
   {
-    color: paletteColor('roxo'), // plano de ação / PDCA / melhoria contínua
+    color: getPaletteColor('roxo'), // plano de ação / PDCA / melhoria contínua
     keywords: ['plano de acao', 'pdca', 'melhoria continua', 'acao', 'proximos passos', 'action items', 'tarefas', 'to-do', 'todo'],
   },
 ];

@@ -19,7 +19,7 @@ output "sns_topic_arn" {
 }
 
 output "dynamodb_board_table" {
-  value = aws_dynamodb_table.board.name
+  value = local.board_table_name
 }
 
 output "dynamodb_room_table" {
