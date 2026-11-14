@@ -39,7 +39,7 @@ git clone https://github.com/mmgabri/agilfacil.git
   sudo systemctl restart nginx
 ```
 
-#### Código Nginx para http: agilfacil
+#### Código Nginx para http: agilfacil 
 
 ```bash
   server {

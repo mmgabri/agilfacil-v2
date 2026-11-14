@@ -152,4 +152,66 @@ const getUserMigrationByEmail = (tableName, email) => {
   });
 };
 
-module.exports = { putTable, getBoardByUserDb, getBoardDb, getRoomDb, deleteBoardDb, getUserMigrationByEmail };
+// ── Escrita concorrente segura (optimistic locking) ───────────────────────────
+//
+// Board e sala são gravados como um item inteiro. Sem controle, duas invocações
+// concorrentes (ex.: dois usuários criando card no mesmo instante) leem a mesma
+// versão e a última gravação apaga a anterior (lost update — no teste de carga
+// em produção, 6 usuários simultâneos perderam 44 de 60 cards).
+//
+// mutateItem: lê o item, aplica `mutate` e grava condicionado à versão lida.
+// Se outra invocação gravou no meio tempo, relê e reaplica a mutação.
+//   mutate(item) → item alterado, ou null quando não há nada a gravar.
+//   Erros lançados dentro de mutate (validação) não são re-tentados.
+
+const MAX_WRITE_ATTEMPTS = 20;
+// Backoff exponencial com "full jitter" (teto de 1s): espalha as re-tentativas
+// para que invocações concorrentes não colidam de novo no mesmo instante.
+const backoffMs = (attempt) => Math.random() * Math.min(1000, 25 * 2 ** attempt);
+const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
+const putVersioned = async (tableName, keyName, item, expectedVersion) => {
+  const next = { ...item, version: (expectedVersion || 0) + 1 };
+  const hasVersion = expectedVersion !== undefined && expectedVersion !== null;
+  await docClient.send(new PutCommand({
+    TableName: tableName,
+    Item: next,
+    // attribute_exists(chave): não recria um item apagado enquanto alguém editava.
+    // attribute_not_exists(version): itens antigos, criados antes do versionamento.
+    ConditionExpression: hasVersion
+      ? 'attribute_exists(#k) AND version = :v'
+      : 'attribute_exists(#k) AND attribute_not_exists(version)',
+    ExpressionAttributeNames: { '#k': keyName },
+    ...(hasVersion && { ExpressionAttributeValues: { ':v': expectedVersion } }),
+  }));
+  return next;
+};
+
+const mutateItem = async ({ tableName, keyName, id, load, mutate }) => {
+  for (let attempt = 1; ; attempt++) {
+    const current = await load();
+    const expectedVersion = current.version;
+    const updated = await mutate(current);
+    if (!updated) return current;
+
+    const start = performance.now();
+    try {
+      const saved = await putVersioned(tableName, keyName, updated, expectedVersion);
+      log.debug('DynamoDB versioned put success', { table: tableName, id, version: saved.version, attempt, elapsedMs: (performance.now() - start).toFixed(3) });
+      return saved;
+    } catch (err) {
+      if (err.name !== 'ConditionalCheckFailedException') {
+        log.error('DynamoDB versioned put error', { table: tableName, id, attempt, error: err.message });
+        throw err;
+      }
+      if (attempt >= MAX_WRITE_ATTEMPTS) {
+        log.error('DynamoDB conflito de escrita — tentativas esgotadas', { table: tableName, id, attempt });
+        throw new Error('Conflito de escrita: tentativas esgotadas.');
+      }
+      log.info('DynamoDB conflito de escrita — relendo e reaplicando', { table: tableName, id, attempt });
+      await sleep(backoffMs(attempt));
+    }
+  }
+};
+
+module.exports = { putTable, getBoardByUserDb, getBoardDb, getRoomDb, deleteBoardDb, getUserMigrationByEmail, mutateItem };

@@ -22,7 +22,7 @@ const onConnect = async (event) => {
     cloudWatch.log('WEBSOCKET', 'connect', idSession, room.roomName, userId, userName, '', '', room.status, elapsed, 'success', 'Connect client successfully.');
   } catch (err) {
     const elapsed = (performance.now() - start).toFixed(3);
-    log.error('Erro no $connect (poker)', { connectionId, userId, idSession, error: err.message });
+    log.error('Erro no $connect (poker)', { connectionId, userId, idSession, error: err?.message || String(err) });
     cloudWatch.log('WEBSOCKET', 'connect', idSession, '', userId, userName, '', '', '', elapsed, 'failed', err.message);
   }
   return { statusCode: 200 };
@@ -47,7 +47,7 @@ const onDisconnect = async (event) => {
     cloudWatch.log('WEBSOCKET', 'disconnect', conn.idSession, room.roomName, conn.userId, conn.userName, '', '', room.status, elapsed, 'success', 'Disconnect client successfully.');
   } catch (err) {
     const elapsed = (performance.now() - start).toFixed(3);
-    log.error('Erro no $disconnect (poker)', { connectionId, userId: conn.userId, idSession: conn.idSession, error: err.message });
+    log.error('Erro no $disconnect (poker)', { connectionId, userId: conn.userId, idSession: conn.idSession, error: err?.message || String(err) });
     cloudWatch.log('WEBSOCKET', 'disconnect', conn.idSession, '', conn.userId, conn.userName, '', '', '', elapsed, 'failed', err.message);
   }
   return { statusCode: 200 };
@@ -57,6 +57,9 @@ const onCommand = async (event) => {
   const body = JSON.parse(event.body);
   const endpoint = `https://${event.requestContext.domainName}/${event.requestContext.stage}`;
   const start = performance.now();
+
+  // Heartbeat do cliente: só mantém a conexão ativa (idle timeout do API Gateway = 10 min).
+  if (body.comand === 'ping') return { statusCode: 200 };
 
   log.info('Poker command received', { command: body.comand, roomId: body.roomId });
 
@@ -93,7 +96,7 @@ const onCommand = async (event) => {
         return { statusCode: 400 };
     }
   } catch (err) {
-    log.error('Erro ao processar comando poker', { command: body.comand, roomId: body.roomId, error: err.message });
+    log.error('Erro ao processar comando poker', { command: body.comand, roomId: body.roomId, error: err?.message || String(err) });
   }
   return { statusCode: 200 };
 };
