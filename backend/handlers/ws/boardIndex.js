@@ -16,7 +16,7 @@ const onConnect = async (event) => {
     // Exclui a própria conexão: AWS não permite PostToConnection durante o $connect dela.
     await broadcastToSession(endpoint, idSession, 'data_board', board, connectionId);
   } catch (err) {
-    log.error('Erro no $connect (board)', { connectionId, userId, idSession, error: err.message });
+    log.error('Erro no $connect (board)', { connectionId, userId, idSession, error: err?.message || String(err) });
   }
   return { statusCode: 200 };
 };
@@ -35,7 +35,7 @@ const onDisconnect = async (event) => {
     const board = await disconnectClientBoard(conn.userId, conn.idSession);
     await broadcastToSession(endpoint, conn.idSession, 'data_board', board);
   } catch (err) {
-    log.error('Erro no $disconnect (board)', { connectionId, userId: conn.userId, idSession: conn.idSession, error: err.message });
+    log.error('Erro no $disconnect (board)', { connectionId, userId: conn.userId, idSession: conn.idSession, error: err?.message || String(err) });
   }
   return { statusCode: 200 };
 };
@@ -92,7 +92,7 @@ const onCommand = async (event) => {
     await broadcastToSession(endpoint, body.boardId, 'data_board', board);
     log.debug('Board command processed', { command: body.comand, boardId: body.boardId, elapsedMs: (performance.now() - start).toFixed(3) });
   } catch (err) {
-    log.error('Erro ao processar comando board', { command: body.comand, boardId: body.boardId, error: err.message });
+    log.error('Erro ao processar comando board', { command: body.comand, boardId: body.boardId, error: err?.message || String(err) });
   }
   return { statusCode: 200 };
 };
