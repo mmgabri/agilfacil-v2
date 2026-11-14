@@ -193,12 +193,14 @@ const AmbientGlow = styled.div`
   }
 `;
 
+// No rodapé: o header é sticky (z-index 1000) e cobriria o aviso no topo.
+// z-index acima do header, abaixo dos modais (9999).
 const ConnectionBanner = styled.div`
   position: fixed;
-  top: 12px;
+  bottom: 24px;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 1000;
+  z-index: 1100;
   max-width: calc(100vw - 32px);
   padding: 8px 16px;
   border-radius: 8px;
