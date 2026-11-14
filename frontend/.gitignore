@@ -43,3 +43,7 @@ amplifytools.xcconfig
 .secret-*
 **.sample
 #amplify-do-not-edit-end
+
+# gerados por scripts/write-build-info.js (prestart/prebuild)
+/public/version.json
+/src/buildInfo.json

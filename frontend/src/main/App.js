@@ -30,6 +30,7 @@ const CreateAndEnterPage = lazy(() => import('../pages/poker/CreateAndEnterRoomP
 const RoomPage           = lazy(() => import('../pages/poker/RoomPage'));
 const GuestUrlPage       = lazy(() => import('../pages/poker/GuestUrlPage'));
 const NotificationPage   = lazy(() => import('../pages/poker/NotificationPage'));
+const VersionPage        = lazy(() => import('../pages/generic/VersionPage'));
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Styled components
@@ -729,6 +730,7 @@ function App() {
           <Route path="/login"             element={<ProtectedRoute><SolicitaLoginPage /></ProtectedRoute>} />
           <Route exact path="/"            element={<HomePage />} />
           <Route exact path="/about"       element={<AboutPage />} />
+          <Route exact path="/version"     element={<VersionPage />} />
           <Route path="/room/create"       element={<CreateAndEnterPage />} />
           <Route exact path="room"         element={<RoomPage />} />
           <Route path="/room/guest/:id"    element={<GuestUrlPage />} />
