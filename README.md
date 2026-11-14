@@ -1,166 +1,267 @@
+# AgilFácil
 
-# Agil Facil
+Ferramenta colaborativa para times ágeis, com dois recursos em tempo real:
 
-### Preparação do ambiente
+- **Boards** (retrospectivas / Kanban): colunas, cards, likes, junção de cards, timer e ofuscação.
+- **Planning Poker**: salas de votação.
 
-```bash
- apt update
- apt install -y nodejs
- apt install npm -y
- apt install nginx -y
- npm install pm2@latest -g
- sudo apt install net-tools
-```
+Produção: **https://agilfacil.com.br**
 
-### Clonar projeto do git
+---
 
-```bash
-git clone https://github.com/mmgabri/agilfacil.git
-```
-
-### Configurando o Frontend - Reacj js
-
-```bash
-  cd agilfacil
-  cd frontend
-  npm install
-  npm run build
-  pm2 start --name agilfacil-frontend npm -- start
-```
-
-
-#### Configurando o Nginx
-
-```bash
-  cd /etc/nginx/sites-available
-  sudo nano agilfacil
-  sudo ln -s /etc/nginx/sites-available/agilfacil /etc/nginx/sites-enabled/
-  sudo nginx -t
-  sudo systemctl restart nginx
-```
-
-#### Código Nginx para http: agilfacil 
-
-```bash
-  server {
-    listen 80;
-    listen [::]:80;
-    server_name agilfacil.com www.agilfacil.com agilfacil.com.br www.agilfacil.com.br;
-    return 301 https://agilfacil.com.br$request_uri;
-
-    location /socket/ {
-         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-		 proxy_set_header Host $host;
-		 proxy_pass http://localhost:9000;
-		 proxy_http_version 1.1;
-         proxy_set_header Upgrade $http_upgrade;
-         proxy_set_header Connection "upgrade";
-    }
-
-    location / {
-        proxy_pass http://localhost:3000;
-    }
-}
-```
-
-
-### Configurando o Backend - Node js
-
-```bash
-  cd /home/ubuntu/agilfacil/backend
-  npm install
-  pm2 start --name agilfacil-backend npm -- start
-  pm2 startup systemd
-```
-
-## Configurando para HTTPS
-
-```bash
-  sudo apt install certbot python3-certbot-nginx -y
-  sudo certbot --nginx -d agilfacil.com.br -d www.agilfacil.com.br
-  sudo certbot renew --dry-run
-```
-#### Atualize a configuração do nginx com o código abaixo
-```bash
-  server {
-    server_name agilfacil.com.br;
-
-    # Configuração para a aplicação principal
-    location / {
-        proxy_pass http://localhost:3000;
-    }
-
-    listen [::]:443 ssl ipv6only=on; # managed by Certbot
-    listen 443 ssl; # managed by Certbot
-    ssl_certificate /etc/letsencrypt/live/agilfacil.com.br/fullchain.pem; # managed by Certbot
-    ssl_certificate_key /etc/letsencrypt/live/agilfacil.com.br/privkey.pem; # managed by Certbot
-    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
-    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
-}
-
-server {
-    listen 80;
-    listen [::]:80;
-    server_name agilfacil.com agilfacil.com.br www.agilfacil.com www.agilfacil.com.br;
-
-    # Redireciona todas as solicitações para agilfacil.com com HTTPS
-    return 301 https://agilfacil.com.br$request_uri;
-}
-
-server {
-    listen 443 ssl;
-    server_name agilfacil.com agilfacil.com.br www.agilfacil.com www.agilfacil.com.br;
-
-    return 301 https://agilfacil.com.br$request_uri;
-}
+## Arquitetura
 
 ```
-#### Executar comando para restartar o nginx
-```bash
-sudo systemctl restart nginx
+                        ┌───────────────────────────┐
+Navegador ── HTTPS ───> │ Cloudflare                │
+   │                    │ frontend estático (React) │
+   │                    └───────────────────────────┘
+   │
+   │                    ┌───────────────────────┐     ┌────────────────┐
+   │                    │ API Gateway HTTP      │     │ Lambda         │
+   ├── HTTPS (REST) ──> │ agilfacil-http        │ ──> │ agilfacil-rest │ ─────────┐
+   │                    │ JWT Cognito nas rotas │     │ agilfacil-auth │          │
+   │                    │ protegidas            │     └────────────────┘          │
+   │                    └───────────────────────┘                                 │
+   │                                                                              v
+   │                    ┌───────────────────────┐     ┌────────────────┐    ┌──────────┐
+   │                    │ API Gateway WebSocket │     │ Lambda         │    │          │
+   └── WSS (WebSocket)> │ agilfacil-board-ws    │ ──> │ agilfacil-ws   │ ──>│ DynamoDB │
+                        │ agilfacil-poker-ws    │ <── │ (broadcast)    │    │          │
+                        └───────────────────────┘     └────────────────┘    └──────────┘
+
+Autenticação: Amazon Cognito (e-mail/senha e Google) + Lambda agilfacil-cognito-pre-signup
+Alertas/Suporte: SNS
 ```
+
+Toda a infraestrutura AWS fica em `sa-east-1` e é provisionada com **Terraform** (`terraform/`).
+
+| Recurso | Nome |
+|---|---|
+| Lambdas | `agilfacil-rest`, `agilfacil-auth`, `agilfacil-ws`, `agilfacil-cognito-pre-signup` (mesmo pacote de código: `backend/`) |
+| API HTTP | `agilfacil-http` → rotas em `terraform/api_gateway_http.tf` |
+| APIs WebSocket | `agilfacil-board-ws` (rota `comand_socket_board`), `agilfacil-poker-ws` (rota `comand_socket_poker`) |
+| DynamoDB | `agilfacil_board` (GSI `gsi_board_user`), `agilfacil_room` (GSI `gsi_room_user`), `agilfacil_connections` (GSI `idSessionIndex`, TTL 24h) |
+
+> A tabela `agilfacil_board` já existia e **não** é gerenciada pelo Terraform (é referenciada por nome/ARN).
+
+### Fluxo em tempo real
+
+1. O frontend abre o WebSocket com `?userName&userId&idSession&service=board|poker` (`frontend/src/customHooks/useSocket.js`).
+2. `$connect` grava a conexão em `agilfacil_connections` e registra o usuário no board/sala.
+3. Cada ação do usuário é um comando (`{ action, comand, boardId|roomId, ... }`). A Lambda altera o item no DynamoDB e faz **broadcast** do estado completo para todas as conexões da sessão.
+4. `$disconnect` remove a conexão e tira o usuário da lista de online.
+
+### Decisões importantes (não quebre sem saber)
+
+- **Gravação com controle de versão.** Board e sala são gravados como um item inteiro. Toda alteração passa por `mutateItem` (`backend/services/database/dynamoService.js`): lê, aplica a mudança e grava com `ConditionExpression` no atributo `version`. Se houver conflito, relê e tenta de novo, com backoff. Sem isso, usuários simultâneos sobrescrevem as alterações uns dos outros: num teste de carga, 6 usuários criando cards ao mesmo tempo perderam 73% deles. **Nunca grave board/sala com `putTable` direto.**
+- **Cards identificados por id.** Os comandos de card enviam `cardId`/`columnId`, e o backend localiza o card pelo id, porque o índice pode estar desatualizado. `add_card_board` é idempotente.
+- **Conexão resiliente no frontend.** O `useSocket`:
+  - reconecta automaticamente com backoff;
+  - guarda numa fila os comandos feitos enquanto desconectado e os reenvia ao reconectar;
+  - envia `ping` a cada 5 min, porque o API Gateway derruba conexões sem tráfego após **10 min**;
+  - o board mostra um aviso enquanto está reconectando.
+- **O broadcast não apaga conexões com 410 (Gone).** Quem remove a conexão é o `$disconnect`, que precisa do registro para saber qual usuário sair da lista de online.
+
+---
+
+## Estrutura do repositório
+
+```
+backend/
+  handlers/
+    rest/      # restIndex.js roteia as rotas HTTP para cada handler
+    ws/        # wsIndex.js → boardIndex.js / pokerIndex.js
+    auth/      # status de autenticação / definição de senha (migração de usuários)
+    cognito/   # trigger pre-signup
+  services/
+    board/     # regras do board (socketBoardService.js)
+    poker/     # regras do poker (socketPokerService.js)
+    connections/  # tabela de conexões WebSocket
+    database/  # acesso ao DynamoDB (inclui mutateItem)
+    generic/   # SNS, CloudWatch, etc.
+  utils/       # logger estruturado, broadcast, auth
+  config.js    # nomes de tabelas/índices
+  template.yaml + events/   # SAM — usado só para testes locais das Lambdas
+frontend/
+  src/
+    main/App.js          # rotas e <ProtectedRoute>
+    pages/board|poker|generic/
+    customHooks/useSocket.js
+    constants/apiConstants.js
+  scripts/write-build-info.js   # gera version.json (ver "Versão publicada")
+terraform/     # infraestrutura AWS
+scripts/       # utilitários pontuais (ex.: migração de usuários do Cognito)
+```
+
+---
+
+## Desenvolvimento local
+
+### Pré-requisitos
+
+- Node.js 22 (mesmo runtime das Lambdas)
+- AWS CLI configurado para a conta do projeto (`aws sts get-caller-identity`)
+- Terraform >= 1.5 (só para deploy do backend)
+- AWS SAM CLI (opcional, para invocar Lambdas localmente)
+
+### Frontend
+
+```bash
+cd frontend
+npm install
+npm start          # http://localhost:3000
+```
+
+> ⚠️ **Por padrão, o frontend local usa as APIs de PRODUÇÃO** (REST e WebSocket), por causa dos valores padrão em `src/constants/apiConstants.js`. Boards e salas criados localmente são reais. Para apontar para outra infraestrutura, crie `frontend/.env.development.local` (veja [Configuração](#configuração)).
+
+**Login local com Cognito:** ajuste `redirectSignIn`/`redirectSignOut` em `frontend/src/aws-exports.js` para `http://localhost:3000/` e confirme que essa URL está em *Allowed callback URLs* / *Allowed sign-out URLs* do app client no Cognito.
+
+### Backend (Lambdas)
+
+Não existe servidor local: o backend roda só como Lambda. Para testar um handler localmente com o SAM:
+
+```bash
+cd backend
+npm install
+sam build
+sam local invoke BoardWsFunction --event events/ws-connect.json
+sam local invoke BoardWsFunction --event events/ws-board-command.json
+```
+
+> As Lambdas invocadas localmente usam suas credenciais AWS e acessam as tabelas reais do DynamoDB.
+
+---
+
+## Configuração
+
+### Frontend (`frontend/.env.*`, não versionados)
+
+O CRA carrega `.env.development` no `npm start` e `.env.production` no `npm run build`. Overrides só da sua máquina vão em `.env.*.local`.
+
+| Variável | Padrão (se ausente) |
+|---|---|
+| `REACT_APP_FRONT_BASE_URL` | `https://agilfacil.com.br` (build) / `http://localhost:3000` (dev) |
+| `REACT_APP_SERVER_BASE_URL` | URL do API Gateway HTTP de produção |
+| `REACT_APP_WS_BOARD_URL` | WebSocket de board de produção |
+| `REACT_APP_WS_POKER_URL` | WebSocket de poker de produção |
+| `REACT_APP_LOG_LEVEL` | nível de log no console do navegador (`debug`, `info`, `warn`, `error`) |
+
+As URLs atuais saem do Terraform: `terraform output http_api_url ws_board_url ws_poker_url`.
+
+### Backend (variáveis de ambiente das Lambdas, definidas em `terraform/lambda.tf`)
+
+`REGION`, `TABLE_BOARD`, `TABLE_ROOM`, `TABLE_CONNECTIONS`, `TOPIC_ARN`, `TOPIC_ARN_SUPPORT`, `USER_POOL_ID`, `CLIENT_ID`, `MIGRATION_SECRET` e, opcionalmente, `LOG_LEVEL` (padrão `debug`).
+
+---
+
+## Deploy
+
+### Backend (Lambdas) — Terraform
+
+O Terraform gera um ZIP do diretório `backend/`, incluindo `node_modules`, e atualiza as quatro Lambdas. O state é **local** (`terraform/terraform.tfstate`, não versionado).
+
+```bash
+cd backend && npm install && cd ..
+cd terraform
+terraform plan      # SEMPRE revise: deve mudar só source_code_hash das Lambdas
+terraform apply
+```
+
+Se o `plan` trouxer mudanças fora das Lambdas que você não pretende aplicar, limite o apply:
+
+```bash
+terraform apply \
+  -target=aws_lambda_function.ws -target=aws_lambda_function.rest \
+  -target=aws_lambda_function.auth -target=aws_lambda_function.cognito_pre_signup
+```
+
+Validação rápida:
+
+```bash
+curl https://v2ffd9vlb9.execute-api.sa-east-1.amazonaws.com/healthcheck
+aws lambda get-function-configuration --region sa-east-1 --function-name agilfacil-ws \
+  --query "[LastModified,LastUpdateStatus]"
+```
+
+### Frontend — Cloudflare
+
+1. **Faça commit antes do build.** A versão publicada é derivada do commit, e um build com alterações pendentes sai marcado como `dirty`.
+2. Gere o build:
+   ```bash
+   cd frontend
+   npm run build      # roda scripts/write-build-info.js antes (prebuild)
+   ```
+3. Publique o conteúdo de `frontend/build/` na Cloudflare.
+4. Confira a versão publicada (próxima seção).
+
+### Versão publicada
+
+A cada `npm start`/`npm run build`, o script `frontend/scripts/write-build-info.js` gera as informações de versão:
+
+- **Formato:** `<version do package.json>+<nº de commits>`, por exemplo `0.1.0+29`. O número sobe sozinho a cada commit.
+- **Outros campos:** hash e data do commit, branch, horário do build e a flag `dirty`.
+
+| Onde | O que mostra |
+|---|---|
+| `curl -s https://agilfacil.com.br/version.json` | o que está **publicado** |
+| https://agilfacil.com.br/version | o que **o seu navegador** está rodando, comparado com o publicado. Se não bater, é cache: Ctrl+Shift+R |
+
+---
+
+## Operação e troubleshooting
+
+| Sintoma | Causa provável / o que verificar |
+|---|---|
+| Cards "não aparecem para os outros" | Conexão WebSocket caiu. Veja os logs de `$disconnect` (consulta abaixo); o frontend deve exibir o aviso de reconexão. |
+| Console: `WebSocket desconectado code=1001 reason=Going away` | O API Gateway encerrou a conexão: ociosidade (10 min sem tráfego) ou duração máxima (2 h). O frontend reconecta sozinho. |
+| Usuários "fantasmas" no contador de online | `$disconnect` não removeu o usuário. Verifique erros em `Erro no $disconnect`. |
+| Comandos perdidos sob carga | Limite de concorrência da Lambda na conta (`aws lambda get-account-settings --region sa-east-1`) e métrica `Throttles` de `agilfacil-ws`. O padrão AWS é 1000; contas novas começam com 10. |
+| Muitos `DynamoDB conflito de escrita` nos logs | É esperado sob uso simultâneo (é o retry funcionando). Só preocupa se aparecer `tentativas esgotadas`. |
+| Login falha localmente | URLs de callback do Cognito (ver [Frontend](#frontend)). |
+
+---
 
 ## Observabilidade — CloudWatch Logs & Insights
 
-O backend emite logs JSON estruturados em todos os handlers Lambda. No AWS, esses logs ficam disponíveis automaticamente nos log groups `/aws/lambda/<nome-da-função>`.
+O backend emite logs JSON estruturados (`backend/utils/logger.js`) nos log groups `/aws/lambda/<função>`:
+
+| Log group | Conteúdo |
+|---|---|
+| `/aws/lambda/agilfacil-ws` | WebSocket de board e poker (connect, disconnect, comandos, broadcast) |
+| `/aws/lambda/agilfacil-rest` | API REST |
+| `/aws/lambda/agilfacil-auth` | Autenticação/migração |
+| `/aws/lambda/agilfacil-cognito-pre-signup` | Trigger do Cognito |
 
 ### Dois campos de nível: `@level` vs `level`
 
-No CloudWatch Insights existem dois campos distintos:
-
 | Campo | O que é | Quando usar |
 |-------|---------|-------------|
-| `@level` | Nível atribuído pelo Lambda runtime (`INFO`, `WARN`, `ERROR`) — determinado pelo método `console.*` usado | Captura **qualquer** output daquela severidade, incluindo warnings nativos do Node/SDK |
+| `@level` | Nível atribuído pelo runtime da Lambda (`INFO`, `WARN`, `ERROR`), conforme o `console.*` usado | Captura **qualquer** saída daquela severidade, inclusive warnings do Node/SDK |
 | `level` | Campo dentro do nosso JSON (`"info"`, `"warn"`, `"error"`) | Filtra **apenas** os logs estruturados da aplicação |
-
-Nas queries abaixo usamos `level` (JSON) para isolar logs da aplicação e `@level` quando queremos capturar tudo incluindo erros do runtime.
 
 ### Correlation ID
 
-Cada invocação Lambda gera automaticamente um `correlationId` (vindo do `requestContext.requestId` do API Gateway) que é incluído em **todos** os logs daquela execução. Use-o para rastrear o fluxo completo de uma requisição no CloudWatch Insights.
+Cada invocação recebe um `correlationId` (o `requestContext.requestId` do API Gateway), incluído em **todos** os logs daquela execução. Use-o para rastrear uma requisição de ponta a ponta.
 
-### Ativando o nível de log
+### Nível de log
 
 A variável de ambiente `LOG_LEVEL` controla o que é gravado (padrão: `debug`):
 
 | Valor | O que é logado |
 |-------|----------------|
-| `debug` (padrão) | Tudo: timing do DynamoDB, detalhes de payload, contagem de conexões no broadcast |
-| `info` | Eventos de negócio: connect/disconnect, comandos, creates/deletes |
+| `debug` (padrão) | Tudo: payloads recebidos, tempo do DynamoDB, broadcast |
+| `info` | Eventos de negócio: connect/disconnect (com motivo), comandos, conflitos de escrita |
 | `warn` | Apenas avisos e erros |
 | `error` | Apenas erros |
 
-Para alterar em uma função Lambda:
-1. Acesse a função no console AWS → **Configuration → Environment variables**
-2. Defina `LOG_LEVEL = info` (ou o nível desejado)
+Para alterar, defina `LOG_LEVEL` no bloco `environment` da Lambda em `terraform/lambda.tf` e faça o deploy. Alterações feitas pelo console da AWS são sobrescritas no próximo `terraform apply`.
 
-### Abrindo o CloudWatch Insights
+### Como abrir
 
-1. Console AWS → **CloudWatch → Logs Insights**
-2. Em **Select log group(s)**, escolha o grupo da função que quer investigar (ex: `/aws/lambda/agilfacil-board-ws`)
-3. Ajuste o período (Time range) e cole a query desejada
+Console AWS → **CloudWatch → Logs Insights** → selecione o log group (ex.: `/aws/lambda/agilfacil-ws`) → ajuste o período → cole a consulta.
 
-### Queries úteis
+### Consultas úteis
 
 #### Rastrear uma requisição pelo Correlation ID
 ```
@@ -169,7 +270,7 @@ fields @timestamp, level, message, boardId, roomId, userId, error, elapsedMs
 | sort @timestamp asc
 ```
 
-#### Ver todos os erros recentes (app + runtime)
+#### Erros recentes (app + runtime)
 ```
 fields @timestamp, @level, level, message, boardId, roomId, userId, error
 | filter @level = "ERROR"
@@ -177,37 +278,57 @@ fields @timestamp, @level, level, message, boardId, roomId, userId, error
 | limit 50
 ```
 
-#### Ver apenas erros da aplicação (sem warnings do Node/SDK)
+#### Motivo das desconexões WebSocket
 ```
-fields @timestamp, message, boardId, roomId, userId, error
-| filter level = "error"
-| sort @timestamp desc
-| limit 50
-```
-
-#### Ver connects/disconnects por sessão (tshoot de usuário sumindo)
-```
-fields @timestamp, message, userId, idSession, connectionId
-| filter level = "info" and (message like "connect" or message like "disconnect")
-| sort @timestamp desc
-| limit 100
+fields @timestamp, connectionId, disconnectStatusCode, disconnectReason
+| filter message = "wsIndex: disconnect"
+| stats count(*) as total by disconnectStatusCode, disconnectReason
+| sort total desc
 ```
 
-#### Acompanhar um board específico (todos os comandos)
+#### Connects/disconnects de um board (usuário "sumindo")
 ```
-fields @timestamp, message, command, userId, error
+fields @timestamp, message, userId, connectionId
+| filter idSession = "SEU_BOARD_ID_AQUI" and (message like /connect/)
+| sort @timestamp asc
+```
+
+#### Todos os comandos de um board
+```
+fields @timestamp, message, command, error
 | filter boardId = "SEU_BOARD_ID_AQUI"
 | sort @timestamp desc
 ```
 
-#### Acompanhar uma sala de poker específica
+#### Conteúdo enviado pelos usuários (com `LOG_LEVEL=debug`)
+```
+fields @timestamp, connectionId, body.comand, body.newCard.content, body.content
+| filter message = "wsIndex: request" and body.boardId = "SEU_BOARD_ID_AQUI"
+| sort @timestamp asc
+```
+
+#### Clientes enviando heartbeat (frontend atualizado)
+```
+fields @timestamp, connectionId
+| filter message = "wsIndex: request" and body.comand = "ping"
+| stats count(*) by bin(10m)
+```
+
+#### Conflitos de escrita e retries esgotados
+```
+fields @timestamp, message, table, id, attempt
+| filter message like /conflito de escrita/
+| stats count(*) as total by message
+```
+
+#### Uma sala de poker
 ```
 fields @timestamp, message, command, userId, vote, status
 | filter roomId = "SEU_ROOM_ID_AQUI"
 | sort @timestamp desc
 ```
 
-#### Timing de operações DynamoDB (detectar lentidão)
+#### Tempo das operações no DynamoDB
 ```
 fields @timestamp, message, table, elapsedMs
 | filter message like "DynamoDB"
@@ -215,7 +336,7 @@ fields @timestamp, message, table, elapsedMs
 | limit 50
 ```
 
-#### Comandos board mais lentos (debug ativado)
+#### Comandos de board mais lentos
 ```
 fields @timestamp, command, boardId, elapsedMs
 | filter message = "Board command processed"
@@ -223,47 +344,10 @@ fields @timestamp, command, boardId, elapsedMs
 | limit 20
 ```
 
-#### Contagem de erros da aplicação por tipo nas últimas 24h
+#### Erros da aplicação por tipo
 ```
 fields message
 | filter level = "error"
 | stats count(*) as total by message
 | sort total desc
 ```
-
-#### Broadcasts com zero conexões (sessão fantasma)
-```
-fields @timestamp, idSession, type, connectionCount
-| filter message = "Broadcast to session" and connectionCount = 0
-| sort @timestamp desc
-```
-
----
-
-## Configuração do Lambda Health Check
-
-#### No ambiente local, na pasta health-check, executar os seguintes comandos, e verificar se os recusrsos foram criados no ambiente aws:
-
-```bash
-pip install -r requirements.txt -t ./FunctionHealth
-sam build
-sam deploy --guided
-```
-
-#### Observações Importantes
-
-1. **Liberar Portas no Security Group:**
-   - Certifique-se de liberar as portas **9000** e **3000** no grupo de segurança (security group) para permitir o tráfego necessário para a aplicação.
-
-2. **Ajuste do Arquivo `.env` no Backend:**
-   - Antes de subir a aplicação, configure o arquivo `.env` do backend conforme o ambiente (dev ou prod) em que a aplicação será executada. 
-
-3. **Para testar local, precisa configurar o cognito da seguinte forma:**
-    - No arquivo aws-exports, ajustar a url dos campos redirectSignIn e redirectSignOut
-    - No Cognito, ajustar a url em Allowed callback URLs e Allowed sign-out URLs - optional
-
-4. **Ajuste o arquivo frontend\src\constants\apiConstants.js de acordo com o ambiente que for subir a aplicação**
-
-5. **Ajuste de IP no CloudFlare (Ambiente AWS):**
-   - Quando for subir uma nova instância no ambiente AWS, é necessário ajustar o endereço IP no CloudFlare. Acesse o painel da CloudFlare através do link abaixo e atualize o IP para o novo endereço da instância:
-     - [Painel CloudFlare](https://dash.cloudflare.com/)
