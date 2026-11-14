@@ -183,9 +183,18 @@ export const useSocket = (userName, userId, idSession, service) => {
         logger.error(CTX, 'WebSocket error', err);
       };
       ws.onmessage = (event) => {
+        // A rota de comandos tem route response no API Gateway: cada comando
+        // enviado recebe de volta o retorno da Lambda, que não tem corpo
+        // (frame vazio). Não é dado do board — apenas ignora.
+        if (!event.data) return;
         try {
           const msg = JSON.parse(event.data);
           // O servidor envia { type: 'data_board'|'data_room', data: {...} }
+          if (!msg.type) {
+            // Ex.: { message: 'Internal server error' } quando a invocação falha
+            logger.warn(CTX, '← resposta do API Gateway sem dados de board/sala', msg);
+            return;
+          }
           logger.debug(CTX, `← mensagem recebida type=${msg.type}`, msg.data);
           if (msg.data) setSocketResponse(msg.data);
         } catch (err) {
