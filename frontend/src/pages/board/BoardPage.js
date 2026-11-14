@@ -34,7 +34,7 @@ export const BoardPage = () => {
     location.state.boardData.boardId,
     'board'
   );
-  const { socketResponse, reorderBoardSocket, combineCardSocket, timerControlSocket } = socket;
+  const { socketResponse, reorderBoardSocket, combineCardSocket, timerControlSocket, connectionStatus } = socket;
 
   const { timeInput, timer, isRunningTimer, isInvalidFormat, hasTimeEnded, handleInputTimerChange, handleStartTimer, handlePauseTimer, syncFromSocket } =
     useTimer({ timerControlSocket, userId: userLoggedData.userId });
@@ -93,6 +93,12 @@ export const BoardPage = () => {
   return (
     <PageBackground>
       <AmbientGlow />
+
+      {connectionStatus === 'reconnecting' && (
+        <ConnectionBanner role="status" aria-live="polite">
+          Conexão perdida — reconectando… Suas alterações serão enviadas assim que a conexão voltar.
+        </ConnectionBanner>
+      )}
 
       <Header
         boardName={boardData.boardName}
@@ -185,6 +191,23 @@ const AmbientGlow = styled.div`
   :root[data-theme="light"] & {
     display: none;
   }
+`;
+
+const ConnectionBanner = styled.div`
+  position: fixed;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  max-width: calc(100vw - 32px);
+  padding: 8px 16px;
+  border-radius: 8px;
+  background: #b45309;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
 `;
 
 const Layout = styled.div`

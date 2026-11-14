@@ -14,15 +14,24 @@ export function useBoardActions({ boardData, setBoardData, socket }) {
     setIsObfuscatedBoardLevelSocket, setIsObfuscatedColumnLevelSocket,
   } = socket;
 
+  // Ids estáveis do card/coluna — o backend usa para localizar o card mesmo
+  // que o índice tenha mudado (ex.: comando reenviado após reconexão).
+  const cardRef = (indexCard, indexColumn) => {
+    const column = boardData.columns[indexColumn];
+    return { columnId: column?.id, cardId: column?.cards[indexCard]?.id };
+  };
+
   const onSaveCard = (content, indexCard, indexColumn) => {
+    const ids = cardRef(indexCard, indexColumn);
     setBoardData(prev => ({ ...prev, ...saveCard(prev, content, indexCard, indexColumn) }));
-    saveCardSocket({ content, indexCard, indexColumn });
+    saveCardSocket({ content, indexCard, indexColumn, ...ids });
   };
 
   const onDeleteCard = async (indexCard, indexColumn) => {
+    const ids = cardRef(indexCard, indexColumn);
     if (!await confirmDialog("Confirma exclusão do Card?")) return;
     setBoardData(prev => ({ ...prev, ...deleteCard(prev, indexCard, indexColumn) }));
-    deleteCardSocket({ indexCard, indexColumn });
+    deleteCardSocket({ indexCard, indexColumn, ...ids });
   };
 
   const onDeleteAllCard = async (indexColumn) => {
@@ -32,8 +41,9 @@ export function useBoardActions({ boardData, setBoardData, socket }) {
   };
 
   const onUpdateLike = (isIncrement, indexCard, indexColumn) => {
+    const ids = cardRef(indexCard, indexColumn);
     setBoardData(prev => ({ ...prev, ...updateLike(prev, isIncrement, indexCard, indexColumn) }));
-    updateLikeSocket({ isIncrement, indexCard, indexColumn });
+    updateLikeSocket({ isIncrement, indexCard, indexColumn, ...ids });
   };
 
   const onUpdateTitleColumn = (content, index) => {
@@ -53,8 +63,9 @@ export function useBoardActions({ boardData, setBoardData, socket }) {
   };
 
   const onAddCard = (newCard, indexColumn) => {
+    const columnId = boardData.columns[indexColumn]?.id;
     setBoardData(prev => ({ ...prev, ...addCard(prev, newCard, indexColumn) }));
-    addCardSocket({ newCard, indexColumn });
+    addCardSocket({ newCard, indexColumn, columnId });
   };
 
   const handleAddColumn = (columnName) => {

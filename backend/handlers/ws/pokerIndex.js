@@ -58,6 +58,9 @@ const onCommand = async (event) => {
   const endpoint = `https://${event.requestContext.domainName}/${event.requestContext.stage}`;
   const start = performance.now();
 
+  // Heartbeat do cliente: só mantém a conexão ativa (idle timeout do API Gateway = 10 min).
+  if (body.comand === 'ping') return { statusCode: 200 };
+
   log.info('Poker command received', { command: body.comand, roomId: body.roomId });
 
   try {

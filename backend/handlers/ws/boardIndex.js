@@ -45,6 +45,9 @@ const onCommand = async (event) => {
   const endpoint = `https://${event.requestContext.domainName}/${event.requestContext.stage}`;
   const start = performance.now();
 
+  // Heartbeat do cliente: só mantém a conexão ativa (idle timeout do API Gateway = 10 min).
+  if (body.comand === 'ping') return { statusCode: 200 };
+
   log.info('Board command received', { command: body.comand, boardId: body.boardId });
 
   try {
@@ -62,7 +65,7 @@ const onCommand = async (event) => {
     switch (body.comand) {
       case 'add_card_board':
         log.debug('Board add card', { boardId: body.boardId, indexColumn: body.indexColumn, cardId: body.newCard?.id });
-        board = await addCardBoard(body.boardId, body.newCard, body.indexColumn); break;
+        board = await addCardBoard(body.boardId, body.newCard, body.indexColumn, body.columnId); break;
       case 'reorder_board':
         log.debug('Board reorder', { boardId: body.boardId, source: body.source, destination: body.destination });
         board = await reorderBoard(body.boardId, body.source, body.destination); break;
@@ -73,10 +76,10 @@ const onCommand = async (event) => {
       case 'add_column':                board = await addColumn(body.boardId, body.newColumn); break;
       case 'update_title_column':       board = await updateTitleColumn(body.boardId, body.content, body.index); break;
       case 'update_color_cards':        board = await updatecolorCards(body.boardId, body.colorCards, body.index); break;
-      case 'update_like':               board = await updateLike(body.boardId, body.isIncrement, body.indexCard, body.indexColumn); break;
-      case 'delete_card':               board = await deleteCard(body.boardId, body.indexCard, body.indexColumn); break;
+      case 'update_like':               board = await updateLike(body.boardId, body.isIncrement, body.indexCard, body.indexColumn, body.columnId, body.cardId); break;
+      case 'delete_card':               board = await deleteCard(body.boardId, body.indexCard, body.indexColumn, body.columnId, body.cardId); break;
       case 'delete_all_card':           board = await deleteAllCard(body.boardId, body.indexColumn); break;
-      case 'save_card':                 board = await saveCard(body.boardId, body.content, body.indexCard, body.indexColumn); break;
+      case 'save_card':                 board = await saveCard(body.boardId, body.content, body.indexCard, body.indexColumn, body.columnId, body.cardId); break;
       case 'set_is_obfuscated_board_level':  board = await setIsObfuscatedBoardLevel(body.boardId, body.isObfuscated); break;
       case 'set_is_obfuscated_column_level': board = await setIsObfuscatedColumnLevel(body.boardId, body.isObfuscated, body.index); break;
       case 'timer_control_board':

@@ -40,6 +40,13 @@ exports.handler = async (event) => {
   // ── $disconnect: consulta a tabela de conexões para descobrir o serviço ───
   if (routeKey === '$disconnect') {
     const connectionId = event.requestContext.connectionId;
+    // Motivo informado pelo API Gateway (ex.: 1001 "Going away" = cliente fechou,
+    // 1006 = queda de rede, "Connection idle timeout", "Connection duration exceeded").
+    log.info('wsIndex: disconnect', {
+      connectionId,
+      disconnectStatusCode: event.requestContext.disconnectStatusCode,
+      disconnectReason: event.requestContext.disconnectReason,
+    });
     try {
       const conn = await getConnection(connectionId);
       if (conn?.service === 'poker') return pokerHandler.handler(event);
